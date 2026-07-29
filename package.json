@@ -1,0 +1,11 @@
+{
+  "name": "my-skills",
+  "private": true,
+  "scripts": {
+    "add": "bun index.ts add",
+    "remove": "bun index.ts remove",
+    "sync": "bun index.ts sync",
+    "check": "bun index.ts check",
+    "test": "bun index.ts test"
+  }
+}
