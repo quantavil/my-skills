@@ -13,12 +13,6 @@
       "skillPath": "skills/brainstorming/SKILL.md",
       "computedHash": "225b53fce53d627d3a1e94bfea84060ccdbf11a58a2d5cf11eefef89d598020e"
     },
-    "brand-guidelines": {
-      "source": "anthropics/skills",
-      "sourceType": "github",
-      "skillPath": "skills/brand-guidelines/SKILL.md",
-      "computedHash": "e48840db6ea772ceecdb68b4e50f8cc77e2534b7580aeaf4a6fe6ee7bd845d7d"
-    },
     "brandkit": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
@@ -66,18 +60,6 @@
       "sourceType": "github",
       "skillPath": "skills/caveman-review/SKILL.md",
       "computedHash": "fb7214a1c5793bae6ba8b1be4329e2e6f40dbec6dd911dfb335ad29f09c316a1"
-    },
-    "caveman-stats": {
-      "source": "JuliusBrussee/caveman",
-      "sourceType": "github",
-      "skillPath": "skills/caveman-stats/SKILL.md",
-      "computedHash": "47ce2de3d6cb39a75047b5c962e4eb3da15594e7397c94103e9a104d42626553"
-    },
-    "claude-api": {
-      "source": "anthropics/skills",
-      "sourceType": "github",
-      "skillPath": "skills/claude-api/SKILL.md",
-      "computedHash": "7688fe71c809c208542ddf6b5d222eb5af4ed979ab0a93740bb666c946d484fa"
     },
     "design-taste-frontend": {
       "source": "Leonxlnx/taste-skill",
@@ -175,12 +157,6 @@
       "skillPath": "skills/brutalist-skill/SKILL.md",
       "computedHash": "8fc355c4aadb7d29c53ca28bc41be3cd6eea765d121e3737c4dc2d0f90a8effa"
     },
-    "internal-comms": {
-      "source": "anthropics/skills",
-      "sourceType": "github",
-      "skillPath": "skills/internal-comms/SKILL.md",
-      "computedHash": "0bdc8867452b7ab9ef6167f6b0db2025ce5fb03773d3f85efcef2dfeb9d4976d"
-    },
     "mcp-builder": {
       "source": "anthropics/skills",
       "sourceType": "github",
@@ -252,12 +228,6 @@
       "sourceType": "github",
       "skillPath": "skills/systematic-debugging/SKILL.md",
       "computedHash": "a2750dfbaed1690da73b120254892c4f926b4576cb82eb16fc877783941fe39b"
-    },
-    "template-skill": {
-      "source": "anthropics/skills",
-      "sourceType": "github",
-      "skillPath": "template/SKILL.md",
-      "computedHash": "38c88f722b574a922311d334a70c2008a2a5b896f06eaa75516d716e5725b26f"
     },
     "test-driven-development": {
       "source": "obra/superpowers",
