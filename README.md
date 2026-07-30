@@ -120,3 +120,8 @@ All four rewrite the table above, so it can't drift; `git diff` shows what chang
 ## Credit
 
 Every skill here was written by someone else and is vendored unmodified under its own licence — see the Source column for where each came from. The tooling in `index.ts` is the only original work in this repo.
+
+## Additional Resources
+
+- [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) — A curated directory of official and community agent skills (including skills by Brave, VoltAgent, Supabase, Google, and more).
+
