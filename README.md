@@ -123,5 +123,5 @@ Every skill here was written by someone else and is vendored unmodified under it
 
 ## Additional Resources
 
-- [VoltAgent/awesome-agent-skills](https://github.com/VoltAgent/awesome-agent-skills) — A curated directory of official and community agent skills (including skills by Brave, VoltAgent, Supabase, Google, and more).
+- [VoltAgent/awesome-agent-skills](https://raw.githubusercontent.com/VoltAgent/awesome-agent-skills/refs/heads/main/README.md) — A curated directory of official and community agent skills (including skills by Brave, VoltAgent, Supabase, Google, and more).
 
