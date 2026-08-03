@@ -86,6 +86,12 @@ bunx skills add quantavil/my-skills --all
 | [`writing-plans`](skills/writing-plans/) | Use when you have a spec or requirements for a multi-step task, before touching code |
 | [`writing-skills`](skills/writing-skills/) | Use when creating new skills, editing existing skills, or verifying skills work before deployment |
 
+### [officecli.ai](https://officecli.ai/SKILL.md)
+
+| Skill | Use it when |
+| --- | --- |
+| [`officecli`](skills/officecli/) | Create, analyze, proofread, and modify Office documents (.docx, .xlsx, .pptx) using the officecli CLI tool. Use when the user wants to create, inspect, check formatting, find issues, add charts, or modify Office documents. |
+
 ### [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)
 
 | Skill | Use it when |

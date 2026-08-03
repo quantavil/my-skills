@@ -181,6 +181,13 @@
       "skillPath": "skills/minimalist-skill/SKILL.md",
       "computedHash": "08873a3131d3be27bef9bf3304b310b16b44ca6e3561aebe532797be3443f6bd"
     },
+    "officecli": {
+      "source": "officecli.ai",
+      "sourceType": "url",
+      "sourceUrl": "https://officecli.ai/SKILL.md",
+      "skillPath": "skills/officecli/SKILL.md",
+      "computedHash": "c950d285ce60021712b4753fb2d9f592308d5622bab776229061dfecb1ce55d4"
+    },
     "pdf": {
       "source": "anthropics/skills",
       "sourceType": "github",
