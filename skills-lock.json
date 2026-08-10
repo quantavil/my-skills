@@ -73,12 +73,6 @@
       "skillPath": "skills/taste-skill/SKILL.md",
       "computedHash": "6d838b246d0e35d0b53f4f23f98ba7a1dd561937e64f7d0c7553b0928e376c3e"
     },
-    "design-taste-frontend-v1": {
-      "source": "Leonxlnx/taste-skill",
-      "sourceType": "github",
-      "skillPath": "skills/taste-skill-v1/SKILL.md",
-      "computedHash": "d704ab912c4d0ca954ffa858983da755ae4cd5cad9ba22554db5557382f5bd34"
-    },
     "dispatching-parallel-agents": {
       "source": "obra/superpowers",
       "sourceType": "github",
@@ -181,6 +175,90 @@
       "skillPath": "skills/minimalist-skill/SKILL.md",
       "computedHash": "08873a3131d3be27bef9bf3304b310b16b44ca6e3561aebe532797be3443f6bd"
     },
+    "n8n-agents": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-agents/SKILL.md",
+      "computedHash": "67ae22efb2f025a8b84db89a3550177123ce42d83a06b2483c5f595db8c885d7"
+    },
+    "n8n-binary-and-data": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-binary-and-data/SKILL.md",
+      "computedHash": "6dbe7d0fcce1a5b7814fe77581bf9d70269c19cfe8d530ad785f20bab0fbcba1"
+    },
+    "n8n-code-javascript": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-code-javascript/SKILL.md",
+      "computedHash": "83168e2fdd7bf76aa1ffb19f28b56497727932791b95d0ffba85d8614faf8b40"
+    },
+    "n8n-code-python": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-code-python/SKILL.md",
+      "computedHash": "549c209e6f64e53f5886e5e808273bd29d06d7158c52f8d12a3188b495f35cb7"
+    },
+    "n8n-code-tool": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-code-tool/SKILL.md",
+      "computedHash": "268228e920b4179caa5b9eecbce539efbb63386bac68ff8f167ee60eb16c3cf3"
+    },
+    "n8n-error-handling": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-error-handling/SKILL.md",
+      "computedHash": "997385e60ff5a9008b7003ee95cc784d5767dbde09ed94a6407fd17d6af67b38"
+    },
+    "n8n-expression-syntax": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-expression-syntax/SKILL.md",
+      "computedHash": "6e3fca0c2a007e27c20a6be820fac8b1598f89babd5d4f681ab669a934bea80b"
+    },
+    "n8n-mcp-tools-expert": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-mcp-tools-expert/SKILL.md",
+      "computedHash": "ff08a9c39ba94c16acf01a1b7b3f491fbb3e9e2dc4e0392bf1f6ef894279006e"
+    },
+    "n8n-multi-instance": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-multi-instance/SKILL.md",
+      "computedHash": "964f6f0befd0bd7760d3ad1ec41bf12b897079a55129dd2690b3741a7d989a60"
+    },
+    "n8n-node-configuration": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-node-configuration/SKILL.md",
+      "computedHash": "dfe7ecc6b8b8a9213d63ca2b97cd6dcea4629d6264adb488bb2ed71629df3d10"
+    },
+    "n8n-self-hosting": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-self-hosting/SKILL.md",
+      "computedHash": "83242f584413d626ee6efb179a8b07f138f26d41198d74e8b27df1046179e6ff"
+    },
+    "n8n-subworkflows": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-subworkflows/SKILL.md",
+      "computedHash": "8cafe3bde8509dfca95b61716d2d862a22557c094cf4312c0056206a4c6417b6"
+    },
+    "n8n-validation-expert": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-validation-expert/SKILL.md",
+      "computedHash": "bc5fbb51c318d52128036849f97e71d59b85a52a0eb93ffe7ec20d233b9462a9"
+    },
+    "n8n-workflow-patterns": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/n8n-workflow-patterns/SKILL.md",
+      "computedHash": "9a937960805ede22e356c3d771c2bf0fc6d792a031a196651bdae4bae8b04026"
+    },
     "officecli": {
       "source": "officecli.ai",
       "sourceType": "url",
@@ -253,6 +331,12 @@
       "sourceType": "github",
       "skillPath": "skills/using-git-worktrees/SKILL.md",
       "computedHash": "48c8a1040e378e0cb7208107294e3afa9067b9370c3f33b49a443eb6b7528b0d"
+    },
+    "using-n8n-mcp-skills": {
+      "source": "czlonkowski/n8n-skills",
+      "sourceType": "github",
+      "skillPath": "skills/using-n8n-mcp-skills/SKILL.md",
+      "computedHash": "f14e53ff51cac298d0d9c32115d48481bfb43c946eb3e8260e1ee1711cca7877"
     },
     "using-superpowers": {
       "source": "obra/superpowers",
