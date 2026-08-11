@@ -163,6 +163,12 @@
       "skillPath": "skills/brutalist-skill/SKILL.md",
       "computedHash": "8fc355c4aadb7d29c53ca28bc41be3cd6eea765d121e3737c4dc2d0f90a8effa"
     },
+    "itr-wala": {
+      "source": "karanb192/itr-wala",
+      "sourceType": "github",
+      "skillPath": "skills/itr-wala/SKILL.md",
+      "computedHash": "db82e3f82397a8739490881a0f188d5565923f48b2762156d3c00161431a0cb6"
+    },
     "mcp-builder": {
       "source": "anthropics/skills",
       "sourceType": "github",

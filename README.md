@@ -63,6 +63,12 @@ bunx skills add quantavil/my-skills --all
 | [`caveman-help`](skills/caveman-help/) | Quick-reference card for all caveman modes, skills, and commands. One-shot display, not a persistent mode. Trigger: /caveman-help, "caveman help", "what caveman commands", "how do I use caveman". |
 | [`caveman-review`](skills/caveman-review/) | Ultra-compressed code review comments. Cuts noise from PR feedback while preserving the actionable signal. Each comment is one line: location, problem, fix. Use when user says "review this PR", "code review", "review the diff", "/review", or invokes /caveman-review. Auto-triggers when reviewing pull requests. |
 
+### [karanb192/itr-wala](https://github.com/karanb192/itr-wala)
+
+| Skill | Use it when |
+| --- | --- |
+| [`itr-wala`](skills/itr-wala/) | File Indian income tax returns (ITR) for FY 2025-26 / AY 2026-27. Use when the user wants to file their ITR, compute or verify Indian income tax, compare the old vs new tax regime, read a Form 16, AIS, TIS or Form 26AS, reconcile TDS, handle capital gains from Zerodha/Groww/Upstox statements, check their tax refund, or asks about ITR-1/ITR-2/ITR-3/ITR-4, sections 80C/80D/87A/111A/112A, crypto tax, advance tax, or the income-tax e-filing portal - even if they just say "help me with my taxes" in an Indian context. |
+
 ### [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)
 
 | Skill | Use it when |

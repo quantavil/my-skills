@@ -1,0 +1,52 @@
+{
+  "name": "Example Filer (fictional)",
+  "regime": "both",
+  "age_category": "regular",
+  "residential_status": "resident",
+  "due_date": "2026-07-31",
+  "filing_date": "2026-07-28",
+  "income": {
+    "salary": {
+      "gross": 2400000,
+      "exempt_allowances": 240000,
+      "professional_tax": 2400,
+      "basic_plus_da": 1200000,
+      "form16_17_1": 2300000,
+      "form16_17_2": 100000,
+      "form16_17_3": 0
+    },
+    "house_property": [
+      { "type": "self_occupied", "interest_paid": 180000 }
+    ],
+    "capital_gains": {
+      "stcg_111a": 45000,
+      "ltcg_112a": 160000,
+      "stcg_slab": 12000
+    },
+    "other_sources": {
+      "savings_interest": 14500,
+      "fd_interest": 42000,
+      "dividends": 8200
+    }
+  },
+  "deductions": {
+    "80c": 150000,
+    "80ccd_1b": 50000,
+    "80ccd_2": 100000,
+    "80d": 25000
+  },
+  "taxes_paid": {
+    "tds": 280000,
+    "advance_tax": [
+      { "date": "2025-12-14", "amount": 20000 }
+    ]
+  },
+  "source_totals": {
+    "form16_gross_salary": 2400000,
+    "form16_total_tds": 265000,
+    "form26as_total_tds": 280000,
+    "ais_total_tds": 280000,
+    "ais_savings_interest": 14500,
+    "ais_dividends": 8200
+  }
+}
