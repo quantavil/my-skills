@@ -131,6 +131,13 @@ bunx skills add quantavil/my-skills --all
 | [`web-design-guidelines`](skills/web-design-guidelines/) | Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices". |
 | [`writing-guidelines`](skills/writing-guidelines/) | Review docs/prose for Writing Guidelines compliance. Use when asked to "review my docs", "check writing style", "audit prose", "review docs voice and tone", or "check this page against the writing handbook". |
 
+### Unsourced
+
+| Skill | Use it when |
+| --- | --- |
+| [`compose-preview`](skills/compose-preview/) | Render Compose @Preview functions to PNG outside Android Studio. Use this to verify UI changes, iterate on designs, and compare before/after states across Android (Jetpack Compose) and Compose Multiplatform Desktop projects. |
+| [`compose-preview-review`](skills/compose-preview-review/) | Review pull requests that change Compose UI by rendering @Preview composables on base and head and diffing them. Use when reviewing a UI PR locally or from a CI agent session (@claude mention), authoring an agent-opened PR that touches UI, triaging flaky or unstable previews (time/random/animation), or wiring compose-preview/main baselines and PR-comment GitHub Actions for a project. Pairs with the compose-preview skill. |
+
 <!-- skills:end -->
 
 ## Maintaining
