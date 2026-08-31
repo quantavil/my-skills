@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GSTR3BPortalSchema",
+  "description": "GSTN Official Offline Return Schema for GSTR-3B",
+  "type": "object",
+  "required": ["gstin", "ret_period", "sup_details", "itc_elg", "inward_sup", "tx_pmt"],
+  "properties": {
+    "gstin": { "type": "string" },
+    "ret_period": { "type": "string" },
+    "sup_details": {
+      "type": "object",
+      "properties": {
+        "osup_det": { "type": "object" },
+        "osup_zero": { "type": "object" },
+        "osup_nil_exmp": { "type": "object" },
+        "isup_rev": { "type": "object" },
+        "osup_nongst": { "type": "object" }
+      }
+    },
+    "inter_sup": {
+      "type": "object",
+      "properties": {
+        "unreg_details": { "type": "array" },
+        "comp_details": { "type": "array" },
+        "uin_details": { "type": "array" }
+      }
+    },
+    "itc_elg": {
+      "type": "object",
+      "properties": {
+        "itc_avl": { "type": "array" },
+        "itc_rev": { "type": "array" },
+        "itc_net": { "type": "object" },
+        "itc_inelg": { "type": "array" }
+      }
+    },
+    "inward_sup": {
+      "type": "object",
+      "properties": {
+        "isup_details": { "type": "array" }
+      }
+    },
+    "interest_details": {
+      "type": "object",
+      "properties": {
+        "iamt": { "type": "number" },
+        "camt": { "type": "number" },
+        "samt": { "type": "number" },
+        "csamt": { "type": "number" }
+      }
+    },
+    "tx_pmt": {
+      "type": "object",
+      "properties": {
+        "tx_py": { "type": "array" }
+      }
+    }
+  }
+}

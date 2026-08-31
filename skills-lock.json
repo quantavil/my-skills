@@ -7,11 +7,17 @@
       "skillPath": "skills/algorithmic-art/SKILL.md",
       "computedHash": "b2ca295de7f9c86c444f1fa21239e22e0eb7013ced1c652169b9402cc96ff744"
     },
+    "archify": {
+      "source": "tt-a1i/archify",
+      "sourceType": "github",
+      "skillPath": "archify/SKILL.md",
+      "computedHash": "f468f6986c2d25676bb9cd4abce9302bcd42c9983ad32b3c93d6d7be189d9988"
+    },
     "brainstorming": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/brainstorming/SKILL.md",
-      "computedHash": "225b53fce53d627d3a1e94bfea84060ccdbf11a58a2d5cf11eefef89d598020e"
+      "computedHash": "b58d55b64742ecd37923985ec7bdfbe678ffbcb9895562abd28c0a32dcacd7fb"
     },
     "brandkit": {
       "source": "Leonxlnx/taste-skill",
@@ -29,37 +35,37 @@
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",
       "skillPath": "skills/cavecrew/SKILL.md",
-      "computedHash": "c5527c994fbd4c22b36714e3b124a0f167a533d114ab164fb1d35e2123533917"
+      "computedHash": "32d5320fb7c8b717e8c434e250ac987bebf48f553d0444afbe8215ea38ae5c09"
     },
     "caveman": {
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",
       "skillPath": "skills/caveman/SKILL.md",
-      "computedHash": "d18cdf73a5f5c496d681a43a6846336b110223bdffa6817b8992529c57f1a815"
+      "computedHash": "1a41e7f3543c4a969c040c34a96925f8a3f82a6179a3f1002692b37957f7140b"
     },
     "caveman-commit": {
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",
       "skillPath": "skills/caveman-commit/SKILL.md",
-      "computedHash": "790a4eeace0be35c6691faf923518ba5bd50f1f1305d1101d09dd4971be94e00"
+      "computedHash": "b416cf134b0f33ddadeca7977aebdbb2d3db79a166d0fce2e1aabeec98132766"
     },
     "caveman-compress": {
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",
       "skillPath": "skills/caveman-compress/SKILL.md",
-      "computedHash": "84517cd4cf7a49d8d2bc1baf00f61bc359306c6ad9389756b6937eff958bd374"
+      "computedHash": "1b22b22d8621e5b1148dc785f8b7682bfba67a5d8e076cecd3fb0df5d9cd8910"
     },
     "caveman-help": {
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",
       "skillPath": "skills/caveman-help/SKILL.md",
-      "computedHash": "dd85267e76baad76995157e7b9f762dfa557cd58951ee92af0c283f48aa26537"
+      "computedHash": "845394fef650bb63b44e2e28391de704505f881c6f968ebfdfb0278343ecbd7c"
     },
     "caveman-review": {
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",
       "skillPath": "skills/caveman-review/SKILL.md",
-      "computedHash": "fb7214a1c5793bae6ba8b1be4329e2e6f40dbec6dd911dfb335ad29f09c316a1"
+      "computedHash": "36a4007c5c0c6b90b5accfee1cd769a86e4963b651dece2ce5f17a223a0abb4b"
     },
     "deploy-to-vercel": {
       "source": "vercel-labs/agent-skills",
@@ -101,7 +107,7 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/finishing-a-development-branch/SKILL.md",
-      "computedHash": "a2afe045ea677114a89854f296ae57f8d34eb84864daa7b08ea9434acded724d"
+      "computedHash": "4f571e7befb8b0946d9d7770232c818812412e9ab1dfb811f847edfba1fc6275"
     },
     "frontend-design": {
       "source": "anthropics/skills",
@@ -125,7 +131,7 @@
       "source": "Nutlope/hallmark",
       "sourceType": "github",
       "skillPath": "skills/hallmark/SKILL.md",
-      "computedHash": "8a8ecafd613f09e701330b5aa4a591ac539abb2605596df4a2394f03628d1d76"
+      "computedHash": "579f86b27cdd7eb972107f7aecedd537f472891c5fd7c7c821bea15f64e0fe86"
     },
     "high-end-visual-design": {
       "source": "Leonxlnx/taste-skill",
@@ -137,7 +143,7 @@
       "source": "blader/humanizer",
       "sourceType": "github",
       "skillPath": "SKILL.md",
-      "computedHash": "7f032c368d4355fb237e1980d73d7febe5bc1a03bad3de74a3d4a918e8940cd1"
+      "computedHash": "a9e52ffc97e9d8fdda35a6fb3967ace6fbc1ae3a0b7703774ad077fcf1e27153"
     },
     "image-to-code": {
       "source": "Leonxlnx/taste-skill",
@@ -167,7 +173,7 @@
       "source": "karanb192/itr-wala",
       "sourceType": "github",
       "skillPath": "skills/itr-wala/SKILL.md",
-      "computedHash": "db82e3f82397a8739490881a0f188d5565923f48b2762156d3c00161431a0cb6"
+      "computedHash": "802cb1f697715896cdebd9e0416395890132f6c2a950d40bde337dae09b421e7"
     },
     "mcp-builder": {
       "source": "anthropics/skills",
@@ -185,7 +191,7 @@
       "source": "czlonkowski/n8n-skills",
       "sourceType": "github",
       "skillPath": "skills/n8n-agents/SKILL.md",
-      "computedHash": "67ae22efb2f025a8b84db89a3550177123ce42d83a06b2483c5f595db8c885d7"
+      "computedHash": "1826feb28c196a6fb94bf87929f10e05d77cf1c6c2fe02ba36c6573a556b1fa6"
     },
     "n8n-binary-and-data": {
       "source": "czlonkowski/n8n-skills",
@@ -227,7 +233,7 @@
       "source": "czlonkowski/n8n-skills",
       "sourceType": "github",
       "skillPath": "skills/n8n-mcp-tools-expert/SKILL.md",
-      "computedHash": "ff08a9c39ba94c16acf01a1b7b3f491fbb3e9e2dc4e0392bf1f6ef894279006e"
+      "computedHash": "1975357fca5768cde0f070bb6b25724d1ad9cbf6f0723edfed6b7ffa7d23c159"
     },
     "n8n-multi-instance": {
       "source": "czlonkowski/n8n-skills",
@@ -239,25 +245,25 @@
       "source": "czlonkowski/n8n-skills",
       "sourceType": "github",
       "skillPath": "skills/n8n-node-configuration/SKILL.md",
-      "computedHash": "dfe7ecc6b8b8a9213d63ca2b97cd6dcea4629d6264adb488bb2ed71629df3d10"
+      "computedHash": "f64e6adc5b65bbeaf27fce17d8e59f8f53ce8324ff43fa74edbbcdd91c45ed80"
     },
     "n8n-self-hosting": {
       "source": "czlonkowski/n8n-skills",
       "sourceType": "github",
       "skillPath": "skills/n8n-self-hosting/SKILL.md",
-      "computedHash": "83242f584413d626ee6efb179a8b07f138f26d41198d74e8b27df1046179e6ff"
+      "computedHash": "f21fee57f22ea33c7c2f41a6e5db3e5fbb4bcad23acdb0fbefee8dd05174fe79"
     },
     "n8n-subworkflows": {
       "source": "czlonkowski/n8n-skills",
       "sourceType": "github",
       "skillPath": "skills/n8n-subworkflows/SKILL.md",
-      "computedHash": "8cafe3bde8509dfca95b61716d2d862a22557c094cf4312c0056206a4c6417b6"
+      "computedHash": "05ffefa9e10efee8dab8c6f2a378c118189a696821077ff2081b64d45a385283"
     },
     "n8n-validation-expert": {
       "source": "czlonkowski/n8n-skills",
       "sourceType": "github",
       "skillPath": "skills/n8n-validation-expert/SKILL.md",
-      "computedHash": "bc5fbb51c318d52128036849f97e71d59b85a52a0eb93ffe7ec20d233b9462a9"
+      "computedHash": "33a96c89b816a5d0a6bf4f9af06394dd14ff7f190ee0871b6a9dc5468c235a4d"
     },
     "n8n-workflow-patterns": {
       "source": "czlonkowski/n8n-skills",
@@ -300,7 +306,7 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/requesting-code-review/SKILL.md",
-      "computedHash": "2304d2073c62eab163e04de40fe775e3d87c69c0df40cd4dc953fdb8e3205b81"
+      "computedHash": "004f340ae65811095d6a9bb0a759c87d0a8085c5e705dbb019b011626293d2e9"
     },
     "stitch-design-taste": {
       "source": "Leonxlnx/taste-skill",
@@ -312,7 +318,7 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/subagent-driven-development/SKILL.md",
-      "computedHash": "f32739563160d3612fe2febd0dad4a9cc8a6d1ea7dfcda59f245b3a4b968f7cf"
+      "computedHash": "367cc1d3216d6672b947c8c6583dbd6440ea407beb6da75a97d3a8ee1a23640a"
     },
     "systematic-debugging": {
       "source": "obra/superpowers",
@@ -342,13 +348,13 @@
       "source": "czlonkowski/n8n-skills",
       "sourceType": "github",
       "skillPath": "skills/using-n8n-mcp-skills/SKILL.md",
-      "computedHash": "f14e53ff51cac298d0d9c32115d48481bfb43c946eb3e8260e1ee1711cca7877"
+      "computedHash": "75e6b3e79f452bf17c25185cd60cf5880e0e48b814d25b23d87b477b5dbb7cd2"
     },
     "using-superpowers": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/using-superpowers/SKILL.md",
-      "computedHash": "a77a803b7fc1a19c87605cf7a5ef318c5adc233de10b9ebeecb2ee2609f5454e"
+      "computedHash": "c7abe8bdc2099bbe4f245454d32c7563ccd2bb41dcc218b02b461c2acc3c6ae6"
     },
     "vercel-cli-with-tokens": {
       "source": "vercel-labs/agent-skills",
@@ -384,7 +390,7 @@
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/react-view-transitions/SKILL.md",
-      "computedHash": "c8952fc9127fa0564d0cb71dccb4215a5608ac933b5831104f09173a97a46f85"
+      "computedHash": "2033ef20681c90d4f93deee719e55e019c254e496d9bf80381c27cc539292001"
     },
     "verification-before-completion": {
       "source": "obra/superpowers",
@@ -414,13 +420,13 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/writing-plans/SKILL.md",
-      "computedHash": "a8a8b0d07b744173079b25d26c6a189a0b5e7ddd80444ce92055b974dab7352b"
+      "computedHash": "27c75044e444a4fc68798c3f799dc23eaff3a6bfabff32e6ad75bb20f881c094"
     },
     "writing-skills": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/writing-skills/SKILL.md",
-      "computedHash": "19a1223c9c174f1b4daf807417f13d53886cdc79feeb05c978129a17592f51d7"
+      "computedHash": "e5dfc1a942f56dc757421b0d87ae1f38ab693ebc71138e65268fd408bb5c93d3"
     },
     "xlsx": {
       "source": "anthropics/skills",
