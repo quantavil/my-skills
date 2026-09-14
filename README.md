@@ -40,6 +40,12 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | --- | --- |
 | [`humanizer`](skills/humanizer/) | Rewrite AI-sounding text so it reads like the writer without changing what it says. Use when editing or reviewing prose for AI tells: not-X-but-Y contrasts, one-line closers, staged openers, forced triads, dashes everywhere, inflated claims, sales language, stock AI words, bold labels, or filler. Based on Wikipedia's "Signs of AI writing." |
 
+### [HKUDS/DeepTutor](https://raw.githubusercontent.com/HKUDS/DeepTutor/main/SKILL.md)
+
+| Skill | Use it when |
+| --- | --- |
+| [`deeptutor-cli`](skills/deeptutor-cli/) | Configure, manage, and use DeepTutor through its CLI, including capabilities, knowledge bases, partners, memory, sessions, notebooks, providers, skills, and the server or Web app. |
+
 ### [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman)
 
 | Skill | Use it when |
