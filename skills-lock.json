@@ -11,7 +11,7 @@
       "source": "tt-a1i/archify",
       "sourceType": "github",
       "skillPath": "archify/SKILL.md",
-      "computedHash": "f468f6986c2d25676bb9cd4abce9302bcd42c9983ad32b3c93d6d7be189d9988"
+      "computedHash": "ecfe0a991f5e7d0a4418125730ee7cc7ccbf45f853f8165aa38449c222c9d4f5"
     },
     "brainstorming": {
       "source": "obra/superpowers",
@@ -120,7 +120,7 @@
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
-      "computedHash": "4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336"
+      "computedHash": "89496d5dd00f4810205f351759594fc2742bf8eea85a2f2b2d1de59f4bd91576"
     },
     "full-output-enforcement": {
       "source": "Leonxlnx/taste-skill",
