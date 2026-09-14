@@ -67,13 +67,6 @@
       "skillPath": "skills/caveman-review/SKILL.md",
       "computedHash": "36a4007c5c0c6b90b5accfee1cd769a86e4963b651dece2ce5f17a223a0abb4b"
     },
-    "deeptutor-cli": {
-      "source": "HKUDS/DeepTutor",
-      "sourceType": "url",
-      "skillPath": "skills/deeptutor-cli/SKILL.md",
-      "computedHash": "f521dd7fee87a1ee993acc09046562d98f48d130566dd24b46a3f9b4a5b66883",
-      "sourceUrl": "https://raw.githubusercontent.com/HKUDS/DeepTutor/main/SKILL.md"
-    },
     "deploy-to-vercel": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
