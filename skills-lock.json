@@ -69,8 +69,8 @@
     },
     "deeptutor-cli": {
       "source": "HKUDS/DeepTutor",
-      "sourceType": "remote",
-      "skillPath": "SKILL.md",
+      "sourceType": "url",
+      "skillPath": "skills/deeptutor-cli/SKILL.md",
       "computedHash": "f521dd7fee87a1ee993acc09046562d98f48d130566dd24b46a3f9b4a5b66883",
       "sourceUrl": "https://raw.githubusercontent.com/HKUDS/DeepTutor/main/SKILL.md"
     },
