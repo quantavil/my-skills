@@ -38,7 +38,7 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 
 | Skill | Use it when |
 | --- | --- |
-| [`humanizer`](skills/humanizer/) | Rewrite AI-sounding text so it reads naturally without changing what it says. Use when editing or reviewing prose for inflated claims, sales language, vague sources, repetitive structure, stock AI words, passive voice, filler, or chatbot artifacts. Based on Wikipedia's "Signs of AI writing." |
+| [`humanizer`](skills/humanizer/) | Rewrite AI-sounding text so it reads like the writer without changing what it says. Use when editing or reviewing prose for AI tells: not-X-but-Y contrasts, one-line closers, staged openers, forced triads, dashes everywhere, inflated claims, sales language, stock AI words, bold labels, or filler. Based on Wikipedia's "Signs of AI writing." |
 
 ### [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman)
 
