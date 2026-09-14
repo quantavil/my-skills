@@ -19,6 +19,7 @@ const UNSOURCED = 'Unsourced';
 
 interface LockEntry {
   source: string;
+  sourceType?: string;
   sourceUrl?: string;
 }
 type Lock = Record<string, LockEntry>;
@@ -147,10 +148,14 @@ async function readSkills(): Promise<Skill[]> {
 /** Refetch every locked skill at its latest upstream commit. `skills update` is not
  *  used: it has no --agent flag, so it re-detects agents, scatters copies into
  *  .agents/ and .claude/, and leaves skills/ stale. */
+export function isUpstreamManaged(entry: LockEntry): boolean {
+  return entry.sourceType !== 'local';
+}
+
 async function sync() {
   const lock = await readLock();
-  const names = Object.keys(lock);
-  if (!names.length) return console.log('nothing in skills-lock.json yet');
+  const names = Object.keys(lock).filter((name) => isUpstreamManaged(lock[name]));
+  if (!names.length) return console.log('no upstream-managed skills to sync');
 
   // One `add` per repo, not per skill — a repo contributing 14 skills would
   // otherwise be fetched 14 times.
@@ -228,6 +233,10 @@ function selftest() {
     () => buildMarkdown([{ name: 'dup', dir: 'x', description: '' }, { name: 'dup', dir: 'y', description: '' }], {}),
     'buildMarkdown must reject two skills with the same name',
   );
+
+  ok(!isUpstreamManaged({ source: './skills/ditto', sourceType: 'local' }), 'sync preserves locally maintained skills');
+  ok(isUpstreamManaged({ source: 'o/r', sourceType: 'github' }), 'sync includes upstream skills');
+  ok(isUpstreamManaged({ source: 'o/r' }), 'sync preserves legacy lock behavior');
 
   console.log('selftest ok');
 }

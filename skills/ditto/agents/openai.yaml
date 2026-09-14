@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ditto"
+  short_description: "Reconstruct mobile apps in Flutter from evidence"
+  default_prompt: "Use $ditto to inspect this mobile app, select its extraction tools, and reconstruct its observed behavior in Flutter."
