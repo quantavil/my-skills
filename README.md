@@ -12,6 +12,15 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 
 <!-- skills:start -->
 
+### ./quantavil/my-skills
+
+| Skill | Use it when |
+| --- | --- |
+| [`dms-plugin-maker`](skills/dms-plugin-maker/) | Architect, build, audit, test, and package production-ready plugins for DankMaterialShell (DMS) and Quickshell on Linux Wayland. Use whenever developing, modifying, reviewing, or testing DMS bar widgets, popout panels, desktop widgets, daemons, launchers, settings pages, or Wayland overlays. Enforces Qt 6 QML declarative binding hygiene, pure-JS calculation engine architecture, DMS Material 3 theme tokens, multi-monitor instance safety, and the triple-validation testing rig. |
+| [`flutter-dart`](skills/flutter-dart/) | Master skill for Dart and Flutter development. Covers architecture best practices, UI and responsive layouts, layout debugging (RenderFlex overflow), declarative routing (go_router), localization (l10n/i18n), REST API integration (http), JSON serialization, unit/widget/integration testing (package:test, WidgetTester, package:checks, mockito), static analysis, runtime error debugging, FFI and native assets (ffigen, hooks), CLI apps, and documentation. |
+| [`gstr-wala`](skills/gstr-wala/) | File Indian Goods and Services Tax (GST) returns for regular taxpayers, including GSTR-1 (outward supplies), GSTR-3B (monthly summary return), GSTR-2B reconciliation, and PDF invoice vision extraction. Use when the user wants to file GSTR-1 or GSTR-3B, reconcile purchase registers against GSTR-2B, optimize ITC set-off under Rule 88A / Section 49, compute Section 50 interest or Section 47 late fees, check DRC-01B / DRC-01C mismatch risks, convert multi-page PDF/image bills to page-by-page visual images, generate official GST portal offline JSON returns, render certified CA tax audit statements, check live statutory compliance updates, or asks about GST rates, HSN codes, Table 4 ITC, blocked credit under Section 17(5), or PMT-06 challan generation. |
+| [`orchestrator`](skills/orchestrator/) | Use when delegating bounded, verifiable coding work to a CLI model, then verifying and auditing the result before accepting it. |
+
 ### [./skills/ditto](https://github.com/quantavil/my-skills/tree/main/skills/ditto)
 
 | Skill | Use it when |
@@ -54,7 +63,6 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | [`caveman`](skills/caveman/) | Ultra-compressed communication mode that cuts output tokens while keeping technical accuracy. Levels: lite, full, ultra and the wenyan variants. Use for /caveman, "caveman mode", "talk like caveman", "be brief" or "less tokens". |
 | [`caveman-commit`](skills/caveman-commit/) | Write a Conventional Commits message compressed to intent only. Use for "write a commit", "commit message", /commit or /caveman-commit. |
 | [`caveman-compress`](skills/caveman-compress/) | Compress a memory file such as CLAUDE.md or a todo list into caveman format to save input tokens, keeping a readable backup. Trigger: /caveman-compress. |
-| [`caveman-help`](skills/caveman-help/) | Quick-reference card for caveman modes, skills and commands. Trigger: /caveman-help or "caveman help". |
 | [`caveman-review`](skills/caveman-review/) | Compressed code review - one line per finding with location, problem and fix. Use for /caveman-review, "review this PR", or "review the diff". |
 
 ### [karanb192/itr-wala](https://github.com/karanb192/itr-wala)
@@ -111,6 +119,13 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | --- | --- |
 | [`officecli`](skills/officecli/) | Create, analyze, proofread, and modify Office documents (.docx, .xlsx, .pptx) using the officecli CLI tool. Use when the user wants to create, inspect, check formatting, find issues, add charts, or modify Office documents. |
 
+### [TheQtCompanyRnD/agent-skills](https://github.com/TheQtCompanyRnD/agent-skills)
+
+| Skill | Use it when |
+| --- | --- |
+| [`qt-qml`](skills/qt-qml/) | Applies QML best practices when producing or working with QML source code. Use whenever QML code is the primary subject: writing, reviewing, fixing, refactoring, optimizing, or debugging QML files, components, or bindings. Do NOT trigger for purely conversational QML questions where no code is produced or examined (e.g. "explain how anchors work"). |
+| [`qt-qml-review`](skills/qt-qml-review/) | Invoke when the user asks to review, check, audit, or look over Qt6 QML code -- or suggest before committing. Runs deterministic linting (47+ rules) then six parallel deep- analysis agents covering bindings, layout, loaders, delegates, states, and performance. Optionally invokes system qmllint for type-level checks. Reports only high-confidence issues (>80/100) with structured mitigations. Read-only -- never modifies code. |
+
 ### [tt-a1i/archify](https://github.com/tt-a1i/archify)
 
 | Skill | Use it when |
@@ -122,7 +137,6 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | Skill | Use it when |
 | --- | --- |
 | [`deploy-to-vercel`](skills/deploy-to-vercel/) | Deploy applications and websites to Vercel. Use when the user requests deployment actions like "deploy my app", "deploy and give me the link", "push this live", or "create a preview deployment". |
-| [`vercel-cli-with-tokens`](skills/vercel-cli-with-tokens/) | Deploy and manage projects on Vercel using token-based authentication. Use when working with Vercel CLI using access tokens rather than interactive login — e.g. "deploy to vercel", "set up vercel", "add environment variables to vercel". |
 | [`vercel-composition-patterns`](skills/vercel-composition-patterns/) | React composition patterns that scale. Use when refactoring components with boolean prop proliferation, building flexible component libraries, or designing reusable APIs. Triggers on tasks involving compound components, render props, context providers, or component architecture. Includes React 19 API changes. |
 | [`vercel-optimize`](skills/vercel-optimize/) | Use for Vercel cost and performance optimization on deployed projects, especially Next.js, SvelteKit, Nuxt, and limited Astro apps. Collect Vercel metrics, usage, project config, and code scan results first; investigate only metric-backed candidates; produce ranked recommendations grounded in verified files and version-aware Vercel/framework docs. Trigger for Vercel bill reduction, slow or expensive routes, caching opportunities, Function Invocations, Build Minutes, Fast Data Transfer, Core Web Vitals, Bot Management, Fluid compute, or cost breakdown requests. |
 | [`vercel-react-best-practices`](skills/vercel-react-best-practices/) | React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements. |
@@ -130,14 +144,6 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | [`vercel-react-view-transitions`](skills/vercel-react-view-transitions/) | Guide for implementing smooth, native-feeling animations using React's View Transition API (`<ViewTransition>` component, `addTransitionType`, and CSS view transition pseudo-elements). Use this skill whenever the user wants to add page transitions, animate route changes, create shared element animations, animate enter/exit of components, animate list reorder, implement directional (forward/back) navigation animations, or integrate view transitions in Next.js. Also use when the user mentions view transitions, `startViewTransition`, `ViewTransition`, transition types, or asks about animating between UI states in React without third-party animation libraries. |
 | [`web-design-guidelines`](skills/web-design-guidelines/) | Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices". |
 | [`writing-guidelines`](skills/writing-guidelines/) | Review docs/prose for Writing Guidelines compliance. Use when asked to "review my docs", "check writing style", "audit prose", "review docs voice and tone", or "check this page against the writing handbook". |
-
-### Unsourced
-
-| Skill | Use it when |
-| --- | --- |
-| [`flutter-dart`](skills/flutter-dart/) | Master skill for Dart and Flutter development. Covers architecture best practices, UI and responsive layouts, layout debugging (RenderFlex overflow), declarative routing (go_router), localization (l10n/i18n), REST API integration (http), JSON serialization, unit/widget/integration testing (package:test, WidgetTester, package:checks, mockito), static analysis, runtime error debugging, FFI and native assets (ffigen, hooks), CLI apps, and documentation. |
-| [`gstr-wala`](skills/gstr-wala/) | File Indian Goods and Services Tax (GST) returns for regular taxpayers, including GSTR-1 (outward supplies), GSTR-3B (monthly summary return), GSTR-2B reconciliation, and PDF invoice vision extraction. Use when the user wants to file GSTR-1 or GSTR-3B, reconcile purchase registers against GSTR-2B, optimize ITC set-off under Rule 88A / Section 49, compute Section 50 interest or Section 47 late fees, check DRC-01B / DRC-01C mismatch risks, convert multi-page PDF/image bills to page-by-page visual images, generate official GST portal offline JSON returns, render certified CA tax audit statements, check live statutory compliance updates, or asks about GST rates, HSN codes, Table 4 ITC, blocked credit under Section 17(5), or PMT-06 challan generation. |
-| [`orchestrator`](skills/orchestrator/) | Use when delegating bounded, verifiable coding work to a CLI model, then verifying and auditing the result before accepting it. |
 
 <!-- skills:end -->
 

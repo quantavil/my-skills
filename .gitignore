@@ -1,1 +1,8 @@
 node_modules/
+__pycache__/
+*.pyc
+.agents/
+.claude/
+.codex/
+.gemini/
+.opencode/

@@ -3,24 +3,33 @@
 //   bun run add <repo> [-s <skill>...]   vendor a repo's skills, all of them by default
 //   bun run remove <skill|repo>...       drop skills, by name or by upstream repo
 //   bun run sync                         refetch everything at latest upstream
-//   bun run check                        exit 1 if README.md is stale (CI)
+//   bun run deploy                       deploy skills globally to all AI agents
+//   bun run check                        exit 1 if README.md is stale or unpinned skills exist (CI)
 //   bun run test                         asserts
-//   bun index.ts                         rebuild the table
+//   bun index.ts                         rebuild the table & auto-deploy
+
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 // `openclaw` is the one agent whose project dir is a plain `skills/` rather than a
 // dotfolder, so it is used purely as a path selector — nothing OpenClaw-specific.
 const AGENT = 'openclaw';
-const SKILLS_DIR = `${import.meta.dir}/skills`;
-const LOCK = `${import.meta.dir}/skills-lock.json`;
-const README = `${import.meta.dir}/README.md`;
+const ROOT_DIR = import.meta.dirname;
+const SKILLS_DIR = path.join(ROOT_DIR, 'skills');
+const LOCK = path.join(ROOT_DIR, 'skills-lock.json');
+const README = path.join(ROOT_DIR, 'README.md');
 const START = '<!-- skills:start -->';
 const END = '<!-- skills:end -->';
 const UNSOURCED = 'Unsourced';
+const HOME = os.homedir();
 
 interface LockEntry {
   source: string;
   sourceType?: string;
   sourceUrl?: string;
+  skillPath?: string;
+  computedHash?: string;
 }
 type Lock = Record<string, LockEntry>;
 interface Skill {
@@ -29,11 +38,46 @@ interface Skill {
   description: string;
 }
 
-/** Pull the YAML frontmatter block out of a SKILL.md. */
+interface SymlinkTarget {
+  name: string;
+  dir: string;
+}
+
+const GLOBAL_SYMLINK_TARGETS: SymlinkTarget[] = [
+  { name: 'Antigravity CLI (Direct)', dir: path.join(HOME, '.gemini/antigravity-cli/skills') },
+  { name: 'Codex CLI', dir: path.join(HOME, '.codex/skills') },
+  { name: 'Claude Code', dir: path.join(HOME, '.claude/skills') },
+  { name: 'OpenCode', dir: path.join(HOME, '.config/opencode/skills') },
+  { name: 'Universal Agents (~/.agents)', dir: path.join(HOME, '.agents/skills') },
+  { name: 'Universal Agents (~/.config/agents)', dir: path.join(HOME, '.config/agents/skills') },
+];
+
+/** Fast native SHA-256 computation using Bun's built-in CryptoHasher. */
+export function computeHash(content: string): string {
+  return new Bun.CryptoHasher('sha256').update(content).digest('hex');
+}
+
+/** Pull the YAML frontmatter block out of a SKILL.md and validate critical agent fields. */
 export function parseFrontmatter(text: string): { name?: string; description?: string } {
   const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!m) throw new Error('no YAML frontmatter');
-  return (Bun.YAML.parse(m[1]) ?? {}) as { name?: string; description?: string };
+  if (!m?.[1]) throw new Error('no YAML frontmatter');
+  const parsed = (Bun.YAML.parse(m[1]) ?? {}) as { name?: string; description?: string };
+
+  if (parsed.name !== undefined) {
+    if (typeof parsed.name !== 'string' || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(parsed.name)) {
+      throw new Error(`invalid name "${parsed.name}": must be lowercase alphanumeric with hyphens`);
+    }
+  }
+
+  if (typeof parsed.description !== 'string' || !parsed.description.trim()) {
+    throw new Error('description cannot be empty');
+  }
+
+  if (parsed.description.length > 1024) {
+    throw new Error(`description is too long (${parsed.description.length} chars, max 1024)`);
+  }
+
+  return parsed;
 }
 
 /** Collapse whitespace and escape pipes so a description can't break the table. */
@@ -109,7 +153,7 @@ export function resolveNames(args: string[], lock: Lock): string[] {
       out.add(arg);
       continue;
     }
-    const fromRepo = Object.keys(lock).filter((n) => lock[n].source === arg || lock[n].sourceUrl === arg);
+    const fromRepo = Object.keys(lock).filter((n) => lock[n]?.source === arg || lock[n]?.sourceUrl === arg);
     if (!fromRepo.length) unmatched.push(arg);
     for (const n of fromRepo) out.add(n);
   }
@@ -119,24 +163,33 @@ export function resolveNames(args: string[], lock: Lock): string[] {
 }
 
 /** Missing lock is fine — a malformed one is not, so only absence is defaulted. */
-const readLock = async (): Promise<Lock> => {
+export const readLock = async (): Promise<Lock> => {
   const file = Bun.file(LOCK);
   if (!(await file.exists())) return {};
-  return ((await file.json()) as { skills?: Lock }).skills ?? {};
+  try {
+    return ((await file.json()) as { skills?: Lock }).skills ?? {};
+  } catch {
+    return {};
+  }
 };
 
-function run(args: string[]) {
-  const { exitCode } = Bun.spawnSync(['bunx', 'skills', ...args], { stdout: 'inherit', stderr: 'inherit' });
-  if (exitCode !== 0) throw new Error(`skills ${args.join(' ')} failed`);
+async function run(args: string[]) {
+  try {
+    await Bun.$`bunx skills ${args}`;
+  } catch {
+    throw new Error(`skills ${args.join(' ')} failed`);
+  }
 }
 
-async function readSkills(): Promise<Skill[]> {
-  const files = await Array.fromAsync(new Bun.Glob('*/SKILL.md').scan({ cwd: SKILLS_DIR }));
+export async function readSkills(): Promise<Skill[]> {
+  const glob = new Bun.Glob('*/SKILL.md');
+  const files = await Array.fromAsync(glob.scan({ cwd: SKILLS_DIR }));
   return Promise.all(
     files.map(async (rel) => {
-      const dir = rel.split('/')[0];
+      const dir = rel.split('/')[0] ?? rel;
       try {
-        const { name, description } = parseFrontmatter(await Bun.file(`${SKILLS_DIR}/${rel}`).text());
+        const text = await Bun.file(path.join(SKILLS_DIR, rel)).text();
+        const { name, description } = parseFrontmatter(text);
         return { name: name ?? dir, dir, description: description ?? '' };
       } catch (e) {
         throw new Error(`skills/${rel}: ${(e as Error).message}`);
@@ -145,36 +198,68 @@ async function readSkills(): Promise<Skill[]> {
   );
 }
 
-/** Refetch every locked skill at its latest upstream commit. `skills update` is not
- *  used: it has no --agent flag, so it re-detects agents, scatters copies into
- *  .agents/ and .claude/, and leaves skills/ stale. */
 export function isUpstreamManaged(entry: LockEntry): boolean {
   return entry.sourceType !== 'local';
 }
 
 async function sync() {
   const lock = await readLock();
-  const names = Object.keys(lock).filter((name) => isUpstreamManaged(lock[name]));
+  const names = Object.keys(lock).filter((name) => { const entry = lock[name]; return entry !== undefined && isUpstreamManaged(entry); });
   if (!names.length) return console.log('no upstream-managed skills to sync');
 
   // One `add` per repo, not per skill — a repo contributing 14 skills would
   // otherwise be fetched 14 times.
   const byRepo = new Map<string, string[]>();
   for (const n of names) {
-    const src = lock[n].sourceUrl ?? lock[n].source;
+    const entry = lock[n];
+    if (!entry) continue; // names are lock keys; guard only satisfies noUncheckedIndexedAccess
+    const src = entry.sourceUrl ?? entry.source;
     byRepo.get(src)?.push(n) ?? byRepo.set(src, [n]);
   }
 
   for (const [src, group] of byRepo) {
     console.log(`\n↻ ${src}  (${group.length} skill${group.length > 1 ? 's' : ''})`);
-    run(addArgs([src, ...group.flatMap((n) => ['-s', n])]));
+    await run(addArgs([src, ...group.flatMap((n) => ['-s', n])]));
   }
 }
 
-async function reindex(check = false) {
+export async function reindex(check = false) {
   const before = await Bun.file(README).text();
   const skills = await readSkills();
-  const after = render(before, buildMarkdown(skills, await readLock()));
+  const lock = await readLock();
+
+  // Detect and auto-pin unpinned local skills
+  let lockModified = false;
+  for (const s of skills) {
+    if (!lock[s.name]) {
+      if (check) {
+        console.error(`✗ Unpinned skill: "skills/${s.dir}" is missing from skills-lock.json — run: bun index.ts`);
+        process.exit(1);
+      }
+      const skillText = await Bun.file(path.join(SKILLS_DIR, s.dir, 'SKILL.md')).text();
+      const hash = computeHash(skillText);
+      lock[s.name] = {
+        source: 'quantavil/my-skills',
+        sourceType: 'local',
+        skillPath: `skills/${s.dir}/SKILL.md`,
+        computedHash: hash,
+      };
+      lockModified = true;
+      console.log(`  ✓ Auto-pinned local skill: "${s.name}" -> quantavil/my-skills`);
+    }
+  }
+
+  if (lockModified && !check) {
+    const sortedSkills: Lock = {};
+    for (const k of Object.keys(lock).sort()) {
+      const entry = lock[k];
+      if (entry !== undefined) sortedSkills[k] = entry;
+    }
+    await Bun.write(LOCK, JSON.stringify({ version: 1, skills: sortedSkills }, null, 2) + '\n');
+    console.log(`  ✓ Updated ${LOCK} with newly pinned local skills`);
+  }
+
+  const after = render(before, buildMarkdown(skills, lock));
 
   if (!check) {
     await Bun.write(README, after);
@@ -185,6 +270,150 @@ async function reindex(check = false) {
     process.exit(1);
   }
   console.log(`README.md up to date (${skills.length} skills)`);
+}
+
+/** Ensure Antigravity discovers the skills directory globally via ~/.gemini/config/skills.json */
+export async function updateGeminiConfig(skillsDir: string = SKILLS_DIR): Promise<void> {
+  const configDir = path.join(HOME, '.gemini/config');
+  const configFile = path.join(configDir, 'skills.json');
+  await fs.promises.mkdir(configDir, { recursive: true });
+
+  let config: { entries?: Array<{ path: string }> } = {};
+  const file = Bun.file(configFile);
+  if (await file.exists()) {
+    try {
+      config = await file.json();
+    } catch {
+      config = {};
+    }
+  }
+  if (!Array.isArray(config.entries)) {
+    config.entries = [];
+  }
+
+  const normalizedPath = skillsDir.replace(HOME, '~');
+  const hasEntry = config.entries.some(
+    (e) => e.path === skillsDir || e.path === normalizedPath || path.resolve(e.path.replace(/^~/, HOME)) === path.resolve(skillsDir)
+  );
+
+  if (!hasEntry) {
+    config.entries.push({ path: skillsDir });
+    await Bun.write(configFile, JSON.stringify(config, null, 2) + '\n');
+    console.log(`  ✓ Registered in Antigravity config: ${configFile}`);
+  } else {
+    console.log(`  ✓ Antigravity config up to date: ${configFile}`);
+  }
+}
+
+/** Ensure OpenCode discovers the skills directory globally via ~/.config/opencode/opencode.json */
+export async function updateOpenCodeConfig(skillsDir: string = SKILLS_DIR): Promise<void> {
+  const configDir = path.join(HOME, '.config/opencode');
+  const configFile = path.join(configDir, 'opencode.json');
+  await fs.promises.mkdir(configDir, { recursive: true });
+
+  let config: { $schema?: string; skills?: string[] } = {};
+  const file = Bun.file(configFile);
+  if (await file.exists()) {
+    try {
+      config = await file.json();
+    } catch {
+      config = {};
+    }
+  }
+  if (!config.$schema) {
+    config.$schema = 'https://opencode.ai/config.json';
+  }
+  if (!Array.isArray(config.skills)) {
+    config.skills = [];
+  }
+
+  const normalizedPath = skillsDir.replace(HOME, '~');
+  const hasEntry = config.skills.some(
+    (p) => p === skillsDir || p === normalizedPath || path.resolve(p.replace(/^~/, HOME)) === path.resolve(skillsDir)
+  );
+
+  if (!hasEntry) {
+    config.skills.push(skillsDir);
+    await Bun.write(configFile, JSON.stringify(config, null, 2) + '\n');
+    console.log(`  ✓ Registered in OpenCode config: ${configFile}`);
+  } else {
+    console.log(`  ✓ OpenCode config up to date: ${configFile}`);
+  }
+}
+
+/** Deploy skills globally to all major AI agents (Antigravity, Codex, Claude Code, OpenCode, Universal). */
+export async function deployGlobal(skillsDir: string = SKILLS_DIR): Promise<void> {
+  console.log('\n🚀 Deploying skills globally to all AI agent targets...');
+
+  // 1. Native config discovery (concurrent)
+  await Promise.all([
+    updateGeminiConfig(skillsDir),
+    updateOpenCodeConfig(skillsDir),
+  ]);
+
+  // 2. Discover local skills to link
+  const skillEntries = await fs.promises.readdir(skillsDir, { withFileTypes: true });
+  const skillDirs = skillEntries
+    .filter((d) => d.isDirectory() && fs.existsSync(path.join(skillsDir, d.name, 'SKILL.md')))
+    .map((d) => d.name);
+
+  // 3. Concurrent symlink fanout to all agent directories
+  await Promise.all(
+    GLOBAL_SYMLINK_TARGETS.map(async (target) => {
+      try {
+        await fs.promises.mkdir(target.dir, { recursive: true });
+        let linked = 0;
+
+        for (const skillName of skillDirs) {
+          const src = path.join(skillsDir, skillName);
+          const dest = path.join(target.dir, skillName);
+
+          try {
+            const stat = await fs.promises.lstat(dest).catch(() => null);
+            if (stat) {
+              if (stat.isSymbolicLink()) {
+                const currentTarget = await fs.promises.readlink(dest);
+                if (path.resolve(target.dir, currentTarget) === path.resolve(src)) {
+                  continue;
+                }
+                await fs.promises.unlink(dest);
+              } else {
+                // Real file or directory (e.g. .system in .codex), do not overwrite
+                continue;
+              }
+            }
+            await fs.promises.symlink(src, dest);
+            linked++;
+          } catch (err) {
+            console.warn(`    ⚠ Failed to link ${skillName} in ${target.name}: ${(err as Error).message}`);
+          }
+        }
+
+        // Cleanup stale symlinks in target pointing to skillsDir
+        const existingEntries = await fs.promises.readdir(target.dir);
+        let cleaned = 0;
+        for (const entry of existingEntries) {
+          const dest = path.join(target.dir, entry);
+          try {
+            const stat = await fs.promises.lstat(dest).catch(() => null);
+            if (stat && stat.isSymbolicLink()) {
+              const targetResolved = path.resolve(target.dir, await fs.promises.readlink(dest));
+              if (targetResolved.startsWith(path.resolve(skillsDir)) && !fs.existsSync(targetResolved)) {
+                await fs.promises.unlink(dest);
+                cleaned++;
+              }
+            }
+          } catch {}
+        }
+
+        console.log(`  ✓ ${target.name} (${target.dir}): ${skillDirs.length} skills active${linked ? ` (${linked} newly linked)` : ''}${cleaned ? ` (${cleaned} stale removed)` : ''}`);
+      } catch (err) {
+        console.warn(`  ✗ Failed deploying to ${target.name}: ${(err as Error).message}`);
+      }
+    })
+  );
+
+  console.log('✓ Global multi-agent deployment complete.\n');
 }
 
 function selftest() {
@@ -201,6 +430,15 @@ function selftest() {
   ok(cell(fm.description!) === 'does a \\| thing over two lines', 'cell folds lines and escapes pipes');
   ok(sourceLink({ source: 'a/b' }) === '[a/b](https://github.com/a/b)', 'sourceLink links owner/repo');
   ok(sourceLink(undefined) === UNSOURCED, 'sourceLink handles a missing lock entry');
+
+  // Frontmatter lint validations
+  throws(() => parseFrontmatter('---\nname: Invalid_Name\ndescription: test\n---'), 'reject bad name charset');
+  throws(() => parseFrontmatter('---\nname: test\ndescription: ""\n---'), 'reject empty description');
+  throws(() => parseFrontmatter('---\nname: test\ndescription: "   "\n---'), 'reject whitespace description');
+  throws(() => parseFrontmatter(`---\nname: test\ndescription: ${'a'.repeat(1025)}\n---`), 'reject oversized description');
+
+  // Hash verification
+  ok(computeHash('test') === '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', 'Bun.CryptoHasher sha256 matches');
 
   const out = render(`intro\n${START}\nstale\n${END}\noutro`, 'TABLE $& text');
   ok(out === `intro\n${START}\n\nTABLE $& text\n\n${END}\noutro`, 'render swaps the block, $& stays literal');
@@ -248,7 +486,7 @@ async function main() {
     case 'add': {
       if (!rest.length) throw new Error('usage: bun run add <repo> [-s <skill>...]');
       const before = await readLock();
-      run(addArgs(rest));
+      await run(addArgs(rest));
       const after = await readLock();
       for (const [name, e] of Object.entries(after)) {
         if (before[name] && before[name].source !== e.source) {
@@ -256,6 +494,7 @@ async function main() {
         }
       }
       await reindex();
+      await deployGlobal();
       break;
     }
 
@@ -263,14 +502,20 @@ async function main() {
       if (!rest.length) throw new Error('usage: bun run remove <skill|repo>...');
       const names = resolveNames(rest, await readLock());
       console.log(`removing ${names.length}: ${names.join(', ')}`);
-      run(['remove', ...names, '-a', AGENT, '-y']);
+      await run(['remove', ...names, '-a', AGENT, '-y']);
       await reindex();
+      await deployGlobal();
       break;
     }
 
     case 'sync':
       await sync();
       await reindex();
+      await deployGlobal();
+      break;
+
+    case 'deploy':
+      await deployGlobal();
       break;
 
     case 'check':
@@ -283,6 +528,8 @@ async function main() {
 
     default:
       await reindex();
+      await deployGlobal();
+      break;
   }
 }
 

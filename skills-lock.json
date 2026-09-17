@@ -55,12 +55,6 @@
       "skillPath": "skills/caveman-compress/SKILL.md",
       "computedHash": "32557f612fd652d87b9f21f6271ba10c36d6c237c607c88e27f4b79a1da2675e"
     },
-    "caveman-help": {
-      "source": "JuliusBrussee/caveman",
-      "sourceType": "github",
-      "skillPath": "skills/caveman-help/SKILL.md",
-      "computedHash": "845394fef650bb63b44e2e28391de704505f881c6f968ebfdfb0278343ecbd7c"
-    },
     "caveman-review": {
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",
@@ -92,6 +86,12 @@
       "skillPath": "skills/ditto/SKILL.md",
       "computedHash": "25b39aefff0d82100648803617e8ce79018f63aff3d1c6c1f2a5598bda107d14"
     },
+    "dms-plugin-maker": {
+      "source": "./quantavil/my-skills",
+      "sourceType": "local",
+      "skillPath": "skills/dms-plugin-maker/SKILL.md",
+      "computedHash": "700f35f12ca750c11a1c9dcebae8ce7c3c0b2ffc0571355be01cbe290f0665f2"
+    },
     "doc-coauthoring": {
       "source": "anthropics/skills",
       "sourceType": "github",
@@ -116,6 +116,12 @@
       "skillPath": "skills/finishing-a-development-branch/SKILL.md",
       "computedHash": "4f571e7befb8b0946d9d7770232c818812412e9ab1dfb811f847edfba1fc6275"
     },
+    "flutter-dart": {
+      "source": "./quantavil/my-skills",
+      "sourceType": "local",
+      "skillPath": "skills/flutter-dart/SKILL.md",
+      "computedHash": "b7ec13141dac5a9e9afe1588d9eadc50005d5fcc6edc2aac62acf0c2893017c9"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
@@ -133,6 +139,12 @@
       "sourceType": "github",
       "skillPath": "skills/gpt-tasteskill/SKILL.md",
       "computedHash": "cc8f0c601d8240a124e1d11634351a2be7b8a72fd807c75e5b6bf7afcd5ddee0"
+    },
+    "gstr-wala": {
+      "source": "./quantavil/my-skills",
+      "sourceType": "local",
+      "skillPath": "skills/gstr-wala/SKILL.md",
+      "computedHash": "84f98aad095532c230f9bec1b7da05cad56fed142a97e58f8d47d40a9f198cec"
     },
     "hallmark": {
       "source": "Nutlope/hallmark",
@@ -207,6 +219,12 @@
       "skillPath": "skills/officecli/SKILL.md",
       "computedHash": "c950d285ce60021712b4753fb2d9f592308d5622bab776229061dfecb1ce55d4"
     },
+    "orchestrator": {
+      "source": "./quantavil/my-skills",
+      "sourceType": "local",
+      "skillPath": "skills/orchestrator/SKILL.md",
+      "computedHash": "d921e6215c8776a5a25f0daa49ad29e19e7f6ffdb35c67e9e5efc1e7d936bd66"
+    },
     "pdf": {
       "source": "anthropics/skills",
       "sourceType": "github",
@@ -218,6 +236,18 @@
       "sourceType": "github",
       "skillPath": "skills/pptx/SKILL.md",
       "computedHash": "82eaf5daede5a1779aa17ccf06597cb209a0c2bd41d3a2f18bd45e0301a387fb"
+    },
+    "qt-qml": {
+      "source": "TheQtCompanyRnD/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/qt-qml/SKILL.md",
+      "computedHash": "b4f483457bf2deb250053ffe8cffe5727724792bcdca06180d4737184bee9dcb"
+    },
+    "qt-qml-review": {
+      "source": "TheQtCompanyRnD/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/qt-qml-review/SKILL.md",
+      "computedHash": "b720653c07cb7f0391f7b89937e69f196389f66a2c17ab20d6313cde0dd07a9e"
     },
     "receiving-code-review": {
       "source": "obra/superpowers",
@@ -278,12 +308,6 @@
       "sourceType": "github",
       "skillPath": "skills/using-superpowers/SKILL.md",
       "computedHash": "c7abe8bdc2099bbe4f245454d32c7563ccd2bb41dcc218b02b461c2acc3c6ae6"
-    },
-    "vercel-cli-with-tokens": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/vercel-cli-with-tokens/SKILL.md",
-      "computedHash": "a2f596ac516fe8986386f9562f4c94604af9fb6a0fc417d263cbe6dc05117b72"
     },
     "vercel-composition-patterns": {
       "source": "vercel-labs/agent-skills",

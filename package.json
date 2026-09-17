@@ -1,11 +1,21 @@
 {
   "name": "my-skills",
+  "type": "module",
   "private": true,
+  "bin": {
+    "my-skills": "./run.sh"
+  },
   "scripts": {
-    "add": "bun index.ts add",
-    "remove": "bun index.ts remove",
-    "sync": "bun index.ts sync",
-    "check": "bun index.ts check",
-    "test": "bun index.ts test"
+    "setup": "./run.sh deploy",
+    "add": "./run.sh add",
+    "remove": "./run.sh remove",
+    "sync": "./run.sh sync",
+    "check": "./run.sh check",
+    "test": "./run.sh test",
+    "deploy": "./run.sh deploy"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "bun-types": "^1.4.2"
   }
 }
