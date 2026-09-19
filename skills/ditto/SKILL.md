@@ -1,27 +1,48 @@
 ---
 name: ditto
-description: Reconstruct an existing Android or iOS app in Flutter using an APK, IPA, app bundle, or running app as evidence. Use for mobile app replication, binary-to-Flutter migration, behavioral specification extraction, and differential parity testing. Does not recover original source or apply to generic Flutter development or the Ditto clipboard app.
+description: Use when replicating, migrating, or reconstructing an existing Android or iOS app (APK, IPA, AAB) into Flutter using binary or runtime evidence, extracting behavioral contracts, or verifying differential parity. Does not apply to generic Flutter development or the Ditto clipboard app.
 ---
 
 # Ditto
 
 Rebuild observable mobile behavior in maintainable Flutter code. Use the original app as a test oracle: apply controlled inputs, capture outputs, specify the contract, implement it, and compare both apps. Decompiled code supplies evidence, not a translation plan.
 
+## When to Use
+
+- Replicating, rewriting, or migrating an Android or iOS application into Flutter without complete original source code.
+- Extracting behavioral, navigation, API, and storage contracts from APK, IPA, or AAB release binaries.
+- Running differential parity tests between a reference binary application and a candidate Flutter build.
+
+## When NOT to Use
+
+- Generic greenfield Flutter app development where requirements are standard product specs (use standard Flutter tooling).
+- Projects where full original Flutter or native source code is already available.
+- Attempting 1:1 decompiled source recovery (Ditto reconstructs observable behavior, not identical decompiler output).
+- Any task relating to the "Ditto" desktop clipboard manager application.
+
 ## Establish the task
 
 Infer the requested mode from the user: evidence/specification only, a particular feature, full reconstruction, or parity review. Preserve the selected platform and existing project architecture. Flutter is the default target for reconstruction; honor an explicit alternative instead of silently changing it.
 
-Record the input path and hash, app version and identifier, target platforms, available source/symbols, runtime device, test environment, and requested flows in `spec/app.md`. Use available context before asking for missing information. Start useful static intake even if a device or test account is unavailable; mark runtime-dependent work blocked and do not claim observed parity.
+### The Device-First Mandate (Avoid the "Synthetic Parity Trap")
+
+**CRITICAL RULE:** Statically analyzing decompiled code and relying on a few static screenshots is incomplete and creates the **"Synthetic Parity Trap"** — where 100% of unit/widget tests pass, but the reconstructed app is missing 60%+ of the real app's functions, sub-sheets, category pickers, date scrubbers, and dialogs.
+
+1. **Advise and Request Device Connection Early:** At the start of any reconstruction or parity task, actively check `adb devices` and advise the user to connect a physical device or launch an emulator with the original app installed.
+2. **Never Claim Parity From Unit Tests Alone:** Passing headless test suites (`flutter test`) only verifies assertions written by the engineer, NOT the actual oracle application. Full parity claims require live device or emulator runtime evidence (UIAutomator XML hierarchy dumps + interactive screenshots).
+3. **Exhaustive Interactive Mapping:** When a device is connected, programmatically drive the original app (via ADB / Maestro / UIAutomator) to systematically open every tab, bottom sheet, sub-picker, drag-and-drop view, and settings dialog to capture the definitive ground truth.
+
+Record the input path and hash, app version and identifier, target platforms, available source/symbols, runtime device, test environment, and requested flows in `spec/app.md`. Use available context before asking for missing information. If a live device is unavailable, proceed with static intake but mark runtime-dependent flows explicitly as `UNVERIFIED_STATIC_ONLY` — never claim full observed parity without runtime verification.
 
 ## Start with a concrete tool plan
 
-Use [toolchain.md](references/toolchain.md) for commands, prerequisites, expected outputs, and primary-source links. Run the bundled `scripts/inventory.py` on an APK/IPA/AAB to obtain its hash, member inventory, framework indicators, and tool availability without extracting it.
+Use [toolchain.md](references/toolchain.md) for commands, prerequisites, expected outputs, and primary-source links. Run the bundled `scripts/inventory.py` on an APK/IPA/AAB to obtain its hash, member inventory, framework indicators, and tool availability without extracting it. Use `scripts/validate_spec.py` to verify contract integrity, and `scripts/diff_screenshots.py` for visual parity checks.
 
 | Source | Default evidence tools |
 | --- | --- |
-| Native Android | apkanalyzer + JADX + Apktool; ADB/Maestro for runtime |
+| Native Android | apkanalyzer + JADX + Apktool; ADB/Maestro for runtime; Ghidra (headless, optional) for native JNI |
 | Flutter Android | Apktool + r2flutter; Blutter/flutterdec for specific unresolved AOT questions |
-| Native iOS | Apple tools + ipsw; a compatible device/build for runtime |
+| Native iOS | Apple tools + ipsw; a compatible device/build for runtime; Ghidra/radare2 for native logic |
 | Flutter iOS | iOS inventory + r2flutter; never assume Blutter supports iOS |
 | Protocol / runtime internals | mitmproxy; Frida/Grapefruit when targeted inspection is needed |
 | Candidate implementation | Flutter/Dart + Dart MCP when connected; Maestro for parity; Patrol for candidate system UI |
@@ -33,7 +54,7 @@ Write the selected tools, actual versions/commits, input ABI/build, first comman
 ## Evidence to implementation
 
 1. **Inventory.** Preserve the original artifact and record extraction tool versions, commands, and failures. Identify framework, ABI, resources, native dependencies, permissions, and accessible runtime environments. Prefer supplied source, build archives, API contracts, and matching symbols when available.
-2. **Observe.** Capture one representative journey before expanding exploration. Record preconditions, actions, screenshots, semantic UI trees where exposed, navigation, network effects, persistence, and native side effects. Use deterministic fixtures and replayable flows. Keep a coverage ledger of discovered states and blocked or untested paths; reachable paths are not the whole application.
+2. **Observe (Live Device First).** When an Android or iOS device/emulator is accessible, connect it immediately. Do not rely on a handful of static screenshots. Use ADB, UIAutomator (`adb shell uiautomator dump`), and automated traversal (e.g. Maestro) to capture full semantic UI trees, screen hierarchies, and pixel-accurate runtime screenshots of every tab, bottom sheet, sub-picker, drag-and-drop view, and dialog. If no device is available, use decompilation to extract strings/assets, but treat the result as `UNVERIFIED_STATIC_ONLY` until confirmed on a real device. Keep a coverage ledger of discovered states and blocked or untested paths; reachable paths are not the whole application.
 3. **Specify.** Use [contracts.md](references/contracts.md) for provenance and per-screen contracts. Attach supporting evidence to material behavior claims and distinguish observed, inferred, unknown, and intentionally changed behavior. Resolve conflicting evidence by checking build, environment, and preconditions. A hash proves artifact identity, not truth or completeness.
 4. **Implement one vertical feature.** Read its screen, flow, API, storage, and native contracts. Implement the smallest complete UI-to-data slice using project conventions. Add dependencies only for evidenced needs. Keep a small typed Kotlin/Swift adapter where platform behavior requires it. Preserve observable persistence semantics; identical database schemas or internal architecture are unnecessary unless interoperability explicitly requires them.
 5. **Compare and correct.** Follow [parity.md](references/parity.md). Replay equivalent inputs against isolated original and candidate environments. Fix evidenced discrepancies, update the specification when observations change, and retain passing flows as regression checks.
@@ -65,3 +86,15 @@ validation/            comparisons, gaps, accepted differences, reports
 For a specification task, deliver evidence-linked contracts and coverage gaps. Use the concrete record examples in [contracts.md](references/contracts.md), not prose-only claims that evidence was collected. For implementation, deliver the feature code, relevant checks, replay results, and unresolved differences. For full reconstruction, report each in-scope flow and target platform separately. A successful build or aggregate similarity score does not establish production readiness.
 
 Finish with what is implemented or specified, what was actually tested, and what remains blocked. Do not promise source recovery, a universal parity percentage, or a fixed timeline based on the supplied research estimates.
+
+## Common Mistakes to Avoid
+
+- **The Synthetic Test / False-Green Trap:** Relying solely on green unit/widget tests (`flutter test`) as proof of parity. Tests only verify the assertions the developer wrote, not the real app. Without live UI dumps and screenshot diffs against the oracle binary, major features, category pickers, and sub-sheets will be missed.
+- **Relying solely on incomplete static captures:** A handful of random screenshots leaves 70% of the app's interactive states (dialogs, scrubbers, search bars, category pickers, reorderable views) unobserved. Always drive the live oracle on a connected device whenever available.
+- **Treating decompiled code as a translation target:** Obfuscated Smali/Java from JADX provides evidence of endpoints and business logic, not code to copy 1:1 into Dart.
+- **Running Ghidra on Flutter AOT or DEX:** Ghidra does not parse Flutter Dart AOT snapshots (use `r2flutter`/`blutter`) and is unnecessarily heavy for DEX (use JADX). Use Ghidra strictly for compiled C/C++ JNI `.so` libraries.
+- **Unvalidated contracts & leftover placeholders:** Leaving `REPLACE_WITH_*` placeholders in `evidence/index.json` or claiming `observed: true` without recorded evidence. Run `python3 scripts/validate_spec.py` before handoff.
+- **Confusing iOS simulator with device builds:** Attempting to install an ARM64 iOS device IPA into a simulator host.
+- **Unmasked visual noise:** Failing to mask dynamic areas (clocks, timestamps, ads) before running visual regression diffs with `scripts/diff_screenshots.py`.
+- **Prematurely claiming completion:** Never claim "all phases complete" or "100% parity" before running live side-by-side verification and screen-by-screen diffing against the reference binary.
+

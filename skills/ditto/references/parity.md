@@ -2,6 +2,14 @@
 
 Define acceptance per in-scope flow and platform before measuring. Start with a representative vertical feature, establish reproducible capture, then expand. Keep validation output independent of the implementation's claims.
 
+## The Ground-Truth Rule: Live Device vs Synthetic Traps
+
+Never mistake synthetic test suites (`flutter test`) for parity verification. A green test suite only proves the candidate matches what the engineer programmed into the test, not what the oracle binary actually does.
+
+1. **Mandatory Live Inspection:** When an Android device or emulator is accessible, automated or interactive traversal (via ADB / UIAutomator / Maestro) is mandatory. Dump the live UI hierarchy tree (`adb shell uiautomator dump`) and capture full-resolution runtime screenshots of every screen, modal sheet, sub-picker, and dialog.
+2. **Incomplete Static Traps:** A handful of static screenshots provided at intake typically captures only ~30% of the actual application, completely omitting sub-views (e.g. category pickers, date scrubbers, section reordering, detailed charts, multi-month adjusters).
+3. **No Parity Without Runtime Evidence:** If no physical device or emulator is connected, all contracts and reports must explicitly mark flows as `UNVERIFIED_STATIC_ONLY`. Never claim full observed parity or stage completion without live runtime comparison.
+
 ## Comparable runs
 
 Use separate original and candidate installations or isolated devices. Record both build IDs. Match OS, viewport/density, text scale, theme, locale, permissions, account/fixture state, and network conditions where they affect the comparison. Reset app and backend fixtures between runs as needed; two sequential writes to a shared backend are not equivalent initial conditions.
@@ -59,7 +67,7 @@ maestro --device "$ORIGINAL_DEVICE" test -e APP_ID="$ORIGINAL_APP_ID" --format J
 maestro --device "$CANDIDATE_DEVICE" test -e APP_ID="$CANDIDATE_APP_ID" --format JUNIT --output validation/candidate/results.xml --test-output-dir validation/candidate oracle/flows/open-settings.yaml
 ```
 
-Check each exit code, JUnit result, and actual screenshot location. A successful `takeScreenshot` does not compare the images. Use the project's image comparator, or use `pixelmatch` with `pngjs` for PNG decoding and encoding. Pin their resolved versions in the validation project lockfile. Save the diff image and machine-readable result; wrap the library with an explicit nonzero exit when the agreed changed-pixel budget is exceeded. Never claim SSIM without calculating it. [Maestro CLI](https://docs.maestro.dev/maestro-cli/maestro-cli-commands-and-options), [flow parameters](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/parameters-and-constants)
+Check each exit code, JUnit result, and actual screenshot location. A successful `takeScreenshot` does not compare the images. Use the bundled `python3 "$DITTO_SKILL/scripts/diff_screenshots.py" original.png candidate.png --output-dir validation/<flow>/<platform>/` helper (backed by `pixelmatch`), or the project's custom image comparator. Save the diff image and machine-readable `result.json`; ensure the process exits with a nonzero exit code when the agreed changed-pixel budget is exceeded. Never claim SSIM without calculating it. [Maestro CLI](https://docs.maestro.dev/maestro-cli/maestro-cli-commands-and-options), [flow parameters](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/parameters-and-constants)
 
 A useful initial visual gate, when the user has not specified one, is a project-local proposal: equal image dimensions, only documented dynamic regions masked, and a measured changed-pixel fraction reported before choosing a tolerance. Calibrate with repeated original-vs-original captures to identify rendering noise. Do not pick a forgiving threshold after seeing the candidate fail.
 
