@@ -14,7 +14,7 @@ Use package metadata and resources to map entry points, components, permissions,
 
 Trace only the code relevant to an unresolved behavior. Obfuscated names are not architectural truth; use supplied mapping files when available. Compose and embedded web interfaces may require runtime inspection beyond resource XML. Inspect WebView behavior and its bridge without assuming the whole app is native.
 
-For JNI or native libraries, use a compatible ELF parser or binary analyzer such as LIEF, Ghidra, or radare2 only when that code materially affects the target flow.
+For JNI or native libraries, prioritize JADX for the Java/Kotlin bridge and method signatures. Escalate to headless Ghidra (`analyzeHeadless`), LIEF, or radare2 only when proprietary algorithms, native request signatures, or cryptographic ciphers are compiled into `.so` binaries and materially affect the target flow. Never route general DEX analysis or Flutter `libapp.so` reversing through Ghidra.
 
 ## Flutter AOT
 

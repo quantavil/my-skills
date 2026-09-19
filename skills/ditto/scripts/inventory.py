@@ -15,7 +15,7 @@ from xml.parsers.expat import ExpatError
 
 TOOLS = ('adb', 'apkanalyzer', 'jadx', 'apktool', 'apkid', 'maestro', 'flutter',
          'dart', 'r2', 'r2flutter', 'flutterdec', 'frida-ps', 'mitmdump', 'igf',
-         'ipsw', 'xcrun', 'plutil', 'otool', 'dwarfdump')
+         'ipsw', 'xcrun', 'plutil', 'otool', 'dwarfdump', 'ghidra', 'analyzeHeadless')
 
 
 def inventory(path):

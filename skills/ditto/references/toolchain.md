@@ -6,7 +6,7 @@ Primary documentation checked 2026-09-14. These are operational defaults for Dit
 
 | Input/task | Start with | Add when needed | Required result |
 | --- | --- | --- | --- |
-| Native Android APK | `apkanalyzer`, JADX, Apktool, ADB, Maestro | APKiD for protections; uiautomator2 for inspection; Frida for a specific runtime question | Decoded manifest/resources, relevant code evidence, recorded journey |
+| Native Android APK | `apkanalyzer`, JADX, Apktool, ADB, Maestro | APKiD for protections; uiautomator2 for inspection; Ghidra for native JNI libraries; Frida for a specific runtime question | Decoded manifest/resources, relevant code evidence, recorded journey |
 | Flutter Android APK | Archive inventory, Apktool, r2flutter, ADB, Maestro | Blutter for Android ARM64 ObjectPool/assembly; flutterdec for experimental pseudocode | Assets/wrapper, snapshot profile, runtime states |
 | Native iOS IPA/app | `plutil`, `otool`, `dwarfdump`, `ipsw`; compatible original runtime | Ghidra/radare2 for unresolved native logic; Frida/Grapefruit for runtime internals | Bundle/entitlement inventory, symbol match, device/build feasibility |
 | Flutter iOS app | iOS inventory, Flutter assets, r2flutter, compatible runtime | Native wrapper/channel inspection | Supported snapshot evidence and observed behavior; never route to Blutter |
@@ -46,6 +46,29 @@ apktool d input/original.apk -o evidence/static/android/apktool
 Inspect `jadx/sources/` for relevant managed logic; `apktool/res/`, `assets/`, and `smali*/` for resources and fallback instructions. Record nonzero exit codes and partial outputs. Do not use force-overwrite flags to destroy prior evidence. [`apkanalyzer`](https://developer.android.com/tools/apkanalyzer), [Apktool decode options](https://apktool.org/docs/cli-parameters/)
 
 For split APKs, obtain the complete applicable split set before installation; do not treat a successfully decoded base APK as a complete runtime. Framework indicators can coexist: DEX in a Flutter APK often belongs to its Android wrapper.
+
+## Native library analysis with Ghidra (Optional)
+
+Ghidra is an escalation tool for compiled C/C++ native shared libraries (`.so` in Android JNI, Mach-O in iOS) when proprietary business logic, token generation, request signing, or custom cryptographic ciphers are implemented natively. Never route Java/Kotlin DEX analysis to Ghidra (use JADX) and never use Ghidra for Flutter `libapp.so` (use r2flutter/blutter).
+
+To analyze an extracted JNI binary in headless non-interactive mode without launching the GUI:
+
+```bash
+mkdir -p evidence/static/native
+analyzeHeadless /tmp/ghidra_proj TempProj \
+  -import evidence/static/android/apktool/lib/arm64-v8a/libnative-lib.so \
+  -overwrite -noanalysis
+```
+
+To run a headless post-analysis decompiler script and export decompiled C functions:
+
+```bash
+analyzeHeadless /tmp/ghidra_proj TempProj \
+  -process libnative-lib.so \
+  -postScript DecompileExport.java evidence/static/native/decompiled.c
+```
+
+Record the Ghidra version, target architecture, imported binary hash, and decompiled C output in `evidence/static/native/`. Keep native reversing tightly bounded to specific unresolved contract questions. [Ghidra Headless Analyzer](https://htmlpreview.github.io/?https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/RuntimeScripts/Common/support/analyzeHeadlessREADME.html)
 
 ## App Bundles and APK sets
 

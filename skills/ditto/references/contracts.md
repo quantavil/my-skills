@@ -102,4 +102,4 @@ These examples define field relationships, not facts about the user's app. Repla
 }
 ```
 
-Before handing off, verify unique IDs, existing relative artifact paths, actual SHA-256 values, references to known screen/flow IDs, and required-case counts. Reject a claim of `observed: true` with no supporting runtime evidence, or `validation: pass` without a comparison result. All example placeholders must be replaced in generated project records; the examples themselves must never enter a real evidence ledger unchanged.
+Before handing off, verify unique IDs, existing relative artifact paths, actual SHA-256 values, references to known screen/flow IDs, and required-case counts. Run `python3 "$DITTO_SKILL/scripts/validate_spec.py" --check-files` to deterministically validate both `evidence/index.json` and `spec/coverage.json`. Reject a claim of `observed: true` with no supporting runtime evidence, or `validation: pass` without a comparison result. All example placeholders must be replaced in generated project records; the examples themselves must never enter a real evidence ledger unchanged.
