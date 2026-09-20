@@ -71,6 +71,8 @@ These examples define field relationships, not facts about the user's app. Repla
   "records": [{
     "id": "ev-settings-ready-001",
     "kind": "screenshot",
+    "role": "original",
+    "runtime": true,
     "path": "evidence/runtime/checkpoint-001/screen.png",
     "sha256": "REPLACE_WITH_SHA256_OF_SANITIZED_FILE",
     "app_sha256": "REPLACE_WITH_INPUT_HASH",
@@ -91,11 +93,14 @@ These examples define field relationships, not facts about the user's app. Repla
     "id": "open-settings.android",
     "flow_id": "open-settings",
     "platform": "android",
+    "state_id": "settings.ready",
     "required": true,
     "critical": false,
     "observed": false,
     "implemented": false,
     "validation": "not_run",
+    "required_dimensions": ["visual", "behavior"],
+    "user_testing": "pending",
     "evidence_ids": [],
     "blocker": null
   }]
@@ -103,3 +108,30 @@ These examples define field relationships, not facts about the user's app. Repla
 ```
 
 Before handing off, verify unique IDs, existing relative artifact paths, actual SHA-256 values, references to known screen/flow IDs, and required-case counts. Run `python3 "$DITTO_SKILL/scripts/validate_spec.py" --check-files` to deterministically validate both `evidence/index.json` and `spec/coverage.json`. Reject a claim of `observed: true` with no supporting runtime evidence, or `validation: pass` without a comparison result. All example placeholders must be replaced in generated project records; the examples themselves must never enter a real evidence ledger unchanged.
+
+## Enforced comparison record
+
+The validator requires artifact and app SHA-256 digests. Each observed case must reference `role: original`, `runtime: true` evidence matching its flow and platform. Candidate captures use their own build hash, never the original APK's hash. Synthetic renders use `runtime: false`. Scope cases to checkpoints/branches, not whole subsystems.
+
+A passing case requires `observed: true`, `implemented: true`, nonempty `required_dimensions`, the current `original_app_sha256` and `candidate_app_sha256`, and `comparison` pointing to a project-relative JSON file:
+
+```json
+{
+  "case_id": "open-settings.android",
+  "result": "pass",
+  "original_evidence_ids": ["ev-settings-ready-001"],
+  "candidate_evidence_ids": ["ev-candidate-settings-ready-001"],
+  "fixture_id": "signed-in-test-account",
+  "method": "paired runtime replay plus visual comparison",
+  "steps": ["Launch from matching fixture", "Open Settings", "Back returns home"],
+  "dimensions": {"visual": "pass", "behavior": "pass"}
+}
+```
+
+Both evidence lists must be included in the case's `evidence_ids`, have the correct role, matching flow/platform/state/build hash, and the comparison's fixture ID. All required dimensions must pass. Keep measurements, expected/actual observations, replay logs, and accepted-difference links alongside this record; the validator checks structure and provenance relationships, not the truth of a manually entered verdict. Choose required dimensions before implementation. A persistence claim needs restart/readback evidence, not a screenshot of a form. Update the case's build hashes when the target changes; the validator cannot discover the installed build automatically.
+
+`user_testing` is `pending`, `changes_requested`, `accepted`, or `waived`. Accepted/waived requires `user_decision`, a project-relative nonempty text record of the actual user response, date, build, and scope. Automated validation cannot authenticate that response. Acceptance and comparison results remain separate.
+
+Legacy schema-version-1 ledgers need these additional fields before their claims validate. Preserve old evidence, downgrade unsupported claims, and add metadata only when known; do not relabel synthetic captures as runtime, replace hashes blindly, or invent user decisions. Missing coverage is an error. For an existing alternate ledger format, export these two JSON files from its canonical records before using the bundled validator; do not maintain duplicate ledgers by hand. Use `--check-files` to verify referenced artifact bytes; running without it checks metadata and comparison records only.
+
+Boolean status fields must be booleans, and `not_applicable` requires a `reason`. Empty ledgers may represent an initial static inventory, never completion. The validator does not discover omitted journeys, verify capture-environment details, or authenticate user feedback: inspect these manually and report executed/required counts against the agreed scope. It is a record-integrity check, not a certification of parity.

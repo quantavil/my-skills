@@ -49,21 +49,22 @@ For split APKs, obtain the complete applicable split set before installation; do
 
 ## Native library analysis with Ghidra (Optional)
 
-Ghidra is an escalation tool for compiled C/C++ native shared libraries (`.so` in Android JNI, Mach-O in iOS) when proprietary business logic, token generation, request signing, or custom cryptographic ciphers are implemented natively. Never route Java/Kotlin DEX analysis to Ghidra (use JADX) and never use Ghidra for Flutter `libapp.so` (use r2flutter/blutter).
+Use Ghidra for relevant compiled C/C++ native shared libraries (`.so` in Android JNI, Mach-O in iOS). Prefer JADX for Java/Kotlin DEX and a compatible r2flutter/Blutter for Flutter AOT. Ghidra can supplement Flutter-aware extraction with targeted disassembly; it is not a Dart source decompiler. See [reverse-engineering.md](reverse-engineering.md) for MCP health checks and question-driven tracing.
 
 To analyze an extracted JNI binary in headless non-interactive mode without launching the GUI:
 
 ```bash
 mkdir -p evidence/static/native
-analyzeHeadless /tmp/ghidra_proj TempProj \
+DITTO_GHIDRA_PROJECT=$(mktemp -d -t ditto-ghidra-XXXXXX)
+analyzeHeadless "$DITTO_GHIDRA_PROJECT" TempProj \
   -import evidence/static/android/apktool/lib/arm64-v8a/libnative-lib.so \
-  -overwrite -noanalysis
+  -noanalysis
 ```
 
 To run a headless post-analysis decompiler script and export decompiled C functions:
 
 ```bash
-analyzeHeadless /tmp/ghidra_proj TempProj \
+analyzeHeadless "$DITTO_GHIDRA_PROJECT" TempProj \
   -process libnative-lib.so \
   -postScript DecompileExport.java evidence/static/native/decompiled.c
 ```
@@ -93,7 +94,7 @@ mkdir -p evidence/static/flutter
 
 r2flutter accepts Android libraries/directories and iOS `.app` bundles; AArch64 is its primary target. Its current README requires radare2 6.2.2+ (or a qualifying 6.2.1 git build), and describes in-tree Dart layouts from 2.10 through 3.12. Layout presence is not a guarantee for every snapshot. Build with `make`; `make user-install` installs its radare2 plugin. Use `r2flutter -AAA` inside radare2 only when deeper references are needed. [README](https://github.com/radareorg/r2flutter), [support matrix](https://github.com/radareorg/r2flutter/blob/main/doc/support.md)
 
-Blutter is a secondary extractor for Android ARM64 only. Keep both `libapp.so` and the matching engine in the extracted ABI directory. From the Blutter checkout:
+Blutter is an Android ARM64 extractor and can be the first AOT tool when already available and compatible. Keep both `libapp.so` and the matching engine in the extracted ABI directory. From the Blutter checkout:
 
 ```bash
 python3 blutter.py "$ANDROID_ARM64_LIB_DIR" "$BLUTTER_OUTPUT_DIR"

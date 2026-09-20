@@ -14,13 +14,13 @@ Use package metadata and resources to map entry points, components, permissions,
 
 Trace only the code relevant to an unresolved behavior. Obfuscated names are not architectural truth; use supplied mapping files when available. Compose and embedded web interfaces may require runtime inspection beyond resource XML. Inspect WebView behavior and its bridge without assuming the whole app is native.
 
-For JNI or native libraries, prioritize JADX for the Java/Kotlin bridge and method signatures. Escalate to headless Ghidra (`analyzeHeadless`), LIEF, or radare2 only when proprietary algorithms, native request signatures, or cryptographic ciphers are compiled into `.so` binaries and materially affect the target flow. Never route general DEX analysis or Flutter `libapp.so` reversing through Ghidra.
+For JNI or native libraries, prioritize JADX for the Java/Kotlin bridge and method signatures. Use Ghidra (`analyzeHeadless`), LIEF, or radare2 for relevant compiled native logic. Use JADX for general DEX analysis. Flutter AOT needs Dart-aware extraction first; targeted Ghidra disassembly may supplement it but does not recover Dart source.
 
 ## Flutter AOT
 
 Inspect Flutter assets, font metadata, native wrapper, plugins, and platform-channel boundaries. A release artifact does not provide the original Dart project merely because the destination is also Flutter.
 
-Start with r2flutter header/function output. Use Blutter or flutterdec only for an unresolved question their outputs can answer. Check each tool's supported OS, architecture, Dart snapshot/runtime version, and obfuscation handling. Do not infer iOS support from Android ARM64 support. Record parse failures and unsupported snapshots as coverage gaps. Do not paste speculative pseudocode into production as recovered source.
+Select an available compatible Flutter-aware extractor: r2flutter or Blutter for supported Android ARM64 inputs, rather than requiring one universal tool order. Use flutterdec only for a supported unresolved question. Check each tool's OS, architecture, Dart snapshot/runtime version, and obfuscation handling. Do not infer iOS support from Android ARM64 support. Record parse failures and unsupported snapshots as coverage gaps. Do not paste speculative pseudocode into production as recovered source. Follow [reverse-engineering.md](reverse-engineering.md) to turn output into a traced contract.
 
 When extraction is unproductive, prioritize reachable behavior and request existing build symbols or source if necessary for a specific unresolved requirement. Avoid open-ended assembly analysis without a concrete behavioral question.
 

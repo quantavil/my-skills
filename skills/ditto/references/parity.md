@@ -6,9 +6,9 @@ Define acceptance per in-scope flow and platform before measuring. Start with a 
 
 Never mistake synthetic test suites (`flutter test`) for parity verification. A green test suite only proves the candidate matches what the engineer programmed into the test, not what the oracle binary actually does.
 
-1. **Mandatory Live Inspection:** When an Android device or emulator is accessible, automated or interactive traversal (via ADB / UIAutomator / Maestro) is mandatory. Dump the live UI hierarchy tree (`adb shell uiautomator dump`) and capture full-resolution runtime screenshots of every screen, modal sheet, sub-picker, and dialog.
-2. **Incomplete Static Traps:** A handful of static screenshots provided at intake typically captures only ~30% of the actual application, completely omitting sub-views (e.g. category pickers, date scrubbers, section reordering, detailed charts, multi-month adjusters).
-3. **No Parity Without Runtime Evidence:** If no physical device or emulator is connected, all contracts and reports must explicitly mark flows as `UNVERIFIED_STATIC_ONLY`. Never claim full observed parity or stage completion without live runtime comparison.
+1. **Targeted runtime inspection:** Explore the active journey and its relevant branches. Capture screenshots, actions, and useful UI hierarchy or recordings. A UIAutomator dump may be incomplete for custom rendering; use another observation method instead of treating missing nodes as missing controls.
+2. **Coverage is explicit:** Inventory top-level journeys once, then deepen only the active journey. Screenshots do not establish save/cancel, restart, validation, or hidden interactions. Do not estimate an unseen percentage of the app.
+3. **Disconnected is not unobserved:** Preserve valid historical runtime evidence for its recorded build/environment. Mark new runtime-dependent claims without evidence as unknown (`UNVERIFIED_STATIC_ONLY` when supported only statically). Changed behavior requires new comparisons.
 
 ## Comparable runs
 
@@ -82,7 +82,13 @@ validation/<flow>/<platform>/
   result.json
 ```
 
-`result.json` includes build IDs, fixture ID, evidence paths, comparison method, thresholds, passed/failed/blocked dimensions, and any accepted-difference IDs. Keep network/storage assertions distinct from the JUnit UI result.
+The screenshot helper's `result.json` contains visual metrics only. Link it as a supporting artifact from the journey's `comparison.json`, using the schema in [contracts.md](contracts.md). That record links both builds through evidence IDs, the fixture, replay steps, and required dimension results. Keep network/storage assertions distinct from the JUnit UI result.
+
+## User checkpoint and regression
+
+Offer one runnable build with its identity, a short action/expected-result checklist, and known differences. Include cancel/back and reopen/restart where relevant. Record user feedback against that build. User acceptance does not convert missing or failed comparisons into passes; a waiver is distinct from acceptance.
+
+After a shared model, navigation, theme, or persistence change, mark affected previous comparisons stale (`not_run`) until rerun; retain historical artifacts. Resume from `spec/progress.md` rather than repeating full intake. Do not request confirmation again for an already authorized action; the user checkpoint is testing the delivered journey.
 
 ## Pixelmatch settings that affect the verdict
 

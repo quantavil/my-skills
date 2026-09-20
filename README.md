@@ -25,7 +25,7 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 
 | Skill | Use it when |
 | --- | --- |
-| [`ditto`](skills/ditto/) | Use when replicating, migrating, or reconstructing an existing Android or iOS app (APK, IPA, AAB) into Flutter using binary or runtime evidence, extracting behavioral contracts, or verifying differential parity. Does not apply to generic Flutter development or the Ditto clipboard app. |
+| [`ditto`](skills/ditto/) | Use when reconstructing an Android or iOS app from APK, IPA, AAB, or runtime evidence, or reviewing a Flutter clone for behavioral and visual parity. Not for ordinary Flutter development, available full-source migrations, or the Ditto clipboard app. |
 
 ### [anthropics/skills](https://github.com/anthropics/skills)
 
