@@ -67,9 +67,32 @@ maestro --device "$ORIGINAL_DEVICE" test -e APP_ID="$ORIGINAL_APP_ID" --format J
 maestro --device "$CANDIDATE_DEVICE" test -e APP_ID="$CANDIDATE_APP_ID" --format JUNIT --output validation/candidate/results.xml --test-output-dir validation/candidate oracle/flows/open-settings.yaml
 ```
 
-Check each exit code, JUnit result, and actual screenshot location. A successful `takeScreenshot` does not compare the images. Use the bundled `python3 "$DITTO_SKILL/scripts/diff_screenshots.py" original.png candidate.png --output-dir validation/<flow>/<platform>/` helper (backed by `pixelmatch`), or the project's custom image comparator. Save the diff image and machine-readable `result.json`; ensure the process exits with a nonzero exit code when the agreed changed-pixel budget is exceeded. Never claim SSIM without calculating it. [Maestro CLI](https://docs.maestro.dev/maestro-cli/maestro-cli-commands-and-options), [flow parameters](https://docs.maestro.dev/maestro-flows/flow-control-and-logic/parameters-and-constants)
+Check each exit code, JUnit result, and actual screenshot location. A successful `takeScreenshot` does not compare the images.
 
-A useful initial visual gate, when the user has not specified one, is a project-local proposal: equal image dimensions, only documented dynamic regions masked, and a measured changed-pixel fraction reported before choosing a tolerance. Calibrate with repeated original-vs-original captures to identify rendering noise. Do not pick a forgiving threshold after seeing the candidate fail.
+### Local AVD Replay & Visual Parity
+
+When running on a local development host with an Android Virtual Device (AVD, e.g. `emulator-5554`), both original and candidate apps can be run sequentially or side-by-side on the same device. Standardize the device profile to match historical baselines (e.g. 1080x2400 @ 420 dpi).
+
+Use the bundled visual parity helper:
+```bash
+python3 "$DITTO_SKILL/scripts/diff_screenshots.py" \
+  validation/original.png \
+  validation/candidate.png \
+  --output-dir validation/<flow>/<platform>/ \
+  --mask-system-bars \
+  --xml-original validation/original.xml \
+  --xml-candidate validation/candidate.xml
+```
+
+The helper masks the explicitly selected top/bottom rows, computes changed pixels
+against the unmasked area, and emits a three-panel montage and optional XML deltas.
+Specify measured `--top-mask` / `--bottom-mask` values: the defaults (110/80)
+are examples, not device-independent safe areas. Never mask app layout errors.
+Missing metrics, invalid dimensions, failed masking, or a missing diff artifact
+must fail the comparison; exit code alone is not a parity verdict. A tool error
+is an unavailable comparison, not evidence of a visual mismatch or match.
+XML matches are supporting hints: repeated labels can be ambiguous and absent
+nodes do not establish that a rendered control is missing.
 
 For one feature, retain:
 
@@ -78,8 +101,8 @@ validation/<flow>/<platform>/
   original.png
   candidate.png
   diff.png
-  mask.png               only if a mask was actually used
-  result.json
+  composite_side_by_side.png  3-panel visual review montage
+  result.json                 metrics, status, and layout deltas
 ```
 
 The screenshot helper's `result.json` contains visual metrics only. Link it as a supporting artifact from the journey's `comparison.json`, using the schema in [contracts.md](contracts.md). That record links both builds through evidence IDs, the fixture, replay steps, and required dimension results. Keep network/storage assertions distinct from the JUnit UI result.
@@ -93,3 +116,34 @@ After a shared model, navigation, theme, or persistence change, mark affected pr
 ## Pixelmatch settings that affect the verdict
 
 Use equal-sized images and record `threshold` (per-pixel color sensitivity), `includeAA` (whether antialiasing differences count), and the separate allowed changed-pixel fraction. A `threshold` of `0.1` does **not** mean that 10% of the screen may differ. Keep the default whole-image counting mode when calculating `changedPixels / comparedPixels`; a windowed density result has a different denominator. `diffMask` controls output rendering, not exclusion regions. Apply documented exclusion regions to both inputs and exclude those pixels from the denominator; reject an empty comparison area. Never resize screenshots silently to make dimensions match. This computes pixel differences, not SSIM. [Pixelmatch API and PNG example](https://github.com/mapbox/pixelmatch)
+
+## Fast laptop iteration
+
+Use Android on the laptop as the Android parity target. Browser/desktop previews
+are optional layout aids, not proof of Android rendering or native behavior.
+
+1. Discover the SDK, AVD and serial; reuse a running compatible emulator. The
+   bundled `scripts/emulator_manager.sh start-headless` supports `DITTO_AVD`,
+   `DITTO_EMULATOR_PORT`, `DITTO_BOOT_TIMEOUT`, `DITTO_ADB` and `DITTO_EMULATOR`.
+   It targets one serial, checks its AVD identity and bounds boot waits. Launch
+   it asynchronously when booting takes time so progress reporting continues.
+2. Install the original once and the candidate once. Keep separate package IDs;
+   if IDs collide, use separate emulators. Never repeatedly uninstall to iterate.
+3. Keep `flutter run -d <serial>` attached. Use hot reload for Dart UI edits,
+   hot restart for initialization changes, and full restart/rebuild for native
+   code or plugin changes. Hot reload preserves state; it is not a cold-start test.
+4. Capture fresh original and candidate baselines on the same emulator with
+   matching resolution, density, OS, font scale, locale, navigation mode and
+   keyboard. A 420-dpi emulator cannot directly validate 400-dpi phone captures.
+   Retain those phone captures as historical evidence; do not rescale them.
+5. Replay deterministic fixtures (dates, records, theme, permission state) for
+   the active checkpoint. Keep isolated snapshot/fixture state and record resets;
+   candidate-only debug navigation must not ship or replace real journey replay.
+6. Capture at native resolution, compare, fix the measured discrepancy, hot reload,
+   and recapture only affected states. Compare transition recordings separately;
+   a still frame cannot establish animation timing. Run a fresh process/restart
+   check before acceptance and build a distributable APK at the checkpoint.
+
+Use a physical phone for milestone checks of OEM keyboard/insets, notifications,
+permissions and performance. Missing phone access leaves those checks pending;
+continue emulator work. Never label an emulator check as physical-device evidence.

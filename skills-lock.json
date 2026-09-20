@@ -84,7 +84,7 @@
       "sourceType": "local",
       "sourceUrl": "https://github.com/quantavil/my-skills/tree/main/skills/ditto",
       "skillPath": "skills/ditto/SKILL.md",
-      "computedHash": "25b39aefff0d82100648803617e8ce79018f63aff3d1c6c1f2a5598bda107d14"
+      "computedHash": "7c6eb5044601e05dc610ea2af5eae05f8a6e3eeadbed873d96b4d6b894e3eba4"
     },
     "dms-plugin-maker": {
       "source": "./quantavil/my-skills",

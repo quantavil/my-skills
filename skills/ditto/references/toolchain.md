@@ -18,6 +18,25 @@ JADX reconstructs Java-like code from DEX; it does not guarantee complete decomp
 
 APKiD identifies compiler/packer/protection signatures; it does not establish application behavior. MobSF is optional broad inventory, not a prerequisite for every feature. [APKiD](https://github.com/rednaga/APKiD), [MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF)
 
+## Local KVM Android Virtual Device (AVD) & ARM Translation
+
+Use a configured local AVD for the frequent Android iteration loop. Check KVM
+access, the installed system image, APK ABIs and actual original-app launch.
+ARM translation availability and performance vary; neither an x86_64 Google APIs
+image nor successful installation proves the original renders correctly. Record
+launch success and any translation limitations instead of promising a frame rate.
+
+Discover existing AVDs with `emulator -list-avds` before creating another.
+Use `scripts/emulator_manager.sh` to reuse an explicitly selected AVD and serial
+with bounded boot checks. Configure `DITTO_AVD` and SDK paths for the host.
+Run both packages on the same emulator where IDs differ, and target every ADB
+or Maestro operation explicitly (for example `adb -s emulator-5554 ...`).
+
+Match recorded display/OS settings or collect fresh original/candidate baselines
+on the same new environment. See [fast laptop iteration](parity.md#fast-laptop-iteration)
+for install-once, hot-reload and checkpoint rules. Preserve physical-device
+captures and keep remaining hardware checks explicit.
+
 ## Intake without installing mobile tools
 
 From the reconstruction workspace, set `DITTO_SKILL` to this skill's directory and run:
