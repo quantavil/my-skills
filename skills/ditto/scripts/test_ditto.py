@@ -1,4 +1,4 @@
-"""Hermetic regression tests. No device, SDK, Node or ImageMagick required.
+"""Hermetic regression tests. No device, SDK, Node, or external image tools required.
 
 Run: python3 -m unittest discover -s scripts -p 'test_*.py'
 """
