@@ -6,13 +6,14 @@ Primary documentation checked 2026-09-14. These are operational defaults for Dit
 
 | Input/task | Start with | Add when needed | Required result |
 | --- | --- | --- | --- |
-| Native Android APK | `apkanalyzer`, JADX, Apktool, ADB, Maestro | APKiD for protections; uiautomator2 for inspection; Ghidra for native JNI libraries; Frida for a specific runtime question | Decoded manifest/resources, relevant code evidence, recorded journey |
-| Flutter Android APK | Archive inventory, Apktool, r2flutter, ADB, Maestro | Blutter for Android ARM64 ObjectPool/assembly; flutterdec for experimental pseudocode | Assets/wrapper, snapshot profile, runtime states |
+| Native Android APK | Existing emulator/mobile tooling; `apkanalyzer`, focused JADX/Apktool inspection | Direct ADB for requested/necessary fallback; Maestro for replay; Ghidra for unresolved JNI code | Relevant manifest/resources/code evidence and recorded journey |
+| Flutter Android APK | Existing emulator/mobile tooling and archive inventory | Apktool/r2flutter for specific questions; ADB for requested/necessary fallback; Blutter for supported Android ARM64 inspection | Assets/wrapper, snapshot profile, runtime states |
 | Native iOS IPA/app | `plutil`, `otool`, `dwarfdump`, `ipsw`; compatible original runtime | Ghidra/radare2 for unresolved native logic; Frida/Grapefruit for runtime internals | Bundle/entitlement inventory, symbol match, device/build feasibility |
 | Flutter iOS app | iOS inventory, Flutter assets, r2flutter, compatible runtime | Native wrapper/channel inspection | Supported snapshot evidence and observed behavior; never route to Blutter |
 | Network contract | Test backend logs or mitmproxy | Frida/Grapefruit when authorized and proxy capture is insufficient | Sanitized request/response/error fixtures |
-| Flutter implementation | Flutter/Dart SDK, existing project tooling, Dart MCP if available | Packages in [flutter-stack.md](flutter-stack.md) | Analyzed, tested vertical feature |
-| Differential validation | Maestro for original/candidate; Flutter tests for candidate | Patrol for candidate native UI; image comparator for checkpoints | Separate visual, behavioral, protocol, storage and platform results |
+| Colours and spacing for the clone | Existing confirmed tokens and relevant measurements | `scripts/theme_extract.py` when repeated measurement warrants it | Verified values in the canonical token file |
+| Flutter implementation | Flutter/Dart SDK, existing project tooling, Dart MCP if available | Packages in [flutter-stack.md](flutter-stack.md); patterns in [flutter-build.md](flutter-build.md) | Analyzed, tested vertical feature |
+| Differential validation | Emulator/mobile capture, `ledger.py adopt`, `diff_screenshots.py` | ADB-backed `ledger.py capture` if required capabilities are missing; Maestro/Patrol as appropriate | Separate dimension results in the ledger |
 
 JADX reconstructs Java-like code from DEX; it does not guarantee complete decompilation. Use `--single-class` once a relevant class is known instead of repeatedly exporting everything. [JADX CLI](https://github.com/skylot/jadx)
 
@@ -26,11 +27,17 @@ ARM translation availability and performance vary; neither an x86_64 Google APIs
 image nor successful installation proves the original renders correctly. Record
 launch success and any translation limitations instead of promising a frame rate.
 
-Discover existing AVDs with `emulator -list-avds` before creating another.
+Prefer discovery, control and capture through available emulator/mobile tools.
+Use direct ADB only when requested or needed for a concrete missing/failing
+operation; explain the fallback. Tools using ADB internally are compatible with
+an emulator-first workflow. If preferred tools cannot manage the emulator,
+discover existing AVDs with `emulator -list-avds` before creating another.
 Use `scripts/emulator_manager.sh` to reuse an explicitly selected AVD and serial
-with bounded boot checks. Configure `DITTO_AVD` and SDK paths for the host.
-Run both packages on the same emulator where IDs differ, and target every ADB
-or Maestro operation explicitly (for example `adb -s emulator-5554 ...`).
+with bounded boot checks; run `emulator_manager.sh check` to see what it
+resolved before starting anything. `DITTO_AVD` is required — there is no
+built-in default AVD name. Run both packages on the same emulator where IDs
+differ, and target every ADB or Maestro operation explicitly (for example
+`adb -s emulator-5554 ...`).
 
 Match recorded display/OS settings or collect fresh original/candidate baselines
 on the same new environment. See [fast laptop iteration](parity.md#fast-laptop-iteration)
@@ -45,9 +52,9 @@ From the reconstruction workspace, set `DITTO_SKILL` to this skill's directory a
 python3 "$DITTO_SKILL/scripts/inventory.py" input/original.apk --output evidence/static/inventory.json
 ```
 
-The bundled helper hashes the file, lists ZIP members, flags unsafe member paths, reports framework/ABI indicators, reads bounded iOS Info.plist metadata, and locates relevant executables on PATH. It does not extract files, execute tools, decode Android binary XML, or prove framework completeness. It refuses to overwrite output. Use `apkanalyzer` for Android identity.
+The bundled helper hashes the file, summarises ZIP members by top-level directory and extension, flags unsafe member paths, reports framework/ABI/asset indicators (fonts, nine-patch, vector drawables, Flutter's `FontManifest.json`/`AssetManifest.json`), reads bounded iOS Info.plist metadata, and locates relevant executables on PATH. **Output is a summary, not a member dump** — a real APK holds thousands of entries, and printing every filename costs tens of thousands of tokens to say very little. Pass `--members path/to/list.txt` only when a specific unresolved question needs the full name list, and it is written to its own file rather than inline. It does not extract files, execute tools, decode Android binary XML, or prove framework completeness. It refuses to overwrite output unless `--force`. Use `apkanalyzer` for Android identity.
 
-For each selected tool, capture its version once and record its executable path. Start with `adb version`, `jadx --version`, `apktool --version`, `maestro --version`, and `flutter --version`; query only tools used by the chosen branch. A PATH entry is not a working device or server connection.
+For each tool actually used, record its version/path once and reuse that information until the tool changes. Do not run every tool's version command on intake. A PATH entry is not a working emulator or server connection.
 
 ## Android extraction
 
@@ -99,7 +106,7 @@ java -jar "$BUNDLETOOL_JAR" build-apks --bundle=input/original.aab --output=evid
 java -jar "$BUNDLETOOL_JAR" install-apks --apks=evidence/static/original.apks --device-id="$ORIGINAL_SERIAL"
 ```
 
-Without signing options, bundletool attempts debug signing. Record that certificate difference: signature-dependent login, APIs, or updates may behave differently. Prefer a supplied matching signed APK set when those behaviors matter. A universal APK may omit non-fused feature modules; do not substitute it for complete split coverage. Inventory the generated archive and relevant contained APKs separately; the helper does not recursively inspect nested APKs. [Google bundletool documentation](https://developer.android.com/tools/bundletool)
+Without signing options, bundletool attempts debug signing. Record that certificate difference: signature-dependent login, APIs, or updates may behave differently. Prefer a supplied matching signed APK set when those behaviors matter. A universal APK may omit non-fused feature modules; do not substitute it for complete split coverage. Inventory the generated archive and relevant contained APKs separately; `inventory.py` does not recursively inspect nested archives. [Google bundletool documentation](https://developer.android.com/tools/bundletool)
 
 ## Flutter AOT commands and limits
 
@@ -158,7 +165,7 @@ ipsw macho info "$IOS_BINARY" --ent > evidence/static/ios/entitlements.txt
 
 [`ipsw` Mach-O commands](https://blacktop.github.io/ipsw/docs/guides/macho/)
 
-Use local `xcrun simctl help` / `xcrun devicectl help` to choose deployment for the actual build. Do not install a device IPA into a simulator. If the current host has no Apple runtime, finish portable inventory and identify the required macOS/device handoff; do not claim an iOS build test.
+Use local `xcrun simctl help` / `xcrun devicectl help` to choose deployment for the actual build. Do not install a device IPA into a simulator. If the current host has no Apple runtime, finish portable inventory and identify the required macOS/device handoff; do not claim an iOS build test. `ledger.py capture` is Android-only (it drives `adb`); adopt iOS evidence with `ledger.py adopt --platform ios` instead.
 
 ## Runtime capture and MCP
 
@@ -177,30 +184,25 @@ Adapt this to the client's configuration format; do not overwrite existing serve
 
 Official Flutter/Dart agent resources are `flutter/agent-plugins` and `dart-lang/skills`. Use installed relevant skills; adding them is environment setup, not something every reconstruction must repeat. [Flutter agent setup](https://docs.flutter.dev/ai/get-started)
 
-For Android, select a device explicitly. Set `ORIGINAL_SERIAL` from `adb devices -l`:
+Prefer existing emulator/mobile capture tooling and register its output with `ledger.py adopt` ([contracts.md](contracts.md)). For an explicit ADB request or a required capture/provenance capability unavailable through preferred tools, select the emulator serial explicitly and use this fallback:
 
 ```bash
-mkdir -p evidence/runtime/checkpoint-001
-adb -s "$ORIGINAL_SERIAL" shell wm size > evidence/runtime/checkpoint-001/size.txt
-adb -s "$ORIGINAL_SERIAL" shell wm density > evidence/runtime/checkpoint-001/density.txt
-adb -s "$ORIGINAL_SERIAL" exec-out screencap -p > evidence/runtime/checkpoint-001/screen.png
+python3 "$DITTO_SKILL/scripts/ledger.py" --project . capture \
+  --serial "$ORIGINAL_SERIAL" --package com.example.original --role original \
+  --flow open-settings --state settings.ready --fixture signed-in-test-account
 ```
 
-Capture hierarchy through uiautomator2 when needed. In the Python environment with `uiautomator2` installed:
+Use raw ADB only for a requested or necessary operation, for example a missing display-facts capability. A spot-check screenshot belongs in task-owned temporary storage; adopt it if it becomes evidence:
 
-```python
-import os
-from pathlib import Path
-import uiautomator2 as u2
-
-device = u2.connect(os.environ['ORIGINAL_SERIAL'])
-Path('evidence/runtime/checkpoint-001/hierarchy.xml').write_text(
-    device.dump_hierarchy(), encoding='utf-8')
+```bash
+adb -s "$ORIGINAL_SERIAL" shell wm size
+capture_tmp=$(mktemp -d)
+adb -s "$ORIGINAL_SERIAL" exec-out screencap -p > "$capture_tmp/spot-check.png"
 ```
 
-Export `ORIGINAL_SERIAL` for the Python process. The checkpoint must correspond to recorded setup/actions; a PNG alone does not prove a transition. [ADB](https://developer.android.com/tools/adb), [uiautomator2](https://github.com/openatx/uiautomator2)
+The checkpoint must correspond to recorded setup/actions; a PNG alone does not prove a transition — that is what `ledger.py capture --setup ... --action ...` records alongside it. [ADB](https://developer.android.com/tools/adb), [uiautomator2](https://github.com/openatx/uiautomator2)
 
-Mobile MCP is a fallback for an already supported device configuration, especially when its screenshot/coordinate operations fill a gap. Check its actual exposed tools and platform prerequisites instead of installing a second driver automatically. [Mobile MCP](https://github.com/mobile-next/mobile-mcp)
+An available Mobile MCP or equivalent emulator interface is preferred when it supports the required operation. Check exposed tools and prerequisites; do not install another driver solely to satisfy a preference. Use the working fallback when needed. [Mobile MCP](https://github.com/mobile-next/mobile-mcp)
 
 ## Network and runtime internals
 

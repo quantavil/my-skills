@@ -1,6 +1,6 @@
 # Flutter implementation stack
 
-Primary package documentation checked 2026-09-14. The choices below are Ditto's defaults for a new app with networked features; they are not a requirement to replace an existing architecture. Retain an existing working Bloc, Provider, HTTP client, or database unless it prevents a demonstrated behavior requirement.
+Primary package documentation checked 2026-09-14. The choices below are Ditto's defaults for a new app with networked features; they are not a requirement to replace an existing architecture. Retain an existing working Bloc, Provider, HTTP client, or database unless it prevents a demonstrated behavior requirement. For how to write against this stack — state patterns, the px→dp conversion, golden tests — see [flutter-build.md](flutter-build.md).
 
 ## Library selection
 
@@ -52,6 +52,7 @@ Use this structure only for a new project; map it to existing conventions otherw
 lib/
   app/                   router, application setup
   core/                  network, database, secure-storage adapters
+  design/                tokens.dart (see flutter-build.md), theme.dart
   features/<feature>/
     data/                wire DTOs, service, repository implementation
     application/         feature controller and state transitions
@@ -60,20 +61,20 @@ lib/
 
 Start with the observed input/output contract, not a directory scaffold. Inject the repository so the same screen/controller can run against sanitized fixtures and the permitted live backend. Fixture mode must be explicit; a mocked successful checkout is not live checkout parity.
 
-Map screen transitions to explicit controller events and states. Examples of bugs to prevent: search results from an older query replacing a newer query; a second submit while the first write is pending; cached content disappearing during refresh; a session refresh loop on 401; an offline write acknowledged before durable persistence. Implement only those semantics supported by evidence or an explicitly chosen product change.
+Map screen transitions to explicit controller events and states — see [flutter-build.md](flutter-build.md#async-state-and-durable-effects) for separate ordering, submission, refresh, authentication and durability contracts. Implement only semantics supported by evidence or an explicitly chosen product change.
 
-For assets, retain an asset map from extracted path/hash to target path, logical size, density/scale and font weight. Use local font files when available; do not fetch an approximately similar Google Font. Preserve image fit/crop, SVG/viewBox geometry, Android nine-patch stretch behavior, and measured icon bounds. Compare at matched text scale and density before changing layout to fix a screenshot.
+For assets, retain an asset map from extracted path/hash to target path, logical size, density/scale and font weight. Reuse confirmed tokens; optionally use `scripts/theme_extract.py` when repeated measurement warrants it ([flutter-build.md](flutter-build.md#reuse-confirmed-tokens)). Use local font files when available. Preserve image fit/crop, SVG/viewBox geometry, Android nine-patch stretch behavior, and measured icon bounds. Compare at matched text scale and density before changing layout to fix a screenshot.
 
 For native features, document the Dart call/event, Kotlin/Swift implementation, permission prerequisite, lifecycle, cancellation/error result, and parity test. Do not force a platform feature into Dart when a small native adapter produces the required behavior.
 
 ## Build and test commands
 
-From the implementation root:
+After the related edits are complete, run applicable checks together from the implementation root; do not run this entire sequence after each small correction:
 
 ```bash
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
-flutter test
+flutter test                                    # includes golden tests, see flutter-build.md
 flutter build apk --debug
 ```
 

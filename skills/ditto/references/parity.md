@@ -4,7 +4,7 @@ Define acceptance per in-scope flow and platform before measuring. Start with a 
 
 ## The Ground-Truth Rule: Live Device vs Synthetic Traps
 
-Never mistake synthetic test suites (`flutter test`) for parity verification. A green test suite only proves the candidate matches what the engineer programmed into the test, not what the oracle binary actually does.
+Never mistake candidate tests (`flutter test`) for parity verification. They check programmed expectations, not automatically what the original binary does. Optional [golden tests](flutter-build.md#golden-tests-and-batch-verification) check reviewed candidate renders; compare the original separately.
 
 1. **Targeted runtime inspection:** Explore the active journey and its relevant branches. Capture screenshots, actions, and useful UI hierarchy or recordings. A UIAutomator dump may be incomplete for custom rendering; use another observation method instead of treating missing nodes as missing controls.
 2. **Coverage is explicit:** Inventory top-level journeys once, then deepen only the active journey. Screenshots do not establish save/cancel, restart, validation, or hidden interactions. Do not estimate an unseen percentage of the app.
@@ -12,7 +12,7 @@ Never mistake synthetic test suites (`flutter test`) for parity verification. A 
 
 ## Comparable runs
 
-Use separate original and candidate installations or isolated devices. Record both build IDs. Match OS, viewport/density, text scale, theme, locale, permissions, account/fixture state, and network conditions where they affect the comparison. Reset app and backend fixtures between runs as needed; two sequential writes to a shared backend are not equivalent initial conditions.
+Use separate original and candidate installations or isolated emulators. Record both installed build identities, including splits, and any hot-reloaded source/session identity ([contracts.md](contracts.md)). Installed APK hashes alone do not identify hot-loaded code. Match OS, viewport/density, text scale, theme, locale, permissions, account/fixture state and network conditions. Restore authorized test fixtures between runs as needed; two sequential writes to a shared backend are not equivalent initial conditions. Never reset personal app data.
 
 Replay the same logical user journey. Selectors may differ by implementation, but preconditions, actions, expected effects, and checkpoints must correspond. Capture each checkpoint after the same state settles. Do not overwrite original baselines with candidate output to make a test pass.
 
@@ -27,19 +27,19 @@ Replay the same logical user journey. Selectors may differ by implementation, bu
 | Platform | Permissions, lifecycle, deep links, notifications, hardware/native integration |
 | Accessibility | Labels, roles, actions, focus and relevant assistive interaction |
 
-Visual metrics such as pixel differences or SSIM support inspection; they do not replace behavior tests. Retain original/candidate images, masks, diff images, metric definitions, and thresholds. Mask only documented nondeterminism, not inconvenient failures. Compare each target with its corresponding original platform; if no iOS original exists, state that the iOS implementation is adapted and lacks direct iOS parity evidence.
+Visual metrics such as pixel differences support inspection; they do not replace behavior tests. Retain original/candidate images, exclusion regions, diff images, metric definitions, and thresholds. Exclude only documented nondeterminism, not inconvenient failures. Compare each target with its corresponding original platform; if no iOS original exists, state that the iOS implementation is adapted and lacks direct iOS parity evidence.
 
 Canonicalize network data only where semantics permit it. Normalize redacted tokens or generated IDs consistently while preserving relationships. Do not sort meaningful arrays, discard meaningful headers, or remove timing/order that affects retry, signing, or idempotency. Compare response handling and side effects, not merely JSON key shapes. Different internal storage schemas are acceptable when the required observable semantics match.
 
 ## Checks and reporting
 
-Run project formatting/analyzer checks and focused unit/widget/integration tests appropriate to the feature. Build and run each required target on a capable host. Use a qualified platform harness for system UI interactions that the Flutter test layer cannot reach. Report commands, outcomes, and unavailable checks explicitly.
+Finish related corrections in a task/phase, then batch affected formatting/analyzer/tests and emulator comparisons. Use goldens only when useful. Finish a lone remaining fix and check it directly; check earlier only if a failure blocks progress or the next edit needs that result. Run required project checks at the checkpoint; repeat only for relevant changes or unresolved failures. Build/run each required target on a capable host and report unavailable checks.
 
-For each case record flow/state/platform, original and candidate evidence IDs, comparison method, result (`pass`, `fail`, `blocked`, `not_run`, or justified `not_applicable`), and discrepancy details. Report executed/required case counts alongside results so skipped work cannot look like full coverage.
+For each case record flow/state/platform, original and candidate evidence IDs, comparison method, result (`pass`, `fail`, `blocked`, `not_run`, or justified `not_applicable`), and discrepancy details. `python3 "$DITTO_SKILL/scripts/validate_spec.py" --json` reports required/passing/blocked/not-run counts and any critical case not currently passing, so skipped work cannot look like full coverage without reading the whole ledger by hand.
 
-Critical authentication, payment, data-integrity, and other user-designated flows require their relevant checks to pass. Do not hide a failure behind a weighted average. If the project requests a composite score, document denominators, weights, handling of untested cases, and critical-flow vetoes. There is no universal 95% release threshold.
+Critical authentication, payment, data-integrity, and other user-designated flows require their relevant checks to pass; mark them `"critical": true` in the coverage case. Do not hide a failure behind a weighted average. If the project requests a composite score, document denominators, weights, handling of untested cases, and critical-flow vetoes. There is no universal 95% release threshold.
 
-For each gap preserve reproduction steps, expected and actual behavior, evidence, severity, and affected component. Correct evidence-backed implementation gaps; rerun affected comparisons. Revisit broader flows when shared behavior changes. If missing access or contradictory evidence prevents a fix, report it instead of looping without progress.
+For each gap preserve reproduction steps, expected and actual behavior, evidence, severity, and affected component. A case left as `"validation": "blocked"` must carry a nonempty `blocker` string — the validator rejects a blocked case with no reason on file. Correct evidence-backed implementation gaps; rerun affected comparisons. Revisit broader flows when shared behavior changes. If missing access or contradictory evidence prevents a fix, report it instead of looping without progress.
 
 A feature is verified only when its required comparisons pass and any intentional deviations are recorded under the user's accepted scope. Full reconstruction additionally requires coverage of all agreed flows/platforms. A specification-only task can finish with unresolved runtime gaps clearly labeled; an implementation cannot claim those gaps as passing parity. Publishing or production rollout remains a separate task unless already requested.
 
@@ -67,82 +67,95 @@ maestro --device "$ORIGINAL_DEVICE" test -e APP_ID="$ORIGINAL_APP_ID" --format J
 maestro --device "$CANDIDATE_DEVICE" test -e APP_ID="$CANDIDATE_APP_ID" --format JUNIT --output validation/candidate/results.xml --test-output-dir validation/candidate oracle/flows/open-settings.yaml
 ```
 
-Check each exit code, JUnit result, and actual screenshot location. A successful `takeScreenshot` does not compare the images.
+Check each exit code, JUnit result, and screenshot location. Register relevant screenshots with `ledger.py adopt` in place; do not capture a second copy solely to populate the ledger. A successful `takeScreenshot` does not compare images — use `diff_screenshots.py` below.
 
 ### Local AVD Replay & Visual Parity
 
 When running on a local development host with an Android Virtual Device (AVD, e.g. `emulator-5554`), both original and candidate apps can be run sequentially or side-by-side on the same device. Standardize the device profile to match historical baselines (e.g. 1080x2400 @ 420 dpi).
 
-Use the bundled visual parity helper:
+Prefer available emulator/mobile tooling for capture and `ledger.py adopt` for registration. If it lacks necessary capture or provenance capabilities, explain that limitation and use the ADB-backed fallback:
+
 ```bash
-python3 "$DITTO_SKILL/scripts/diff_screenshots.py" \
-  validation/original.png \
-  validation/candidate.png \
-  --output-dir validation/<flow>/<platform>/ \
-  --mask-system-bars \
-  --xml-original validation/original.xml \
-  --xml-candidate validation/candidate.xml
+python3 "$DITTO_SKILL/scripts/ledger.py" --project . capture \
+  --serial "$ORIGINAL_SERIAL" --package "$ORIGINAL_PACKAGE" --role original \
+  --flow open-settings --state settings.ready --fixture signed-in-test-account \
+  --link-case --dimensions visual behavior
 ```
 
-The helper masks the explicitly selected top/bottom rows, computes changed pixels
-against the unmasked area, and emits a three-panel montage and optional XML deltas.
-Specify measured `--top-mask` / `--bottom-mask` values: the defaults (110/80)
-are examples, not device-independent safe areas. Never mask app layout errors.
-Missing metrics, invalid dimensions, failed masking, or a missing diff artifact
-must fail the comparison; exit code alone is not a parity verdict. A tool error
-is an unavailable comparison, not evidence of a visual mismatch or match.
-XML matches are supporting hints: repeated labels can be ambiguous and absent
-nodes do not establish that a rendered control is missing.
+For a comparison against files already on disk, or against evidence captured elsewhere, use the visual parity tool directly. It needs no external binaries:
 
-For one feature, retain:
+```bash
+python3 "$DITTO_SKILL/scripts/diff_screenshots.py" \
+  validation/original.png validation/candidate.png \
+  --output-dir "validation/<flow>/<platform>/" \
+  --top-mask 66 --bottom-mask 48 \
+  --exclude 0,0,220,66 \
+  --xml-original validation/original.xml --xml-candidate validation/candidate.xml \
+  --case-id open-settings.settings.ready.android --no-montage
+```
+
+`--top-mask` / `--bottom-mask` exclude full-width bands; `--exclude x,y,w,h` excludes a rectangle and is repeatable. Measure regions and document why each is nondeterministic: excluded areas can hide defects. Excluded pixels leave the numerator and denominator. The tool writes `diff.png` and `result.json`; request `--montage` only for a composite you will inspect. With paired XML it reports bounding-box deltas, lists ambiguous labels instead of matching them, and treats hierarchy gaps as hints. Invalid inputs exit 2 (comparison unavailable), not a parity verdict. Capture matching native dimensions; never resize evidence to make it pass.
+
+Retain referenced native captures and the current comparison's `diff.png` and `result.json`. The default omits a montage; pass `--montage` only when it will be reviewed. Keep one canonical set per checkpoint, not copies in multiple output directories:
 
 ```text
 validation/<flow>/<platform>/
-  original.png
-  candidate.png
   diff.png
-  composite_side_by_side.png  3-panel visual review montage
+  composite_side_by_side.png  optional 3-panel review montage
   result.json                 metrics, status, and layout deltas
 ```
 
-The screenshot helper's `result.json` contains visual metrics only. Link it as a supporting artifact from the journey's `comparison.json`, using the schema in [contracts.md](contracts.md). That record links both builds through evidence IDs, the fixture, replay steps, and required dimension results. Keep network/storage assertions distinct from the JUnit UI result.
+The screenshot tool's `result.json` contains visual metrics only. Feed it to `ledger.py comparison --supporting` (see [contracts.md](contracts.md)), which writes the actual pass/fail comparison record and updates the coverage case. Keep network/storage assertions distinct from the visual result.
 
 ## User checkpoint and regression
 
 Offer one runnable build with its identity, a short action/expected-result checklist, and known differences. Include cancel/back and reopen/restart where relevant. Record user feedback against that build. User acceptance does not convert missing or failed comparisons into passes; a waiver is distinct from acceptance.
 
-After a shared model, navigation, theme, or persistence change, mark affected previous comparisons stale (`not_run`) until rerun; retain historical artifacts. Resume from `spec/progress.md` rather than repeating full intake. Do not request confirmation again for an already authorized action; the user checkpoint is testing the delivered journey.
+After a shared model, navigation, theme or persistence change, mark affected previous comparisons stale (`not_run`) until the next relevant verification batch. Preserve accepted/referenced evidence. Keep exploratory captures, intermediate pulls/dumps and obsolete generated previews in task-owned temporary storage; remove only unreferenced scratch files you created. Keep one progress file and canonical contracts/results; do not create duplicate plans or status files. Resume from `spec/progress.md`. User checkpoints test the delivered journey, not permission for already authorized work.
 
-## Pixelmatch settings that affect the verdict
+## Visual comparison settings that affect the verdict
 
-Use equal-sized images and record `threshold` (per-pixel color sensitivity), `includeAA` (whether antialiasing differences count), and the separate allowed changed-pixel fraction. A `threshold` of `0.1` does **not** mean that 10% of the screen may differ. Keep the default whole-image counting mode when calculating `changedPixels / comparedPixels`; a windowed density result has a different denominator. `diffMask` controls output rendering, not exclusion regions. Apply documented exclusion regions to both inputs and exclude those pixels from the denominator; reject an empty comparison area. Never resize screenshots silently to make dimensions match. This computes pixel differences, not SSIM. [Pixelmatch API and PNG example](https://github.com/mapbox/pixelmatch)
+`diff_screenshots.py` uses a YIQ colour-delta threshold; it is not a complete pixelmatch implementation (for example, it does not reproduce its anti-aliasing handling). `--threshold` is per-pixel sensitivity; `--max-diff-ratio` is the allowed fraction of changed pixels. Excluded pixels leave the denominator, and a fully excluded image is rejected. Exclusions can hide defects inside their region: justify each mask. Never resize screenshots to force a match. This computes pixel differences, not SSIM.
 
 ## Fast laptop iteration
 
 Use Android on the laptop as the Android parity target. Browser/desktop previews
 are optional layout aids, not proof of Android rendering or native behavior.
 
-1. Discover the SDK, AVD and serial; reuse a running compatible emulator. The
-   bundled `scripts/emulator_manager.sh start-headless` supports `DITTO_AVD`,
-   `DITTO_EMULATOR_PORT`, `DITTO_BOOT_TIMEOUT`, `DITTO_ADB` and `DITTO_EMULATOR`.
-   It targets one serial, checks its AVD identity and bounds boot waits. Launch
-   it asynchronously when booting takes time so progress reporting continues.
-2. Install the original once and the candidate once. Keep separate package IDs;
+1. Discover/reuse a compatible emulator through available emulator/mobile tools.
+   Prefer those tools for installation, interaction and capture. If unavailable
+   or missing a required capability, explain why the shell fallback is needed. The
+   bundled `scripts/emulator_manager.sh start-headless` supports `DITTO_AVD`
+   (required — there is no default AVD), `DITTO_EMULATOR_PORT`, `DITTO_BOOT_TIMEOUT`,
+   `DITTO_GPU`, `DITTO_ADB` and `DITTO_EMULATOR`. It targets one serial, checks
+   its AVD identity, uses software rendering headless unless `DITTO_GPU` says
+   otherwise, and makes a bounded attempt to wait for boot-animation completion.
+   Confirm the app is interactive before capture. Run `emulator_manager.sh check` to see what it
+   resolved. Launch it asynchronously when booting takes time so progress
+   reporting continues.
+2. Install the original once and candidate once with preferred tooling; the
+   fallback is `emulator_manager.sh install <apk> [package]`. It checks AVD identity
+   and preserves permission prompts; `--grant-permissions` is explicit fixture setup.
+   Keep separate package IDs;
    if IDs collide, use separate emulators. Never repeatedly uninstall to iterate.
 3. Keep `flutter run -d <serial>` attached. Use hot reload for Dart UI edits,
    hot restart for initialization changes, and full restart/rebuild for native
    code or plugin changes. Hot reload preserves state; it is not a cold-start test.
 4. Capture fresh original and candidate baselines on the same emulator with
    matching resolution, density, OS, font scale, locale, navigation mode and
-   keyboard. A 420-dpi emulator cannot directly validate 400-dpi phone captures.
-   Retain those phone captures as historical evidence; do not rescale them.
+   keyboard. Capture tools record some of these facts; record navigation mode,
+   keyboard and any other missing settings explicitly. A 420-dpi
+   emulator cannot directly validate 400-dpi phone captures. Retain those
+   phone captures as historical evidence; do not rescale them.
 5. Replay deterministic fixtures (dates, records, theme, permission state) for
    the active checkpoint. Keep isolated snapshot/fixture state and record resets;
    candidate-only debug navigation must not ship or replace real journey replay.
-6. Capture at native resolution, compare, fix the measured discrepancy, hot reload,
-   and recapture only affected states. Compare transition recordings separately;
-   a still frame cannot establish animation timing. Run a fresh process/restart
-   check before acceptance and build a distributable APK at the checkpoint.
+6. Collect discrepancies, finish the related fixes in the active phase, hot reload,
+   then run affected tests and recapture affected states as one batch. Check a
+   single remaining fix directly; check earlier when further work depends on the
+   result. Record modified-runtime source/session identity during hot reload.
+   Compare transition recordings separately. Before acceptance, build/install a
+   distributable APK and perform required fresh-process/restart checks.
 
 Use a physical phone for milestone checks of OEM keyboard/insets, notifications,
 permissions and performance. Missing phone access leaves those checks pending;
