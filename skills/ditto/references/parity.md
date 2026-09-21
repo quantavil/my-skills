@@ -107,6 +107,18 @@ validation/<flow>/<platform>/
 
 The screenshot tool's `result.json` contains visual metrics only. Feed it to `ledger.py comparison --supporting` (see [contracts.md](contracts.md)), which writes the actual pass/fail comparison record and updates the coverage case. Keep network/storage assertions distinct from the visual result.
 
+## Measure workflow efficiency
+
+Run this only when evaluating a workflow change or when requested. Ordinary journeys need no extra metrics file. Add a compact row to the existing progress/report record:
+
+`task | skill revision | model/settings | uncached input / cached input / output tokens | billed cost | elapsed time | correction cycles | required checks passed/total | unresolved defects`
+
+Use actual usage exports when available; mark unavailable values unknown. Word counts, tool calls and LOC are proxies, not token/cost measurements. Count the whole task, including reference loads, tool output, retries and delegated work. For cost, use actual billed cost or the applicable rates for the recorded model/settings and usage categories; do not assume cached tokens cost the same as uncached input.
+
+Compare the old and new workflows on equivalent tasks from the same starting revision, fixtures, acceptance criteria and environment. Use a small representative set (for example UI repair, async behavior and persistence), keep model/settings fixed, and repeat paired runs when feasible. Include failed runs; report median cost/time and the range, not just the best attempt. Preserve user-testing and required parity gates across both variants.
+
+Accept a cheaper workflow only when correctness and required coverage remain at least as good, without increasing unresolved defects. Report measured differences with their sample size and limitations. A shorter entry file or fewer handwritten lines alone cannot establish an AI-bill reduction. Reuse normal task artifacts and keep only the compact comparison summary; do not create duplicate builds/captures solely for reporting.
+
 ## User checkpoint and regression
 
 Offer one runnable build with its identity, a short action/expected-result checklist, and known differences. Include cancel/back and reopen/restart where relevant. Record user feedback against that build. User acceptance does not convert missing or failed comparisons into passes; a waiver is distinct from acceptance.

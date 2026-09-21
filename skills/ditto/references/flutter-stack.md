@@ -23,11 +23,19 @@ Do not automatically add Firebase, a maps SDK, payments, Bluetooth, or a backgro
 
 ## Resolve dependencies rather than paste a stale pubspec
 
+Choose the smallest sufficient stack. Local widget state can stay local; simple navigation can use Navigator. Keep an existing HTTP client. For a new small HTTP surface, consider `package:http`; choose Dio when its interceptors, cancellation or upload facilities remove work you actually need. Add Drift for relational/durable requirements, not a few preferences. Package capabilities and SDK constraints matter more than publication date. [HTTP package](https://pub.dev/packages/http).
+
+Reduce handwritten code, not readability. Reuse widgets, repository operations and platform plugins before writing wrappers. Extract shared code when repeated behavior is established; avoid a generic framework for one screen. Keep generated code out of routine model context: edit generator inputs, run generation once after related model changes, and inspect diagnostics or relevant generated sections only when necessary. Commit generated outputs according to the project's existing policy; context exclusion does not mean deletion.
+
+Use `json_serializable` for recurring wire models where field mappings and conversion boilerplate justify it. Add Freezed for meaningful immutable unions/copying needs; plain Dart classes, records or sealed classes may suffice for small models. Riverpod generation is optional: retain the project's approach and account for generator setup/build time. Do not install code generation solely to shorten a trivial provider. [Riverpod code generation](https://riverpod.dev/docs/concepts/about_code_generation).
+
 Inside the target Flutter project, record `flutter --version`, `dart --version`, and existing constraints. Run only the applicable groups:
 
 ```bash
-# New networked feature with no established stack:
-flutter pub add flutter_riverpod dio go_router
+# Run only the individual additions justified by the active feature:
+flutter pub add flutter_riverpod  # shared async feature state
+flutter pub add dio              # richer HTTP requirements
+flutter pub add go_router        # declarative routing/deep links
 
 # Relational persistence:
 flutter pub add drift drift_flutter path_provider
@@ -42,7 +50,7 @@ flutter pub add freezed_annotation
 flutter pub add --dev freezed
 ```
 
-Resolve, inspect `pubspec.lock`, and commit the application lockfile. Record selected versions in `spec/toolchain.md`; the versions above are a research snapshot, not a tested combination for the user's SDK. Do not upgrade an existing project just to match them. After defining generator inputs, run `dart run build_runner build`; inspect collisions instead of blindly deleting conflicting outputs.
+Resolve, inspect `pubspec.lock`, and commit the application lockfile. Record selected versions in the existing toolchain record (or a compact section of `spec/app.md`); avoid duplicating the lockfile. The versions above are a research snapshot, not a tested combination for the user's SDK. Do not upgrade an existing project just to match them. Consult current primary docs when adding/upgrading a dependency or resolving an API uncertainty; reuse the finding for the same locked version. After related generator-input edits, run `dart run build_runner build` once; inspect collisions instead of blindly deleting conflicting outputs.
 
 ## Implement a vertical feature
 
