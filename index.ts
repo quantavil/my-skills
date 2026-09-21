@@ -45,9 +45,12 @@ interface SymlinkTarget {
 
 const GLOBAL_SYMLINK_TARGETS: SymlinkTarget[] = [
   { name: 'Antigravity CLI (Direct)', dir: path.join(HOME, '.gemini/antigravity-cli/skills') },
+  { name: 'Antigravity (~/.antigravity)', dir: path.join(HOME, '.antigravity/skills') },
+  { name: 'Antigravity (~/.gemini/skills)', dir: path.join(HOME, '.gemini/skills') },
   { name: 'Codex CLI', dir: path.join(HOME, '.codex/skills') },
   { name: 'Claude Code', dir: path.join(HOME, '.claude/skills') },
   { name: 'OpenCode', dir: path.join(HOME, '.config/opencode/skills') },
+  { name: 'Cursor', dir: path.join(HOME, '.cursor/skills') },
   { name: 'Universal Agents (~/.agents)', dir: path.join(HOME, '.agents/skills') },
   { name: 'Universal Agents (~/.config/agents)', dir: path.join(HOME, '.config/agents/skills') },
 ];
