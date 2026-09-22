@@ -709,6 +709,7 @@ Future<void> main() async {
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
+@unittest.skipIf(os.name == 'nt' or not shutil.which('bash'), 'Bash compatibility tests require POSIX and Bash')
 class EmulatorScriptTests(Temp):
     SCRIPT = HERE / 'emulator_manager.sh'
 
@@ -740,11 +741,13 @@ class EmulatorScriptTests(Temp):
         self.assertNotIn('-g', marker.read_text().split())
 
     def test_refuses_to_stop_a_different_avd(self):
-        adb = self.fake('adb', '#!/bin/sh\ncase "$*" in\n*"avd name"*) echo other;;\n'
+        adb = self.fake('adb', '#!/bin/sh\ncase "$*" in\n'
+                               'devices) printf "List\\nemulator-5554\\tdevice\\n";;\n'
+                               '*"avd name"*) echo other;;\n'
                                '*kill*) touch "$KILL_MARKER";;\nesac\n')
         marker = self.root / 'killed'
         result = self.run_script('stop', DITTO_ADB=str(adb), DITTO_AVD='wanted',
-                          KILL_MARKER=str(marker))
+                          DITTO_EMULATOR_PORT='5554', KILL_MARKER=str(marker))
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("expected 'wanted'", result.stderr)
         self.assertFalse(marker.exists())
@@ -752,7 +755,7 @@ class EmulatorScriptTests(Temp):
     def test_requires_an_explicit_avd(self):
         adb = self.fake('adb', '#!/bin/sh\nexit 0\n')
         result = self.run_script('stop', DITTO_ADB=str(adb), DITTO_AVD='')
-        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.returncode, 1)
         self.assertIn('Set DITTO_AVD', result.stderr)
 
     def test_running_emulator_is_reused_not_relaunched(self):

@@ -114,11 +114,13 @@ def adb_binary():
     found = shutil.which('adb')
     if found:
         return found
-    sdk = os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT')
-    if sdk:
-        candidate = Path(sdk) / 'platform-tools' / 'adb'
-        if candidate.is_file():
-            return str(candidate)
+    windows = sys.platform == 'win32'
+    default_sdk = (Path(os.environ.get('LOCALAPPDATA', str(Path.home() / 'AppData' / 'Local')))
+                   / 'Android' / 'Sdk' if windows else Path.home() / 'Android' / 'Sdk')
+    sdk = os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT') or default_sdk
+    candidate = Path(sdk) / 'platform-tools' / ('adb.exe' if windows else 'adb')
+    if candidate.is_file():
+        return str(candidate)
     raise LedgerError('adb not found. Set DITTO_ADB or ANDROID_HOME, or use "adopt".')
 
 

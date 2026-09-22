@@ -2,7 +2,7 @@
 
 Use stable screen, state, flow, and evidence IDs. Keep one canonical home for each contract; screen files link to shared API and storage definitions.
 
-Use `scripts/ledger.py` for artifact hashes and record links. Preferred emulator tools produce captures; `adopt` registers them without copying the files. Supply verified build/environment facts; adoption cannot discover them from a screenshot. `capture` is the ADB-backed fallback when preferred tooling lacks required capture/provenance capabilities. Edit coverage metadata to define scope and record actual user decisions; document the reason and authorization for any change to required dimensions before recording another comparison. Do not invent hashes or duplicate records by hand.
+Use `scripts/ledger.py` for artifact hashes and record links. Existing emulator tools produce captures; `adopt` registers them without copying the files. Supply verified build/environment facts; adoption cannot discover them from a screenshot. Use `capture` when ADB-backed collection is practical. Edit coverage metadata to define scope and record actual user decisions; document the reason and authorization for any change to required dimensions before recording another comparison. Do not invent hashes or duplicate records by hand.
 
 ## Evidence records
 

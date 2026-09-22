@@ -73,7 +73,7 @@ Check each exit code, JUnit result, and screenshot location. Register relevant s
 
 When running on a local development host with an Android Virtual Device (AVD, e.g. `emulator-5554`), both original and candidate apps can be run sequentially or side-by-side on the same device. Standardize the device profile to match historical baselines (e.g. 1080x2400 @ 420 dpi).
 
-Prefer available emulator/mobile tooling for capture and `ledger.py adopt` for registration. If it lacks necessary capture or provenance capabilities, explain that limitation and use the ADB-backed fallback:
+Prefer working emulator/mobile tooling for capture and `ledger.py adopt` for registration. When ADB is the practical path, use:
 
 ```bash
 python3 "$DITTO_SKILL/scripts/ledger.py" --project . capture \
@@ -123,6 +123,46 @@ Accept a cheaper workflow only when correctness and required coverage remain at 
 
 Offer one runnable build with its identity, a short action/expected-result checklist, and known differences. Include cancel/back and reopen/restart where relevant. Record user feedback against that build. User acceptance does not convert missing or failed comparisons into passes; a waiver is distinct from acceptance.
 
+Human review is required to accept a meaningful implemented journey. Offer it after
+the first useful compared slice rather than after exhaustive speculative polishing.
+Ask the user to try the main path and alternate choices and assess appearance,
+motion and interaction feel. Provide short paired clips when installation is
+inconvenient; record that this is visual review, not hands-on testing. Keep review
+pending while doing independent authorized work. User findings drive the next
+focused correction batch. Avoid broad repeated testing when relevant checks already
+pass; retain data-integrity, save/restart and affected regression checks.
+
+## Animation and transition comparison
+
+Settled screenshots validate endpoints only. For in-scope motion, capture short
+original/candidate recordings covering the same action and starting state, with
+matching device settings and animation scales. Include forward and Back where they
+differ, and keyboard or overlay entry/dismissal when those are part of the change.
+Use the existing recording tool; avoid introducing a video stack for static fixes.
+
+Record actual frame timestamps or frame rate and dropped-frame limitations. Prefer
+a rate that yields several frames during the transition; increasing the output
+video frame rate later cannot recover missing frames. A roughly 140 ms transition
+may occupy only four frames at 30 fps, so a single middle frame cannot establish
+its easing curve. If the recorder misses the motion, mark timing/curve unknown and
+use another capture or human review, not a guessed exact duration.
+
+Compare onset, intermediate progress and completion: direction, travel distance,
+opacity, clipping, scale, layering, entering/outgoing elements, and interruption
+behavior where relevant. Align clips at the first visible response for visual
+progress comparison. Measure input-to-response latency separately only when input
+timestamps are available; do not silently align away a real delay. Use a small
+timestamped contact sheet or cropped frames for AI review and preserve the clips.
+Do not compare arbitrary frame numbers from recordings with different timing.
+
+Measure the observed motion before choosing implementation constants. An end-state
+match or a passing duration unit test does not establish transition parity. Check
+the packaged build for final motion review; debug/translation/recording overhead
+can cause jank and does not establish its cause. Compare relative movement on a
+matching environment and keep real-device smoothness pending when unavailable.
+If an animation never settles (spinner, looping art), wait for a relevant state
+or stable region rather than an unbounded whole-screen settle.
+
 After a shared model, navigation, theme or persistence change, mark affected previous comparisons stale (`not_run`) until the next relevant verification batch. Preserve accepted/referenced evidence. Keep exploratory captures, intermediate pulls/dumps and obsolete generated previews in task-owned temporary storage; remove only unreferenced scratch files you created. Keep one progress file and canonical contracts/results; do not create duplicate plans or status files. Resume from `spec/progress.md`. User checkpoints test the delivered journey, not permission for already authorized work.
 
 ## Visual comparison settings that affect the verdict
@@ -135,18 +175,17 @@ Use Android on the laptop as the Android parity target. Browser/desktop previews
 are optional layout aids, not proof of Android rendering or native behavior.
 
 1. Discover/reuse a compatible emulator through available emulator/mobile tools.
-   Prefer those tools for installation, interaction and capture. If unavailable
-   or missing a required capability, explain why the shell fallback is needed. The
-   bundled `scripts/emulator_manager.sh start-headless` supports `DITTO_AVD`
+   Prefer working tools for installation, interaction and capture. The portable
+   `python3 scripts/emulator_manager.py start-headless` supports `DITTO_AVD`
    (required — there is no default AVD), `DITTO_EMULATOR_PORT`, `DITTO_BOOT_TIMEOUT`,
    `DITTO_GPU`, `DITTO_ADB` and `DITTO_EMULATOR`. It targets one serial, checks
-   its AVD identity, uses software rendering headless unless `DITTO_GPU` says
-   otherwise, and makes a bounded attempt to wait for boot-animation completion.
-   Confirm the app is interactive before capture. Run `emulator_manager.sh check` to see what it
+   its AVD identity, uses automatic graphics selection unless `DITTO_GPU` says
+   otherwise, and waits within a deadline for Android boot completion.
+   Confirm the app is interactive before capture. Run `python3 scripts/emulator_manager.py check` to see what it
    resolved. Launch it asynchronously when booting takes time so progress
    reporting continues.
 2. Install the original once and candidate once with preferred tooling; the
-   fallback is `emulator_manager.sh install <apk> [package]`. It checks AVD identity
+   fallback is `python3 scripts/emulator_manager.py install <apk> [package]`. It checks AVD identity
    and preserves permission prompts; `--grant-permissions` is explicit fixture setup.
    Keep separate package IDs;
    if IDs collide, use separate emulators. Never repeatedly uninstall to iterate.

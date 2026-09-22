@@ -6,8 +6,8 @@ Primary documentation checked 2026-09-14. These are operational defaults for Dit
 
 | Input/task | Start with | Add when needed | Required result |
 | --- | --- | --- | --- |
-| Native Android APK | Existing emulator/mobile tooling; `apkanalyzer`, focused JADX/Apktool inspection | Direct ADB for requested/necessary fallback; Maestro for replay; Ghidra for unresolved JNI code | Relevant manifest/resources/code evidence and recorded journey |
-| Flutter Android APK | Existing emulator/mobile tooling and archive inventory | Apktool/r2flutter for specific questions; ADB for requested/necessary fallback; Blutter for supported Android ARM64 inspection | Assets/wrapper, snapshot profile, runtime states |
+| Native Android APK | Existing emulator/mobile tooling; `apkanalyzer`, focused JADX/Apktool inspection | ADB when practical; Maestro for replay; Ghidra for unresolved JNI code | Relevant manifest/resources/code evidence and recorded journey |
+| Flutter Android APK | Existing emulator/mobile tooling and archive inventory | Apktool/r2flutter for specific questions; ADB when practical; Blutter for supported Android ARM64 inspection | Assets/wrapper, snapshot profile, runtime states |
 | Native iOS IPA/app | `plutil`, `otool`, `dwarfdump`, `ipsw`; compatible original runtime | Ghidra/radare2 for unresolved native logic; Frida/Grapefruit for runtime internals | Bundle/entitlement inventory, symbol match, device/build feasibility |
 | Flutter iOS app | iOS inventory, Flutter assets, r2flutter, compatible runtime | Native wrapper/channel inspection | Supported snapshot evidence and observed behavior; never route to Blutter |
 | Network contract | Test backend logs or mitmproxy | Frida/Grapefruit when authorized and proxy capture is insufficient | Sanitized request/response/error fixtures |
@@ -28,16 +28,22 @@ image nor successful installation proves the original renders correctly. Record
 launch success and any translation limitations instead of promising a frame rate.
 
 Prefer discovery, control and capture through available emulator/mobile tools.
-Use direct ADB only when requested or needed for a concrete missing/failing
-operation; explain the fallback. Tools using ADB internally are compatible with
+Use direct ADB when it is the practical available path for authorized testing.
+Tools using ADB internally are compatible with
 an emulator-first workflow. If preferred tools cannot manage the emulator,
 discover existing AVDs with `emulator -list-avds` before creating another.
-Use `scripts/emulator_manager.sh` to reuse an explicitly selected AVD and serial
-with bounded boot checks; run `emulator_manager.sh check` to see what it
+Use `python3 scripts/emulator_manager.py` to reuse an explicitly selected AVD and serial
+with bounded boot checks; run `python3 scripts/emulator_manager.py check` to see what it
 resolved before starting anything. `DITTO_AVD` is required — there is no
 built-in default AVD name. Run both packages on the same emulator where IDs
 differ, and target every ADB or Maestro operation explicitly (for example
 `adb -s emulator-5554 ...`).
+
+On Windows use `py -3` and PowerShell environment syntax; see
+[runtime commands](runtime-workflow.md#commands-and-tracking). The portable launcher
+uses the host emulator's acceleration selection; KVM checks apply only to Linux.
+Android work is supported on both hosts. iOS runtime/build checks still need a
+capable Apple host; Windows/Linux can perform portable artifact inspection.
 
 Match recorded display/OS settings or collect fresh original/candidate baselines
 on the same new environment. See [fast laptop iteration](parity.md#fast-laptop-iteration)
@@ -184,7 +190,7 @@ Adapt this to the client's configuration format; do not overwrite existing serve
 
 Official Flutter/Dart agent resources are `flutter/agent-plugins` and `dart-lang/skills`. Use installed relevant skills; adding them is environment setup, not something every reconstruction must repeat. [Flutter agent setup](https://docs.flutter.dev/ai/get-started)
 
-Prefer existing emulator/mobile capture tooling and register its output with `ledger.py adopt` ([contracts.md](contracts.md)). For an explicit ADB request or a required capture/provenance capability unavailable through preferred tools, select the emulator serial explicitly and use this fallback:
+Prefer existing emulator/mobile capture tooling and register its output with `ledger.py adopt` ([contracts.md](contracts.md)). When ADB is the practical capture path, select the emulator serial explicitly:
 
 ```bash
 python3 "$DITTO_SKILL/scripts/ledger.py" --project . capture \
