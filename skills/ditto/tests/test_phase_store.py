@@ -141,7 +141,7 @@ class PhaseStoreTests(unittest.TestCase):
             store.load_json(path)
 
     def test_safe_paths_and_names(self):
-        self.assertEqual(store.safe_child(self.root, 'a/b'), self.root / 'a' / 'b')
+        self.assertEqual(store.safe_child(self.root, 'a/b'), (self.root / 'a' / 'b').resolve())
         for value in ('../outside', '/tmp/outside'):
             with self.subTest(value=value), self.assertRaisesRegex(store.PhaseError, 'inside'):
                 store.safe_child(self.root, value)
