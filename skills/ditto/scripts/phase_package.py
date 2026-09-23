@@ -36,12 +36,12 @@ def _copy_mcp_export(capability, source, destination, expected_receipt, retained
     receipt = store.load_json(receipt_path)
     if receipt != expected_receipt or receipt.get('provenance') != 'mcp':
         raise store.PhaseError(f'{capability} MCP export does not match active preflight')
-    files = sorted(path for path in source.rglob('*') if path.is_file() or path.is_symlink())
     total = 0
-    for path in files:
-        if path.is_symlink():
-            raise store.PhaseError(f'{capability} MCP export contains a symbolic link')
-        relative = path.relative_to(source)
+    for name in ('receipt.json', 'result.json'):
+        path = source / name
+        if not path.is_file() or path.is_symlink():
+            raise store.PhaseError(f'{capability} MCP export is missing {name}')
+        relative = Path(name)
         target = store.safe_child(destination, Path('mcp') / capability / relative)
         total += path.stat().st_size
         if total > MAX_SELECTED_BYTES:

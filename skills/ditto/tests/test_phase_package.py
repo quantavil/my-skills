@@ -79,6 +79,9 @@ class PackageAnalysisTests(unittest.TestCase):
             {'res/drawable/icon.png': ['log_top']}, self.exports, self.preflight)
 
     def test_analysis_writes_hashed_index_and_preserves_paths(self):
+        analysis = self.exports['r2flutter'] / 'analysis'
+        analysis.mkdir()
+        (analysis / 'classes.json').write_text('{"large": "shared cache"}')
         result = self.analyze()
         destination = self.root / 'original'
         self.assertEqual(result['package_sha256'], self.package_sha)
@@ -89,6 +92,8 @@ class PackageAnalysisTests(unittest.TestCase):
         self.assertEqual(retained['res/drawable/icon.png']['checkpoints'], ['log_top'])
         self.assertTrue((destination / 'reverse.001/res/drawable/icon.png').is_file())
         self.assertTrue((destination / 'reverse.001/mcp/r2flutter/result.json').is_file())
+        self.assertFalse((destination / 'reverse.001/mcp/r2flutter/analysis').exists())
+        self.assertTrue((analysis / 'classes.json').is_file())
         self.assertEqual(store.load_json(destination / 'reverse.001.json'), result)
         for item in result['retained_files']:
             self.assertEqual(store.sha256_file(destination / item['path']), item['sha256'])

@@ -23,7 +23,7 @@ All runnable examples are in [commands](references/commands.md). Run bundled scr
 ## Working rules
 
 - Evidence lives in `phases/<phase-id>/original/`, `clone/`, and `diff/`. Scripts retain revisions and build identities; use the current report to navigate. Do not manually maintain duplicate indexes or rewrite tool receipts.
-- Analyze a package once per analyzer version. Reuse its export across phases; search or read bounded excerpts instead of loading entire decompilations. A day passing or a server restart does not invalidate recorded analysis or screenshots.
+- Analyze a package once per analyzer version. Keep full exports in a shared ignored cache and reuse them across phases; phase packs retain receipts, indexes, and selected package resources. Search or read bounded excerpts instead of loading entire decompilations. A day passing or a server restart does not invalidate recorded analysis or screenshots.
 - Check live device identity and environment when collecting new evidence. A command executing successfully does not prove that the intended UI state was reached; observe the result.
 - Use screenshots for visible layout; XML is helpful when available. Persistence needs a write/restart/read sequence. A foreground activity dump is not proof of saved application data.
 - Keep dependency mapping small. Local changes reopen affected checkpoints; uncertain impact or shared theme/native/dependency changes reopen the relevant broader scope. Retained checks identify their tested build; never call them fresh tests of the final APK.
