@@ -1,228 +1,59 @@
-# Toolchain: selection, commands, outputs
+# Required tool roles
 
-Primary documentation checked 2026-09-14. These are operational defaults for Ditto, not claims that every tool is installed or every binary is supported. Use the installed release's help when flags differ; record the actual version or commit with each capture. Run only the branch needed for the task.
+The Android Flutter phase has one compulsory stack. Capability is established by verified MCP receipts, not configuration files, PATH entries, or prose claims.
 
-## Select the smallest working stack
+| Capability | Required role | Required proof |
+| --- | --- | --- |
+| JADX MCP | DEX, manifest, wrapper, platform-channel analysis | Healthy bounded probe for the original APK SHA-256 |
+| Apktool MCP | Resources, decoded XML, assets, Smali when needed | Healthy bounded probe for the same APK |
+| r2Flutter MCP | Dart AOT object/function/cross-reference analysis | Supported ABI and Dart profile for the same APK |
+| mobile-control MCP | Device operation, replay, screenshot, hierarchy | Required control probes for the contract target and environment |
 
-| Input/task | Start with | Add when needed | Required result |
-| --- | --- | --- | --- |
-| Native Android APK | Existing emulator/mobile tooling; `apkanalyzer`, focused JADX/Apktool inspection | ADB when practical; Maestro for replay; Ghidra for unresolved JNI code | Relevant manifest/resources/code evidence and recorded journey |
-| Flutter Android APK | Existing emulator/mobile tooling and archive inventory | Apktool/r2flutter for specific questions; ADB when practical; Blutter for supported Android ARM64 inspection | Assets/wrapper, snapshot profile, runtime states |
-| Native iOS IPA/app | `plutil`, `otool`, `dwarfdump`, `ipsw`; compatible original runtime | Ghidra/radare2 for unresolved native logic; Frida/Grapefruit for runtime internals | Bundle/entitlement inventory, symbol match, device/build feasibility |
-| Flutter iOS app | iOS inventory, Flutter assets, r2flutter, compatible runtime | Native wrapper/channel inspection | Supported snapshot evidence and observed behavior; never route to Blutter |
-| Network contract | Test backend logs or mitmproxy | Frida/Grapefruit when authorized and proxy capture is insufficient | Sanitized request/response/error fixtures |
-| Colours and spacing for the clone | Existing confirmed tokens and relevant measurements | `scripts/theme_extract.py` when repeated measurement warrants it | Verified values in the canonical token file |
-| Flutter implementation | Flutter/Dart SDK, existing project tooling, Dart MCP if available | Packages in [flutter-stack.md](flutter-stack.md); patterns in [flutter-build.md](flutter-build.md) | Analyzed, tested vertical feature |
-| Differential validation | Emulator/mobile capture, `ledger.py adopt`, `diff_screenshots.py` | ADB-backed `ledger.py capture` if required capabilities are missing; Maestro/Patrol as appropriate | Separate dimension results in the ledger |
 
-JADX reconstructs Java-like code from DEX; it does not guarantee complete decompilation. Use `--single-class` once a relevant class is known instead of repeatedly exporting everything. [JADX CLI](https://github.com/skylot/jadx)
+The reconstruction agent uses these MCP interfaces. Their server implementations may invoke the underlying analyzers, Android SDK, emulator, or device bridge internally. Every exported result must retain MCP provenance and its originating session identity.
 
-APKiD identifies compiler/packer/protection signatures; it does not establish application behavior. MobSF is optional broad inventory, not a prerequisite for every feature. [APKiD](https://github.com/rednaga/APKiD), [MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF)
+Use `inventory.py` only for a bounded, read-only archive summary before preflight or for diagnosis. It hashes the package, reports safe member statistics, framework indicators, assets, and ABIs. It does not replace any compulsory MCP probe or prove runtime behavior.
 
-## Local KVM Android Virtual Device (AVD) & ARM Translation
+`diff_screenshots.py` is the deterministic local metric engine used by `phase compare`. It uses Pillow for PNGs and panel rendering and NumPy for the YIQ comparison, preserves panel resolution, writes the labeled triptych, and optionally compares paired hierarchy XML. Semantic acceptance remains in `phase verdict`.
 
-Use a configured local AVD for the frequent Android iteration loop. Check KVM
-access, the installed system image, APK ABIs and actual original-app launch.
-ARM translation availability and performance vary; neither an x86_64 Google APIs
-image nor successful installation proves the original renders correctly. Record
-launch success and any translation limitations instead of promising a frame rate.
+Flutter implementation uses the project's pinned Flutter/Dart toolchain and Ditto's [Flutter build](flutter-build.md) and [stack](flutter-stack.md) guidance. Keep analyzer, unit/widget tests, and build verification proportionate to the implementation. The final parity evidence comes from a freshly identified packaged build captured through mobile-control.
 
-Prefer discovery, control and capture through available emulator/mobile tools.
-Use direct ADB when it is the practical available path for authorized testing.
-Tools using ADB internally are compatible with
-an emulator-first workflow. If preferred tools cannot manage the emulator,
-discover existing AVDs with `emulator -list-avds` before creating another.
-Use `python3 scripts/emulator_manager.py` to reuse an explicitly selected AVD and serial
-with bounded boot checks; run `python3 scripts/emulator_manager.py check` to see what it
-resolved before starting anything. `DITTO_AVD` is required — there is no
-built-in default AVD name. Run both packages on the same emulator where IDs
-differ, and target every ADB or Maestro operation explicitly (for example
-`adb -s emulator-5554 ...`).
+If a required MCP is unavailable, invalid, attached to another package/device, or incompatible with the APK's ABI/profile, record the blocker and stop the phase. Installing and repairing these servers belongs in the MCP workspace; weakening the phase contract does not resolve missing capability.
 
-On Windows use `py -3` and PowerShell environment syntax; see
-[runtime commands](runtime-workflow.md#commands-and-tracking). The portable launcher
-uses the host emulator's acceleration selection; KVM checks apply only to Linux.
-Android work is supported on both hosts. iOS runtime/build checks still need a
-capable Apple host; Windows/Linux can perform portable artifact inspection.
+For iOS, define an equivalent compulsory MCP contract before starting. Do not assume the Android capability set proves iOS extraction or runtime support.
 
-Match recorded display/OS settings or collect fresh original/candidate baselines
-on the same new environment. See [fast laptop iteration](parity.md#fast-laptop-iteration)
-for install-once, hot-reload and checkpoint rules. Preserve physical-device
-captures and keep remaining hardware checks explicit.
+## Portable local setup
 
-## Intake without installing mobile tools
+Use Python 3.11+, uv, Java, JADX, Apktool, r2Flutter, and the Android SDK
+(platform-tools, build-tools, emulator, and a compatible AVD). The MCP bridge
+is local Python code; its external analyzers still need compatible installations.
+Use the consolidated [setup command](commands.md#setup-and-emulator) to generate
+standalone MCP JSON, merge the entries, and restart the client. The generator
+needs no Bun or fixed checkout location.
 
-From the reconstruction workspace, set `DITTO_SKILL` to this skill's directory and run:
+SDK discovery uses `ANDROID_HOME` or `ANDROID_SDK_ROOT`, then the standard Linux
+or Windows SDK location. Explicit `DITTO_ADB_BIN`, `DITTO_EMULATOR_BIN`, and
+`DITTO_AAPT_BIN` override discovery. Analyzer executable overrides are documented
+in the MCP integration reference. Java archives and supported Windows launchers
+run with argument lists, including paths containing spaces.
 
-```bash
-python3 "$DITTO_SKILL/scripts/inventory.py" input/original.apk --output evidence/static/inventory.json
-```
+Start/reuse the AVD through the mobile MCP; see [commands](commands.md#setup-and-emulator).
+The MCP backend owns SDK discovery and emulator startup; the skill contains no
+second launcher. Its shared Python implementation detects Windows/Linux automatically.
+Use `gpu="software"` without GPU hardware; the default is `auto`. CPU virtualization
+is a separate `accel="auto|on|off"` choice. Software rendering does not solve an
+incompatible APK ABI or unsupported Dart profile. Never count a crashing app as a
+successful mobile probe. Native Windows validation is a separate check.
 
-The bundled helper hashes the file, summarises ZIP members by top-level directory and extension, flags unsafe member paths, reports framework/ABI/asset indicators (fonts, nine-patch, vector drawables, Flutter's `FontManifest.json`/`AssetManifest.json`), reads bounded iOS Info.plist metadata, and locates relevant executables on PATH. **Output is a summary, not a member dump** — a real APK holds thousands of entries, and printing every filename costs tens of thousands of tokens to say very little. Pass `--members path/to/list.txt` only when a specific unresolved question needs the full name list, and it is written to its own file rather than inline. It does not extract files, execute tools, decode Android binary XML, or prove framework completeness. It refuses to overwrite output unless `--force`. Use `apkanalyzer` for Android identity.
+Phase/image commands share a locked uv environment. `pyproject.toml` and `uv.lock` specify
+Pillow and NumPy; uv installs binary wheels in an isolated environment. There is
+one image implementation, no optional slow fallback. Transparent PNGs composite
+on white; 16-bit grey values use their high byte. Screenshot panels keep native
+resolution; only the overview is resized. Do not install these packages globally.
 
-For each tool actually used, record its version/path once and reuse that information until the tool changes. Do not run every tool's version command on intake. A PATH entry is not a working emulator or server connection.
-
-## Android extraction
-
-Run from the reconstruction workspace after creating `input/original.apk`. Use a fresh output directory for each extraction run:
-
-```bash
-mkdir -p evidence/static/android
-apkanalyzer apk summary input/original.apk > evidence/static/android/summary.txt
-apkanalyzer manifest print input/original.apk > evidence/static/android/manifest.xml
-apkanalyzer files list input/original.apk > evidence/static/android/files.txt
-jadx -d evidence/static/android/jadx input/original.apk
-apktool d input/original.apk -o evidence/static/android/apktool
-```
-
-Inspect `jadx/sources/` for relevant managed logic; `apktool/res/`, `assets/`, and `smali*/` for resources and fallback instructions. Record nonzero exit codes and partial outputs. Do not use force-overwrite flags to destroy prior evidence. [`apkanalyzer`](https://developer.android.com/tools/apkanalyzer), [Apktool decode options](https://apktool.org/docs/cli-parameters/)
-
-For split APKs, obtain the complete applicable split set before installation; do not treat a successfully decoded base APK as a complete runtime. Framework indicators can coexist: DEX in a Flutter APK often belongs to its Android wrapper.
-
-## Native library analysis with Ghidra (Optional)
-
-Use Ghidra for relevant compiled C/C++ native shared libraries (`.so` in Android JNI, Mach-O in iOS). Prefer JADX for Java/Kotlin DEX and a compatible r2flutter/Blutter for Flutter AOT. Ghidra can supplement Flutter-aware extraction with targeted disassembly; it is not a Dart source decompiler. See [reverse-engineering.md](reverse-engineering.md) for MCP health checks and question-driven tracing.
-
-To analyze an extracted JNI binary in headless non-interactive mode without launching the GUI:
-
-```bash
-mkdir -p evidence/static/native
-DITTO_GHIDRA_PROJECT=$(mktemp -d -t ditto-ghidra-XXXXXX)
-analyzeHeadless "$DITTO_GHIDRA_PROJECT" TempProj \
-  -import evidence/static/android/apktool/lib/arm64-v8a/libnative-lib.so \
-  -noanalysis
-```
-
-To run a headless post-analysis decompiler script and export decompiled C functions:
-
-```bash
-analyzeHeadless "$DITTO_GHIDRA_PROJECT" TempProj \
-  -process libnative-lib.so \
-  -postScript DecompileExport.java evidence/static/native/decompiled.c
-```
-
-Record the Ghidra version, target architecture, imported binary hash, and decompiled C output in `evidence/static/native/`. Keep native reversing tightly bounded to specific unresolved contract questions. [Ghidra Headless Analyzer](https://htmlpreview.github.io/?https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/RuntimeScripts/Common/support/analyzeHeadlessREADME.html)
-
-## App Bundles and APK sets
-
-An `.aab` is not directly installable. Use Google's `bundletool` to generate a device-specific `.apks` set. Set `BUNDLETOOL_JAR` to the downloaded release JAR and select the test device explicitly:
-
-```bash
-java -jar "$BUNDLETOOL_JAR" build-apks --bundle=input/original.aab --output=evidence/static/original.apks --connected-device --device-id="$ORIGINAL_SERIAL"
-java -jar "$BUNDLETOOL_JAR" install-apks --apks=evidence/static/original.apks --device-id="$ORIGINAL_SERIAL"
-```
-
-Without signing options, bundletool attempts debug signing. Record that certificate difference: signature-dependent login, APIs, or updates may behave differently. Prefer a supplied matching signed APK set when those behaviors matter. A universal APK may omit non-fused feature modules; do not substitute it for complete split coverage. Inventory the generated archive and relevant contained APKs separately; `inventory.py` does not recursively inspect nested archives. [Google bundletool documentation](https://developer.android.com/tools/bundletool)
-
-## Flutter AOT commands and limits
-
-Set `R2FLUTTER_BIN` to the built standalone executable and `AOT_BINARY` to the identified `libapp.so` or supported iOS bundle. Do not select a binary by guessing its Dart version.
-
-```bash
-mkdir -p evidence/static/flutter
-"$R2FLUTTER_BIN" -jH "$AOT_BINARY" > evidence/static/flutter/header.json
-"$R2FLUTTER_BIN" -f "$AOT_BINARY" > evidence/static/flutter/functions.txt
-```
-
-r2flutter accepts Android libraries/directories and iOS `.app` bundles; AArch64 is its primary target. Its current README requires radare2 6.2.2+ (or a qualifying 6.2.1 git build), and describes in-tree Dart layouts from 2.10 through 3.12. Layout presence is not a guarantee for every snapshot. Build with `make`; `make user-install` installs its radare2 plugin. Use `r2flutter -AAA` inside radare2 only when deeper references are needed. [README](https://github.com/radareorg/r2flutter), [support matrix](https://github.com/radareorg/r2flutter/blob/main/doc/support.md)
-
-Blutter is an Android ARM64 extractor and can be the first AOT tool when already available and compatible. Keep both `libapp.so` and the matching engine in the extracted ABI directory. From the Blutter checkout:
-
-```bash
-python3 blutter.py "$ANDROID_ARM64_LIB_DIR" "$BLUTTER_OUTPUT_DIR"
-```
-
-Read `asm/`, `objs.txt`, and `pp.txt`. The tool may download and compile a matching Dart runtime; account for that cost before choosing it. Its generated Frida template is analysis material, not an app dependency. [Blutter](https://github.com/worawit/blutter)
-
-For flutterdec, inspect first:
-
-```bash
-flutterdec info input/original.apk --json
-flutterdec adapter list
-```
-
-If the reported snapshot has a supported registry entry, install its matching adapter using `flutterdec adapter install --dart-hash "$SNAPSHOT_HASH"`, then run:
-
-```bash
-flutterdec decompile input/original.apk -o evidence/static/flutter/flutterdec
-```
-
-Read `report.json`, `quality.json`, and `pseudocode/`. A nonzero quality exit may still leave outputs; preserve the failure and unresolved branches. Do not raise quality limits merely to call extraction successful. Its current prerelease is `v0.1.0-alpha.4`; packaged `bin/` and `share/` must stay together. This is experimental pseudocode, not recovered Dart. [flutterdec usage and adapter requirements](https://github.com/caverav/flutterdec)
-
-## iOS inventory
-
-After bounded archive inspection/extraction, set `IOS_APP` to the selected `.app` and `IOS_BINARY` to its `CFBundleExecutable` path. On macOS:
-
-```bash
-mkdir -p evidence/static/ios
-plutil -p "$IOS_APP/Info.plist" > evidence/static/ios/plist.txt
-otool -L "$IOS_BINARY" > evidence/static/ios/libraries.txt
-xcrun dwarfdump --uuid "$IOS_BINARY" > evidence/static/ios/binary-uuid.txt
-```
-
-If a dSYM is supplied, compare its `dwarfdump --uuid` output with the binary. A matching product name is insufficient. [Apple symbol matching](https://developer.apple.com/documentation/xcode/locating-a-missing-debug-symbol-file)
-
-For structured Mach-O inspection, including on supported non-macOS hosts:
-
-```bash
-ipsw macho info "$IOS_BINARY" --json > evidence/static/ios/macho.json
-ipsw macho info "$IOS_BINARY" --ent > evidence/static/ios/entitlements.txt
-```
-
-[`ipsw` Mach-O commands](https://blacktop.github.io/ipsw/docs/guides/macho/)
-
-Use local `xcrun simctl help` / `xcrun devicectl help` to choose deployment for the actual build. Do not install a device IPA into a simulator. If the current host has no Apple runtime, finish portable inventory and identify the required macOS/device handoff; do not claim an iOS build test. `ledger.py capture` is Android-only (it drives `adb`); adopt iOS evidence with `ledger.py adopt --platform ios` instead.
-
-## Runtime capture and MCP
-
-Prefer connected MCP tools for exploration; save the resulting journey as a replayable flow. Standard stdio server definitions are:
-
-```json
-{
-  "mcpServers": {
-    "dart": {"command": "dart", "args": ["mcp-server"]},
-    "maestro": {"command": "maestro", "args": ["mcp"]}
-  }
-}
-```
-
-Adapt this to the client's configuration format; do not overwrite existing server entries. Dart MCP operates on the Flutter implementation and SDK; Maestro operates the original/candidate device UI. Confirm server tools are exposed and a device is visible before relying on either. If MCP is unavailable, use the same CLI workflows. [Flutter setup](https://docs.flutter.dev/ai/get-started), [Maestro MCP maintained documentation](https://github.com/mobile-dev-inc/maestro-docs/blob/main/introduction/get-started/maestro-mcp.md)
-
-Official Flutter/Dart agent resources are `flutter/agent-plugins` and `dart-lang/skills`. Use installed relevant skills; adding them is environment setup, not something every reconstruction must repeat. [Flutter agent setup](https://docs.flutter.dev/ai/get-started)
-
-Prefer existing emulator/mobile capture tooling and register its output with `ledger.py adopt` ([contracts.md](contracts.md)). When ADB is the practical capture path, select the emulator serial explicitly:
-
-```bash
-python3 "$DITTO_SKILL/scripts/ledger.py" --project . capture \
-  --serial "$ORIGINAL_SERIAL" --package com.example.original --role original \
-  --flow open-settings --state settings.ready --fixture signed-in-test-account
-```
-
-Use raw ADB only for a requested or necessary operation, for example a missing display-facts capability. A spot-check screenshot belongs in task-owned temporary storage; adopt it if it becomes evidence:
-
-```bash
-adb -s "$ORIGINAL_SERIAL" shell wm size
-capture_tmp=$(mktemp -d)
-adb -s "$ORIGINAL_SERIAL" exec-out screencap -p > "$capture_tmp/spot-check.png"
-```
-
-The checkpoint must correspond to recorded setup/actions; a PNG alone does not prove a transition — that is what `ledger.py capture --setup ... --action ...` records alongside it. [ADB](https://developer.android.com/tools/adb), [uiautomator2](https://github.com/openatx/uiautomator2)
-
-An available Mobile MCP or equivalent emulator interface is preferred when it supports the required operation. Check exposed tools and prerequisites; do not install another driver solely to satisfy a preference. Use the working fallback when needed. [Mobile MCP](https://github.com/mobile-next/mobile-mcp)
-
-## Network and runtime internals
-
-Start a capture only after the test device is configured to reach the proxy and trust its inspection certificate in the authorized test environment:
-
-```bash
-mkdir -p private-captures
-mitmdump --listen-host 127.0.0.1 --listen-port 8080 -w private-captures/original.mitm
-```
-
-Loopback binding requires a local route/tunnel for the device; otherwise bind the specific reachable test interface. Verify a known test request reaches the proxy before crawling. Retain raw capture privately and create sanitized fixtures for `evidence/runtime/`. `-w` writes flows; it does not configure Android/iOS trust or defeat pinning. [mitmproxy options](https://docs.mitmproxy.org/stable/concepts/options/)
-
-For an authorized instrumentation environment, `frida-ps -U` is an initial process-list check. Match host/server versions and device ABI; a stock non-rooted Android app may require a permitted Gadget/repackaging workflow instead of server attachment. [Frida Android setup](https://frida.re/docs/android/)
-
-Grapefruit provides SQLite/filesystem inspection and Flutter platform-channel monitoring through a web UI, backed by Frida. Its checked README requires Node.js 22.18+ for npm use and a Frida server on the device. Install `igf` only if this inspection is needed, then run `igf --host 127.0.0.1 --project private-captures/grapefruit --no-open`. Confirm attachment before promising database or channel data. [Grapefruit](https://github.com/ChiChou/grapefruit)
-
-For each instrumentation question, record the hook target and the specific fact it can establish. Capturing TLS plaintext does not recover an HMAC secret, guarantee visibility into custom crypto, or validate bypassed authentication. Keep altered-run evidence distinct from the unmodified baseline.
+Analyzer exports are reusable for the same APK and tool version after integrity
+validation; they do not expire by age. Query cached exports for relevant excerpts.
+Historical captures retain their originating sessions after an MCP restart; new
+captures require a live session and a fresh environment check. A single agent can
+run the full pipeline. Parallel agents may handle independent code or analysis,
+with one controller owning each emulator through an OS lock.

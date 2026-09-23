@@ -1,4 +1,4 @@
 interface:
   display_name: "Ditto"
-  short_description: "Reconstruct mobile apps in Flutter from evidence"
-  default_prompt: "Use $ditto to reconstruct or repair this app one observed journey at a time, compare both apps, and deliver each phase for user testing."
+  short_description: "Reconstruct mobile apps with phase evidence"
+  default_prompt: "Use $ditto to define one bounded phase, consult its Flutter and verification references, verify required MCPs, freeze the original evidence pack, implement and capture the clone, batch compare every checkpoint, correct failures, pass automated readiness, and request one final human review."

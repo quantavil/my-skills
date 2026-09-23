@@ -1,0 +1,14 @@
+[project]
+name = "ditto-phase-tools"
+version = "0.2.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pillow>=12,<13",
+    "numpy>=2,<3",
+    "pydantic>=2,<3",
+    "typer>=0.27,<1",
+]
+
+[tool.uv]
+package = false
+no-build = true

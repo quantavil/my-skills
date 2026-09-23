@@ -29,28 +29,11 @@ Reduce handwritten code, not readability. Reuse widgets, repository operations a
 
 Use `json_serializable` for recurring wire models where field mappings and conversion boilerplate justify it. Add Freezed for meaningful immutable unions/copying needs; plain Dart classes, records or sealed classes may suffice for small models. Riverpod generation is optional: retain the project's approach and account for generator setup/build time. Do not install code generation solely to shorten a trivial provider. [Riverpod code generation](https://riverpod.dev/docs/concepts/about_code_generation).
 
-Inside the target Flutter project, record `flutter --version`, `dart --version`, and existing constraints. Run only the applicable groups:
+Record the installed Flutter/Dart versions and existing constraints. Add only dependencies justified by the feature:
 
-```bash
-# Run only the individual additions justified by the active feature:
-flutter pub add flutter_riverpod  # shared async feature state
-flutter pub add dio              # richer HTTP requirements
-flutter pub add go_router        # declarative routing/deep links
+See the consolidated [commands](commands.md#flutter-project).
 
-# Relational persistence:
-flutter pub add drift drift_flutter path_provider
-flutter pub add --dev drift_dev build_runner
-
-# JSON models:
-flutter pub add json_annotation
-flutter pub add --dev json_serializable build_runner
-
-# Optional union models:
-flutter pub add freezed_annotation
-flutter pub add --dev freezed
-```
-
-Resolve, inspect `pubspec.lock`, and commit the application lockfile. Record selected versions in the existing toolchain record (or a compact section of `spec/app.md`); avoid duplicating the lockfile. The versions above are a research snapshot, not a tested combination for the user's SDK. Do not upgrade an existing project just to match them. Consult current primary docs when adding/upgrading a dependency or resolving an API uncertainty; reuse the finding for the same locked version. After related generator-input edits, run `dart run build_runner build` once; inspect collisions instead of blindly deleting conflicting outputs.
+Resolve, inspect `pubspec.lock`, and commit the application lockfile. Record selected versions in the existing toolchain record (or a compact section of `spec/app.md`); avoid duplicating the lockfile. The versions above are a research snapshot, not a tested combination for the user's SDK. Do not upgrade an existing project just to match them. Consult current primary docs when adding/upgrading a dependency or resolving an API uncertainty; reuse the finding for the same locked version. After related generator-input edits, run code generation once; inspect collisions instead of blindly deleting conflicting outputs.
 
 ## Implement a vertical feature
 
@@ -75,15 +58,10 @@ For assets, retain an asset map from extracted path/hash to target path, logical
 
 For native features, document the Dart call/event, Kotlin/Swift implementation, permission prerequisite, lifecycle, cancellation/error result, and parity test. Do not force a platform feature into Dart when a small native adapter produces the required behavior.
 
-## Build and test commands
+## Build and test scope
 
 After the related edits are complete, run applicable checks together from the implementation root; do not run this entire sequence after each small correction:
 
-```bash
-dart format --output=none --set-exit-if-changed lib test
-flutter analyze
-flutter test                                    # includes golden tests, see flutter-build.md
-flutter build apk --debug
-```
+See the consolidated [commands](commands.md#flutter-project).
 
-Adapt existing paths and flavors. After launching a supported device, run `flutter test integration_test -d "$CANDIDATE_DEVICE"` when those tests exist. On macOS, `flutter build ios --simulator` validates a simulator build only; it is not proof of signing or physical-device behavior. Run tests for each required target rather than implying Android results cover iOS. Flutter's integration layer and system-UI limitations are documented in [Flutter integration tests](https://docs.flutter.dev/testing/integration-tests).
+Adapt existing paths and flavors. After launching a supported device, run the integration tests when they exist. On macOS, a simulator build validates a simulator build only; it is not proof of signing or physical-device behavior. Run tests for each required target rather than implying Android results cover iOS. Flutter's integration layer and system-UI limitations are documented in [Flutter integration tests](https://docs.flutter.dev/testing/integration-tests).

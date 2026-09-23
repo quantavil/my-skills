@@ -1,53 +1,31 @@
 ---
 name: ditto
-description: Use when reconstructing an Android or iOS app from APK, IPA, AAB, or runtime evidence, or reviewing a Flutter clone for behavioral and visual parity. Not for ordinary Flutter development, available full-source migrations, or the Ditto clipboard app.
+description: Reconstruct an Android app in Flutter from an APK and runtime evidence, or review a Flutter clone for visual and behavioral parity. The supplied MCP backend supports Android emulators and ARM64 Flutter AOT analysis; iOS and other package formats need a separate capability contract.
 ---
 
 # Ditto
 
-Reconstruct observable behavior using the original as the oracle. Work in manageable journeys with human review at meaningful checkpoints. Decompiled code informs contracts; candidate tests cannot establish original behavior.
+Reproduce the original app accurately, one bounded phase at a time. Use original screenshots, behavior, and extracted assets to guide Flutter implementation. Static analysis suggests what to inspect; runtime evidence establishes what the user sees and can do.
 
-Scale the workflow to the task. A small repair needs the affected evidence and checks, not a new plan, graph or full discovery pass. Use these as working defaults; keep firm boundaries around honest evidence, user data and requested scope.
+Ditto contains its own Flutter guidance; no external skill is required. For Android Flutter originals, the four required MCP capabilities are JADX, Apktool, r2Flutter, and mobile-control. Keep these interfaces compulsory. Dart MCP is supplementary. Missing required capability is a specific blocker, not permission to pretend a different tool passed.
 
-## Resume and select tools
+All runnable examples are in [commands](references/commands.md). Run bundled scripts through the locked `uv` project; use the mobile MCP to start and control the emulator. The same entry points work on Linux and Windows. See [toolchain](references/toolchain.md) for setup.
 
-Infer evidence-only, reconstruction, or parity-repair mode. Preserve requested platforms, architecture and authorized differences. Resolve conflicting requirements explicitly.
+## Procedure
 
-Read `spec/progress.md` if present, then the active contract and relevant evidence. Reuse results after verifying build/environment identities. Set `DITTO_SKILL` to this directory. For new projects, run `python3 "$DITTO_SKILL/scripts/ledger.py" --project . init`; record artifact identity/scope in `spec/app.md` and briefly inventory journeys.
+1. **Prepare the phase.** Pick a coherent feature or flow. Define its checkpoints, fixtures, actions, and expected results. Explore enough to settle questions that affect this phase; unrelated app questions can wait. Use [commands and contracts](references/commands.md) for the record format and [toolchain](references/toolchain.md) for host setup.
+2. **Collect the original.** Reuse verified package analysis across phases. Search relevant strings, routes, assets, and native behavior through the analyzer MCPs. Capture the phase's still images and useful XML through mobile-control, then freeze the pack. See [reverse engineering](references/reverse-engineering.md) and [runtime capture](references/runtime-workflow.md).
+3. **Implement the phase.** Read relevant sections of [Flutter build](references/flutter-build.md); consult [stack](references/flutter-stack.md) only when choosing a dependency or architecture. Reuse extracted assets and measured design values. Implement the bounded phase together; avoid repeated capture after every widget edit.
+4. **Compare the clone.** Replay the phase on a matching emulator environment. Batch compare all checkpoints; inspect one full-resolution `ORIGINAL APK | CLONE APK | DIFF` image per checkpoint. Review behavior from executed actions and resulting states. See [parity](references/parity.md).
+5. **Correct what matters.** Fix failed checkpoints and recapture only those affected by the change. Pixel percentages prioritize inspection; the AI decides whether content, geometry, and behavior match. Do not repeat a valid accepted check merely to reduce a harmless metric difference. Read any phase file or revisit the original when a concrete uncertainty requires it.
+6. **Finish the phase.** Run the relevant analysis/tests, build and capture the identified APK, then run automated readiness. Inspect actual exit results and screenshots before claiming success. Present the build, comparison report, and remaining decisions for one human review at phase end. Automated readiness is not human acceptance.
 
-Prefer working local emulator/mobile tooling; use ADB when it is the practical available path, without adding an approval step for ordinary authorized testing. Android helpers support Linux and Windows; use the shell examples in the runtime reference. Use corresponding iOS tools on a capable host; physical devices serve requested/hardware-specific checks. Disconnection does not invalidate historical evidence.
+## Working rules
 
-## Journey loop
-
-1. **Select:** Define one outcome, checkpoints, branches and required comparison dimensions, including relevant restart effects. Inventory every visible choice in the active journey; each needs an observed destination or explicit gap. Do not silently narrow a whole journey to its default branch. Keep future journeys as backlog entries.
-2. **Observe:** Replay the original. Register existing captures with `ledger.py adopt`, or use `capture` for ADB-backed collection. Record setup/actions, fixture, build/runtime identity and environment. Sparse hierarchies need screenshots/checkpoints. Inspect static code for specific questions; preserve unknowns.
-3. **Build:** Implement the smallest complete slice within existing boundaries. Map distinctive artwork/fonts to source assets or explicit gaps before replacing them. Authorized copy changes do not authorize artwork removal. Reuse confirmed tokens and convert capture pixels to logical dimensions. Preserve working libraries; add dependencies/code generation only when they remove needed complexity. Goldens and theme extraction are optional.
-4. **Compare:** Finish related corrections, then batch affected tests and emulator recaptures. Replay matching fixtures/actions against both apps. Use `diff_screenshots.py` and `ledger.py comparison`; compare relevant animations with paired recordings, not settled screenshots. Keep visual, behavior, persistence and relevant platform verdicts separate. Inapplicable dimensions need reasons; required dimensions cannot disappear. Invalidate affected accepted comparisons after shared changes. Screenshots or green candidate tests alone are not parity.
-5. **Human checkpoint:** Offer a runnable identified build early enough for useful feedback, with a short review checklist, evidence links and gaps. Human review is part of each meaningful implemented journey, especially appearance, animation and interaction feel. Keep the journey pending until feedback arrives; silence or an automated review is not acceptance. Continue already-authorized independent work while waiting. Use feedback to focus corrections and avoid speculative polish or repeated broad tests; retain checks for saving, data integrity and affected behavior. A waiver is not user testing.
-
-Evidence-only work ends with contracts/gaps. Missing runtime access permits evidence-backed implementation, never invented passes. Finish useful active work and record the blocked checkpoint/reason.
-
-## Efficiency and retention
-
-- Complete a lone remaining fix and check directly. Check earlier only when a failure blocks progress or the next edit depends on its result. Run required checks at checkpoints; repeat for relevant changes, failures or new evidence.
-- Keep Flutter attached; hot reload related edits together. Record loaded-source/session identity separately from installed APK hashes. Final comparisons use a fresh installed build and required restart checks.
-- Use the [runtime workflow](references/runtime-workflow.md) for fast replay, Linux/Windows and Intel/NVIDIA setup, small review previews and commands. Prefer multiagent work when the harness supports it and independent subtasks exist; keep tiny or sequential tasks local. One owner controls each device/session.
-- Search before reading; load one relevant reference below, bounded excerpts and tool summaries. Reuse inventories; request full member lists only for a specific question. Exclude generated/vendor files from routine context; inspect targeted sections when debugging requires them.
-- Keep canonical contracts/coverage, one progress file, relevant source/assets, referenced evidence, results and user decisions. Temporary captures/dumps/pulls belong in task-owned temporary storage. Remove only your unreferenced scratch files; preserve user and accepted evidence. Generate montages only for review.
-- Update progress at checkpoints: journey/stage, identities, result links, blockers, user decision, next command. Measure efficiency only when requested or evaluating workflow changes; use the [measurement procedure](references/parity.md#measure-workflow-efficiency).
-
-## References: load on demand
-
-| Need | Reference/tool |
-| --- | --- |
-| Binary/tool choice | [toolchain.md](references/toolchain.md), `inventory.py` |
-| Missing access/source | [extraction.md](references/extraction.md) |
-| Reverse a specific behavior | [reverse-engineering.md](references/reverse-engineering.md) |
-| Dependency decision | [flutter-stack.md](references/flutter-stack.md) |
-| Measurements/async implementation | [flutter-build.md](references/flutter-build.md) |
-| Evidence/coverage records | [contracts.md](references/contracts.md), `ledger.py` |
-| Comparison/measurement | [parity.md](references/parity.md), `diff_screenshots.py` |
-
-At a journey handoff or final completion, run `python3 "$DITTO_SKILL/scripts/ditto.py" check` from the project root. Intermediate repairs need affected checks, not repeated full-ledger hashing. Use `report` for current counts and optional `graph` for a Mermaid view of recorded transitions. These validate records, not truth or completeness; reassess unsupported legacy passes. Unlisted branches and missing assets remain discovery responsibilities. Derive completion claims from current evidence, never test counts or an earlier prose summary.
-
-Use authorized accounts/services; never reset personal app data. Sanitize credentials and label instrumentation. Never ship inspection hooks or disabled TLS validation. Report executed/required comparisons, actual user-testing status and gaps; no invented hashes, universal parity percentage or source-recovery promises.
+- Evidence lives in `phases/<phase-id>/original/`, `clone/`, and `diff/`. Scripts retain revisions and build identities; use the current report to navigate. Do not manually maintain duplicate indexes or rewrite tool receipts.
+- Analyze a package once per analyzer version. Reuse its export across phases; search or read bounded excerpts instead of loading entire decompilations. A day passing or a server restart does not invalidate recorded analysis or screenshots.
+- Check live device identity and environment when collecting new evidence. A command executing successfully does not prove that the intended UI state was reached; observe the result.
+- Use screenshots for visible layout; XML is helpful when available. Persistence needs a write/restart/read sequence. A foreground activity dump is not proof of saved application data.
+- Keep dependency mapping small. Local changes reopen affected checkpoints; uncertain impact or shared theme/native/dependency changes reopen the relevant broader scope. Retained checks identify their tested build; never call them fresh tests of the final APK.
+- One agent can do the whole phase. Use additional agents only when available, permitted, and useful for isolated tasks. One owner controls each emulator and integrates shared code, builds, and verdicts. Independent phases may use separate devices and workspaces; never share a mutable capture session.
+- Use still images, not video. Keep fixtures sanitized. Intentional product changes require existing authorization or an explicit proposal in the final review; harmless rendering variation is a semantic judgment.

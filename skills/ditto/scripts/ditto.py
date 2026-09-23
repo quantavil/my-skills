@@ -1,107 +1,164 @@
 #!/usr/bin/env python3
-"""Read-only Ditto record checks, JSON reporting and Mermaid coverage view."""
-import argparse
+"""Ditto phase workspace command line interface."""
 import json
 from pathlib import Path
 import sys
+from typing import Annotated
 
-import validate_spec
+import typer
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import phase_capture  # noqa: E402
+import phase_compare  # noqa: E402
+import phase_preflight  # noqa: E402
+import phase_store  # noqa: E402
 
-def graph_data(path):
-    data = json.loads(path.read_text(encoding='utf-8'))
-    if not isinstance(data, dict) or not isinstance(data.get('cases'), list):
-        raise ValueError('coverage must contain a cases array')
-    cases = data['cases']
-    ids = [case.get('id') if isinstance(case, dict) else None for case in cases]
-    if any(not isinstance(item, str) or not item for item in ids):
-        raise ValueError('every case needs a nonempty string id')
-    if len(set(ids)) != len(ids):
-        raise ValueError('duplicate case id')
-    edges = data.get('transitions', [])
-    if not isinstance(edges, list):
-        raise ValueError('transitions must be an array')
-    for edge in edges:
-        if (not isinstance(edge, dict)
-                or not isinstance(edge.get('from'), str)
-                or not isinstance(edge.get('to'), str)
-                or edge['from'] not in ids or edge['to'] not in ids
-                or not isinstance(edge.get('action'), str)
-                or not edge['action'].strip()):
-            raise ValueError('each transition needs existing from/to case IDs and an action')
-    return cases, edges
+app = typer.Typer(add_completion=False, no_args_is_help=True)
+phase = typer.Typer(add_completion=False, no_args_is_help=True)
+app.add_typer(phase, name='phase', help='Manage a parity phase')
+Project = Annotated[Path, typer.Option('--project')]
 
 
-def label(value):
-    # Mermaid decimal entities prevent labels from injecting syntax or HTML.
-    return ''.join(char if char.isascii() and (char.isalnum() or char in ' ._-')
-                   else f'#{ord(char)};' for char in str(value))
+def emit(value):
+    print(json.dumps(value, indent=2))
 
 
-def mermaid(cases, edges):
-    ids = {case['id']: f'n{index}' for index, case in enumerate(cases)}
-    lines = ['flowchart TD', '  %% Recorded coverage only; not proof of completeness or parity.']
-    if not cases:
-        lines.append('  empty["No inventoried cases"]')
-    for case in cases:
-        text = f"{case['id']} | {case.get('validation', 'not_run')}"
-        lines.append(f'  {ids[case["id"]]}["{label(text)}"]')
-    for edge in edges:
-        lines.append(f'  {ids[edge["from"]]} -->|"{label(edge["action"])}"| {ids[edge["to"]]}')
-    return '\n'.join(lines)
+def path_pair(value):
+    name, separator, path = value.partition('=')
+    if not separator or not name or not path:
+        raise phase_store.PhaseError('value must use NAME=PATH')
+    return name, Path(path)
+
+
+@phase.command('init')
+def init(phase_id: str, project: Project = Path.cwd()):
+    """Create a phase workspace."""
+    print(phase_capture.init_phase(project, phase_id))
+
+
+@phase.command('report')
+def report(phase_id: str, project: Project = Path.cwd()):
+    """Print compact phase status."""
+    emit(phase_capture.phase_report(project, phase_id))
+
+
+@phase.command('preflight')
+def preflight(phase_id: str, package: Annotated[Path, typer.Option('--package')],
+              receipt: Annotated[list[Path], typer.Option('--receipt')],
+              project: Project = Path.cwd()):
+    """Record compulsory capabilities."""
+    record = phase_preflight.record_preflight(project, phase_id, package, receipt)
+    emit({'ok': True, 'revision': record['revision']})
+
+
+@phase.command('collect-original')
+def collect_original(
+    phase_id: str,
+    package: Annotated[Path, typer.Option('--package')],
+    controller_export: Annotated[Path, typer.Option('--controller-export')],
+    mcp_export: Annotated[list[str], typer.Option('--mcp-export')],
+    checkpoint: Annotated[list[str] | None, typer.Option('--checkpoint')] = None,
+    build_metadata: Annotated[str, typer.Option('--build-metadata')] = '{}',
+    project: Project = Path.cwd(),
+):
+    """Collect a complete original evidence pack."""
+    pairs = [path_pair(value) for value in mcp_export]
+    exports = dict(pairs)
+    if len(exports) != len(pairs):
+        raise phase_store.PhaseError('duplicate --mcp-export name')
+    active = phase_preflight.require_active_preflight(project, phase_id)
+    manifest = phase_capture.collect_pack(
+        'original', project, phase_id, package, controller_export,
+        json.loads(build_metadata), active, exports, checkpoint_ids=checkpoint)
+    emit({'ok': True, 'revision': manifest['revision']})
+
+
+@phase.command('freeze-original')
+def freeze_original(phase_id: str, project: Project = Path.cwd()):
+    """Freeze the original oracle."""
+    status = phase_capture.freeze_original(project, phase_id)
+    emit({'ok': True, 'state': status['state']})
+
+
+@phase.command('capture-clone')
+def capture_clone(phase_id: str, apk: Annotated[Path, typer.Option('--apk')],
+                  controller_export: Annotated[Path, typer.Option('--controller-export')],
+                  build_metadata: Annotated[str, typer.Option('--build-metadata')] = '{}',
+                  project: Project = Path.cwd()):
+    """Capture a clone evidence pack."""
+    active = phase_preflight.require_active_preflight(project, phase_id)
+    manifest = phase_capture.collect_pack(
+        'clone', project, phase_id, apk, controller_export,
+        json.loads(build_metadata), active)
+    emit({'ok': True, 'revision': manifest['revision']})
+
+
+@phase.command('compare')
+def compare(phase_id: str, project: Project = Path.cwd()):
+    """Compare captured checkpoints."""
+    emit(phase_compare.compare_phase(project, phase_id))
+
+
+@phase.command('verdict')
+def verdict(
+    phase_id: str, checkpoint_id: str,
+    dimension: Annotated[str, typer.Option('--dimension')],
+    status: Annotated[str, typer.Option('--status')],
+    rationale: Annotated[str, typer.Option('--rationale')],
+    evidence: Annotated[list[str], typer.Option('--evidence')],
+    authorization: Annotated[str | None, typer.Option('--authorization')] = None,
+    project: Project = Path.cwd(),
+):
+    """Record a semantic verdict."""
+    result = phase_compare.record_verdict(
+        project, phase_id, checkpoint_id, dimension, status, rationale,
+        evidence, authorization)
+    emit({'ok': True, 'verdict': result})
+
+
+@phase.command('invalidate')
+def invalidate(phase_id: str, changed: Annotated[list[str], typer.Option('--changed')],
+               project: Project = Path.cwd()):
+    """Reopen affected checkpoints."""
+    emit(phase_compare.invalidate(project, phase_id, changed))
+
+
+@phase.command('ready')
+def ready(phase_id: str, project: Project = Path.cwd()):
+    """Run the automated readiness gate."""
+    status = phase_compare.ready_phase(project, phase_id)
+    emit({'ok': True, 'state': status['state']})
+
+
+@phase.command('review')
+def review(phase_id: str, note: Annotated[str, typer.Option('--note')],
+           accept: Annotated[bool, typer.Option('--accept')] = False,
+           request_changes: Annotated[list[str] | None, typer.Option('--request-changes')] = None,
+           project: Project = Path.cwd()):
+    """Record final human review."""
+    if accept == bool(request_changes):
+        raise phase_store.PhaseError('provide either --accept or --request-changes')
+    decision = 'accept' if accept else 'request_changes'
+    status = phase_compare.record_review(project, phase_id, decision, note, request_changes or [])
+    emit({'ok': True, 'state': status['state']})
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=('check', 'report', 'graph'))
-    args = parser.parse_args(argv)
-    graph_errors = []
     try:
-        cases, edges = graph_data(Path('spec/coverage.json'))
-    except (OSError, ValueError) as error:
-        if args.command == 'graph':
-            print(f'Coverage unavailable: {error}', file=sys.stderr)
-            return 2
-        graph_errors.append(f'Coverage graph: {error}')
-    if args.command == 'graph':
-        print(mermaid(cases, edges))
+        try:
+            app(args=argv, prog_name='ditto.py')
+        except SystemExit as error:
+            if error.code != 0:
+                raise
         return 0
-
-    # Graph metadata is optional; a broken edge must not hide record findings.
-    root = Path.cwd()
-    evidence_errors, records = validate_spec.validate_evidence(
-        Path('evidence/index.json'), root, args.command == 'check')
-    coverage_errors, records_by_case = validate_spec.validate_coverage(
-        Path('spec/coverage.json'), records, root)
-    errors = evidence_errors + coverage_errors + graph_errors
-    summary = validate_spec.summarise(records_by_case)
-    scope_note = ('Record integrity only. Not proof of parity, and not a measure '
-                  'of journeys that were never inventoried.')
-    if args.command == 'report':
-        print(json.dumps({
-            'ok': not errors, 'error_count': len(errors), 'errors': errors,
-            'errors_truncated': 0, 'summary': summary,
-            'files_checked': False, 'scope_note': scope_note,
-            'cases': [{
-                'id': case['id'], 'observed': case.get('observed', False),
-                'implemented': case.get('implemented', False),
-                'validation': case.get('validation', 'not_run'),
-                'user_testing': case.get('user_testing', 'pending'),
-            } for case in records_by_case.values()],
-        }, indent=2))
-    elif errors:
-        print(f'validation failed: {len(errors)} error(s)', file=sys.stderr)
-        for error in errors:
-            print(f'  - {error}', file=sys.stderr)
-    else:
-        print(f"records ok: {summary['required_passing']}/{summary['required']} "
-              f"required case(s) passing, {summary['required_not_run']} not run, "
-              f"{summary['required_blocked']} blocked")
-        if summary['critical_not_passing']:
-            print('critical cases not passing: '
-                  + ', '.join(summary['critical_not_passing']))
-        print(scope_note)
-    return 1 if errors else 0
+    except phase_compare.ReadinessError as error:
+        print('ditto: automated readiness not met', file=sys.stderr)
+        for reason in error.errors:
+            print(f'- {reason}', file=sys.stderr)
+        return 1
+    except (phase_store.PhaseError, ValueError) as error:
+        print(f'ditto: {error}', file=sys.stderr)
+        return 2
 
 
 if __name__ == '__main__':

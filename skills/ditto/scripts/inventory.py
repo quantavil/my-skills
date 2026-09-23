@@ -15,15 +15,10 @@ import json
 from pathlib import Path, PurePosixPath
 import plistlib
 import re
-import shutil
 import stat
 import sys
 import zipfile
 from xml.parsers.expat import ExpatError
-
-TOOLS = ('adb', 'apkanalyzer', 'jadx', 'apktool', 'apkid', 'maestro', 'flutter', 'dart',
-         'r2', 'r2flutter', 'blutter', 'flutterdec', 'frida-ps', 'mitmdump', 'igf',
-         'ipsw', 'xcrun', 'plutil', 'otool', 'dwarfdump', 'analyzeHeadless')
 
 INDICATORS = {
     'android_manifest': r'(^|/)AndroidManifest\.xml$',
@@ -95,12 +90,11 @@ def inventory(path, include_members=False):
         'input': str(path),
         'sha256': digest.hexdigest(),
         'size_bytes': path.stat().st_size,
-        'tools_on_path': {tool: shutil.which(tool) for tool in TOOLS},
         'limitations': [
             'No files extracted and no external tools executed.',
             'Framework indicators are not complete framework detection.',
             'Android binary XML is not decoded; use apkanalyzer for identity.',
-            'PATH presence does not prove tool version, device access, or compatibility.',
+            'External reverse-engineering capability is established by MCP preflight.',
             'Member metadata is not a CRC or archive integrity check.',
             'Nested archives (an .apks set, a split APK) are not inspected recursively.',
         ],
