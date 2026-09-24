@@ -40,7 +40,7 @@ Edit `phases/<id>/phase.001.json` before original freeze. It contains:
 - Ownership for isolated implementation work.
 - Existing authorized differences with stable IDs.
 
-Artifact kinds are `png`, `xml`, `trace`, `state`, `network`, and `semantics`. Dimensions are `visual`, `layout`, `behavior`, `navigation`, `persistence`, `platform`, `network`, and `accessibility`. The controller export must supply every artifact declared for each captured checkpoint, including nonvisual trace or state evidence when required.
+Artifact kinds in the contract schema are `png`, `xml`, `trace`, `state`, `network`, and `semantics`; the current local mobile controller can capture only `png`, `xml`, `trace`, and `state`. Declare `network` or `semantics` only when a verified MCP backend supplies them. Dimensions are `visual`, `layout`, `behavior`, `navigation`, `persistence`, `platform`, `network`, and `accessibility`. The controller export must supply every artifact declared for each captured checkpoint, including nonvisual trace or state evidence when required.
 
 Use three-digit checkpoint numbers and lowercase IDs. Controller exports use `<order>_<checkpoint-id>.<kind>`. Canonical retained evidence adds the revision: `001_log_top.r001.png`. Builds use `app.<hash8>.<extension>`.
 
@@ -84,6 +84,12 @@ without GPU hardware; `accel` controls CPU virtualization separately. Operations
 `start`, `start-headless`, `status`, `check`, `stop`. APK installation belongs to
 MCP probe/begin, which verifies the installed package. Read [runtime workflow](runtime-workflow.md)
 for replay and capture fields.
+
+After `mobile_control(operation="begin", ...)`, a guarded batch call has this shape. Replace the labels, fixture, and observed state with the declared checkpoint; `expect` must identify the resulting UI, not merely an element present on every screen.
+
+```json
+{"operation":"run_checkpoints","plan":[{"steps":[{"action":"tap_target","selector":"Continue","step":"Continue"}],"expect":"Welcome","checkpoint":{"number":1,"checkpoint_id":"welcome","fixture":"fresh","setup":"Fresh launch","actions":["Continue"],"kinds":["png","xml","trace"],"observed_state":"Welcome screen is visible"}}]}
+```
 
 ## Measurement
 
