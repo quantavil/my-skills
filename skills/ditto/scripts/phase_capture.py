@@ -99,10 +99,14 @@ def _validate_controller_export(directory, contract, controller, build_sha,
     directory = directory.resolve()
     capture_path = directory / 'capture.json'
     capture = store.load_json(capture_path)
-    identity = {field: controller.get(field) for field in ('server', 'tool', 'session_id')}
+    identity = {field: controller.get(field) for field in ('server', 'tool')}
     for field, value in identity.items():
         if capture.get(field) != value:
             raise store.PhaseError(f'controller capture uses a different {field}')
+    session_id = capture.get('session_id')
+    if not isinstance(session_id, str) or not session_id.strip():
+        raise store.PhaseError('controller capture needs a session_id')
+    identity['session_id'] = session_id
     if capture.get('schema_version') != 1 or capture.get('provenance') != 'mcp':
         raise store.PhaseError('controller capture must have MCP provenance')
     if capture.get('target') != controller.get('target'):
@@ -225,6 +229,13 @@ def _same_file_tree(source, target):
                for relative in source_files)
 
 
+def _pending_clone_checkpoint_ids(contract, status):
+    return {item['id'] for item in contract['checkpoints']
+            if (not (checkpoint := status['checkpoints'].get(item['id'], {})).get('closed')
+                or checkpoint.get('invalidated')
+                or not checkpoint.get('active_result'))}
+
+
 def collect_pack(role, project, phase_id, build, controller_export,
                  build_metadata, preflight, mcp_exports=None, checkpoint_ids=None):
     if role not in ('original', 'clone'):
@@ -274,9 +285,7 @@ def collect_pack(role, project, phase_id, build, controller_export,
             phase / 'original', 'manifest', original_revision, 'json'))
     controller = active['mcps']['mobile-control']
     if role == 'clone':
-        pending = {item['id'] for item in contract['checkpoints']
-                   if status['checkpoints'].get(item['id'], {}).get('invalidated')
-                   or not status['checkpoints'].get(item['id'], {}).get('active_result')}
+        pending = _pending_clone_checkpoint_ids(contract, status)
         if pending:
             checkpoint_ids = pending
     package_sha = store.sha256_file(build)

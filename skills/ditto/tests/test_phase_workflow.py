@@ -448,6 +448,32 @@ class OriginalPackTests(unittest.TestCase):
         self.assertEqual(status['clone_manifest_revisions'], [1])
         self.assertEqual(status['active_clone_manifest_revision'], 1)
 
+    def test_clone_capture_accepts_new_mcp_process_session(self):
+        self._prepare_clone()
+
+        def restart(data):
+            data['session_id'] = 'new-process-session'
+            for artifact in data['artifacts']:
+                artifact['session_id'] = 'new-process-session'
+
+        self._mutate_capture(restart)
+        manifest = phase_capture.collect_pack(
+            'clone', self.root, self.phase_id, self.clone, self.controller,
+            {'package_name': 'example.clone', 'version': '7'}, self.preflight)
+        self.assertEqual(manifest['controller']['session_id'], 'new-process-session')
+
+    def test_clone_recapture_selects_only_open_checkpoints_with_old_results(self):
+        contract = {'checkpoints': [{'id': 'closed'}, {'id': 'open'}]}
+        status = {'checkpoints': {
+            'closed': {'active_result': '001_closed.r001.result.json',
+                       'closed': True, 'invalidated': False},
+            'open': {'active_result': '002_open.r001.result.json',
+                     'closed': False, 'invalidated': False},
+        }}
+        self.assertEqual(
+            phase_capture._pending_clone_checkpoint_ids(contract, status),
+            {'open'})
+
     def test_clone_requires_frozen_oracle_and_matching_environment(self):
         self.clone = self.root / 'clone.apk'
         self.clone.write_bytes(b'not collected')
