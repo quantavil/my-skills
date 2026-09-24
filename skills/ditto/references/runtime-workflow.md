@@ -18,7 +18,9 @@ The AI may inspect any file in the phase and may query the running original agai
 
 ## Implement and capture the clone
 
-Implement the complete bounded phase before final replay. Build and install one identified clone APK through mobile-control, restore equivalent fixtures, and repeat the frozen original protocol. Keep the same target and environment. Export the exact declared files and controller receipt.
+Implement the complete bounded phase before final replay. For Dart layout edits, `flutter run` on the intended Android emulator and hot reload the running app. After Flutter launches it, use mobile-control `preview_begin` for UI actions and `observe_screen`/`inspect_ui` for feedback. Preview does not install an APK or create receipts; `capture`, `run_checkpoints`, and `finalize` are unavailable in that mode. End it with `abort` and stop the Flutter run session before evidence capture. Hot reload preserves state, so use a restart when the changed behavior depends on startup or persisted state. A browser preview is optional for an already web-compatible screen; it cannot establish Android parity.
+
+Build and install one identified clone APK through mobile-control, restore equivalent fixtures, and repeat the frozen original protocol. Keep the same target and environment. Export the exact declared files and controller receipt. Never submit a preview screenshot or hot-reloaded process as evidence for an APK hash.
 
 Each clone checkpoint records the APK SHA-256 and manifest revision. A later build does not erase earlier evidence. After dependency invalidation or a revised oracle, export only the files for reopened checkpoints. The controller capture must identify the installed APK hash, fixture, setup/actions, and capture time. The next clone manifest and comparison cover those checkpoints; unaffected verdicts retain their earlier result and exact build identity.
 

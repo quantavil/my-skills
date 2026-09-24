@@ -85,6 +85,14 @@ without GPU hardware; `accel` controls CPU virtualization separately. Operations
 MCP probe/begin, which verifies the installed package. Read [runtime workflow](runtime-workflow.md)
 for replay and capture fields.
 
+For iterative Android UI work, keep `flutter run -d <emulator-serial>` open. Once
+the clone is visible, call mobile-control `preview_begin` with `serial`, `target_id`
+(AVD name), and `package_name`; then use `perform`/`replay`, `inspect_ui`, and
+`observe_screen`. Hot reload from the Flutter terminal (`r`). Call `abort` to
+release the preview session. Preview has no APK receipt and cannot be supplied to
+`phase capture-clone`; stop the Flutter run session and build the identified APK
+before the package-bound `begin`/capture path.
+
 After `mobile_control(operation="begin", ...)`, a guarded batch call has this shape. Replace the labels, fixture, and observed state with the declared checkpoint; `expect` must identify the resulting screen. The MCP waits up to 5 seconds for it by default (`expect_timeout_ms` can raise that to at most 30000). Do not use a shared button label such as `Next` as the screen marker.
 
 ```json
