@@ -2,7 +2,7 @@
 
 Android Flutter phases require successful JADX, Apktool, and r2Flutter MCP sessions for the same original APK hash. Keep the full exports in a shared, ignored cache such as `work/`; each original phase pack retains their matching receipts and result indexes. Missing or incompatible required capability blocks the phase.
 
-Start with package-wide indexes, then retain only phase-relevant files and findings. The contract's `reverse_engineering.include_globs` controls packaged resources copied into `original/reverse.001/`. The reverse index hashes every retained file and links useful entries to checkpoints. Full MCP analyzer output stays in the shared cache; a phase does not copy thousands of decompiled files.
+Start with package-wide indexes and a coarse phase map, then retain only phase-relevant files and findings. Recover useful assets/resources directly and reconstruct behavior from static clues plus runtime evidence; do not promise recovery of the original Dart source. Resolve details as each phase needs them instead of exhaustively analyzing every route up front. The contract's `reverse_engineering.include_globs` controls packaged resources copied into `original/reverse.001/`. The reverse index hashes every retained file and links useful entries to checkpoints. Full MCP analyzer output stays in the shared cache; a phase does not copy thousands of decompiled files.
 
 ## Route questions by owner
 

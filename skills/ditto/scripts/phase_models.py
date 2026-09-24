@@ -63,6 +63,8 @@ class Checkpoint(Record):
     id: Id
     fixture: str
     setup: str
+    capture_when: Text | None = None
+    expect: Text | None = None
     actions: Strings
     artifacts: Annotated[list[Artifact], Field(min_length=1), AfterValidator(unique)]
     required_dimensions: Annotated[list[Dimension], Field(min_length=1), AfterValidator(unique)]

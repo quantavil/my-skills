@@ -22,8 +22,8 @@ uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py
 uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase review daily_logging --project . --accept --note "Reviewed the identified build and final evidence."
 ```
 
-`phase ready` returns exit code 1 when the gate is unmet and 2 for malformed input or tool failure. Human review commands are valid only after readiness succeeds.
-The recorder is an optional original-capture control surface; its human actions are evidence collection, not `phase review`.
+`phase ready` returns exit code 1 when the gate is unmet and 2 for malformed input or tool failure. After readiness succeeds, commit the implementation and tracked phase records before requesting final human review; run `phase review --accept` only after actual human acceptance.
+The recorder is an optional original or clone control surface; human navigation is evidence collection or recovery, not `phase review`.
 
 
 ## Phase contract
@@ -33,7 +33,7 @@ Edit `phases/<id>/phase.001.json` before original freeze. It contains:
 - `scope.summary`, required-scope `unknowns`, and fully evidenced proposed exclusions.
 - `runtime_target` with the exact emulator identity; the supplied controller does not yet support physical devices.
 - Named fixtures containing sanitized deterministic setup data.
-- Ordered checkpoints with number, stable ID, fixture, setup, actions, artifact kinds, required dimensions, and dependencies.
+- Ordered checkpoints with number, stable ID, fixture, setup, actions, artifact kinds, required dimensions, and dependencies. For new human recording, supply `capture_when` with an exact visible capture condition and settling instruction; optionally supply a unique `expect` marker. These optional fields do not require rewriting archived contracts.
 - When rebinding already recorded incidental system actions, `incidental_actions` lists the removed action labels in the revised checkpoint. Preserve the raw trace and state the reason. Do not use rebind for changed screen content or fixtures.
 - `reverse_engineering.include_globs` and targeted questions.
 - A dependency graph with components, path rules, and directed component edges.
@@ -59,7 +59,7 @@ Ditto's Flutter and verification guidance is in its own `references/`. Preflight
 
 ## Controller capture receipt
 
-`controller-export/capture.json` repeats the active mobile-control server, tool, session, target, environment, limitations, MCP provenance, installed-package SHA-256, and capture timestamp. Each artifact record names its checkpoint, kind, path, source SHA-256, installed-package SHA-256, fixture, setup/action hashes, successful action result, and the same capture-session identity. Executed action records include arguments and protocol step labels; their ordered labels must match the declared actions. The agent supplies an observed-state description for image review. Missing, duplicate, renamed, extra, linked, manually supplied, foreign-build, or foreign-session files are rejected. MCP `capture` returns compact paths and hashes; `capture.json` retains full provenance.
+`controller-export/capture.json` repeats the active mobile-control server, tool, session, target, environment, limitations, MCP provenance, installed-package SHA-256, and capture timestamp. Each artifact record names its checkpoint, kind, path, source SHA-256, installed-package SHA-256, fixture, setup/action hashes, successful action result, and the same capture-session identity. Executed action records include arguments and protocol step labels; their ordered labels must match the declared actions. The agent supplies an observed-state description for image review. Missing, duplicate, renamed, extra, linked, manually supplied, foreign-build, or foreign-session files are rejected. MCP `capture` returns compact paths and hashes; `capture.json` retains full provenance. Its `replay.status="candidate"` and `replay.plan` retain executable steps and checkpoint fields for review and reuse. Session `timings` separate total elapsed time from recorded command time; the remainder includes controller processing and gaps between calls, not just AI thinking. These measurements do not establish a speedup without comparable runs.
 
 ## Stored records
 
@@ -98,6 +98,22 @@ After `mobile_control(operation="begin", ...)`, a guarded batch call has this sh
 ```json
 {"operation":"run_checkpoints","plan":[{"steps":[{"action":"tap_target","selector":"Continue","step":"Continue"}],"expect":"Welcome","checkpoint":{"number":1,"checkpoint_id":"welcome","fixture":"fresh","setup":"Fresh launch","actions":["Continue"],"kinds":["png","xml","trace"],"observed_state":"Welcome screen is visible"}}]}
 ```
+
+For human navigation after package-bound `begin`, select all contract checkpoints or a subset executed in contract order:
+
+```json
+{"operation":"start","contract_path":"phases/daily_logging/phase.001.json","checkpoint_ids":["log_top"]}
+```
+
+Send this to `recorder_control`, open the returned localhost URL, and let the human navigate and capture. The panel displays fixture, setup, actions, and `capture_when` (setup fallback for older contracts); prepare the actual capture condition before handoff. It can record an optional unique expected-screen selector. Mark focus, scrolling, or popup handling as Preparation / popup action when it should not consume a named protocol step. Return control to AI freezes the panel and sets `progress.handoff_requested` in `recorder_control(operation="status")`; call `recorder_control(operation="stop")` before resuming AI actions. Stopping retains the active session and is not aborting or finalizing. Finalize when the selected evidence is complete.
+
+After reviewing the saved replay, load `capture.json` directly or a reviewed JSON object containing `{"plan": [...]}`:
+
+```json
+{"operation":"run_checkpoints","plan_path":"work/original-controller/capture.json"}
+```
+
+Every file-loaded entry requires an `expect` marker. Review and adapt original targets and fixtures for the clone before execution; a saved candidate has not yet passed clone validation. If a screen exposes no distinct marker, inspect and capture it individually.
 
 ## Measurement
 
