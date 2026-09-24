@@ -11,6 +11,7 @@ The Android Flutter phase has one compulsory stack. Capability is established by
 
 
 The reconstruction agent uses these MCP interfaces. Their server implementations may invoke the underlying analyzers, Android SDK, emulator, or device bridge internally. Every exported result must retain MCP provenance and its originating session identity.
+The local human recorder is a panel inside the same mobile-control MCP server, not a fifth required service. It serves still images on localhost and routes human input through the controller, so captures keep the same package, environment, and session proof. The operator and AI must not drive the same device at once.
 
 Use `inventory.py` only for a bounded, read-only archive summary before preflight or for diagnosis. It hashes the package, reports safe member statistics, framework indicators, assets, and ABIs. It does not replace any compulsory MCP probe or prove runtime behavior.
 

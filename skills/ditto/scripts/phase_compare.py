@@ -545,9 +545,29 @@ def _check_manifest_provenance(manifest, preflight, contract, role, errors):
             'provenance': 'mcp', 'action_result': 'success',
             'installed_package_sha256': build_sha,
             'fixture': checkpoint['fixture'],
-            'setup_sha256': store.sha256_json(checkpoint['setup']),
-            'actions_sha256': store.sha256_json(checkpoint['actions']),
         }
+        binding = artifact.get('binding')
+        if binding is None:
+            required.update({
+                'setup_sha256': store.sha256_json(checkpoint['setup']),
+                'actions_sha256': store.sha256_json(checkpoint['actions']),
+            })
+        else:
+            trace = next((item for item in manifest['artifacts']
+                          if item.get('checkpoint_id') == checkpoint['id']
+                          and item.get('kind') == 'trace'), None)
+            if (not (role == 'original' or role.endswith(' original'))
+                    or not manifest.get('rebound_from')
+                    or not manifest.get('rebind_reason')
+                    or not binding.get('reason')
+                    or binding.get('source_setup_sha256') != evidence.get('setup_sha256')
+                    or binding.get('source_actions_sha256') != evidence.get('actions_sha256')
+                    or binding.get('setup_sha256') != store.sha256_json(checkpoint['setup'])
+                    or binding.get('actions_sha256') != store.sha256_json(checkpoint['actions'])
+                    or binding.get('incidental_actions') != checkpoint.get('incidental_actions', [])
+                    or (binding.get('source_trace_sha256') is not None
+                        and (trace is None or binding['source_trace_sha256'] != trace['sha256']))):
+                errors.append(f'{role} artifact has invalid contract rebind')
         # Each retained artifact keeps its historical session, including partial recaptures.
         if (not evidence.get('session_id') or
                 any(evidence.get(field) != value for field, value in required.items())):

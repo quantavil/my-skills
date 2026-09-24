@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Phase workspace initialization, evidence collection, and compact reporting."""
 from datetime import datetime, timezone
+from copy import deepcopy
 import os
 from pathlib import Path
 import shutil
@@ -466,6 +467,116 @@ def freeze_original(project, phase_id):
         current['blockers'] = []
         store.atomic_write_json(phase / 'status.json', current)
         return current
+
+
+def rebind_original(project, phase_id, revised_contract_path, reason):
+    """Bind unchanged raw oracle files to revised wording without recapturing them."""
+    phase, old_contract, status = load_phase(project, phase_id)
+    if status['state'] != 'oracle_frozen' or status['active_clone_manifest_revision'] is not None:
+        raise store.PhaseError('rebind requires a frozen original before clone collection')
+    if not isinstance(reason, str) or not reason.strip():
+        raise store.PhaseError('rebind needs an audit reason')
+    next_phase_revision = old_contract['revision'] + 1
+    expected_path = store.versioned_path(phase, 'phase', next_phase_revision, 'json')
+    if Path(revised_contract_path).resolve() != expected_path.resolve():
+        raise store.PhaseError(f'revised contract must be {expected_path}')
+    revised = store.validate_contract(store.load_json(expected_path), phase_id)
+    if revised['revision'] != next_phase_revision:
+        raise store.PhaseError('revised contract has the wrong revision')
+    for key in ('platform', 'runtime_target', 'fixtures'):
+        if revised[key] != old_contract[key]:
+            raise store.PhaseError(f'rebind cannot change {key}')
+    if (revised['reverse_engineering']['include_globs'] !=
+            old_contract['reverse_engineering']['include_globs']):
+        raise store.PhaseError('rebind cannot change packaged original resources')
+    old_checkpoints = {item['id']: item for item in old_contract['checkpoints']}
+    new_checkpoints = {item['id']: item for item in revised['checkpoints']}
+    if old_checkpoints.keys() != new_checkpoints.keys():
+        raise store.PhaseError('rebind cannot add or remove checkpoints')
+    old_path = store.versioned_path(phase / 'original', 'manifest',
+                                    status['original_manifest_revision'], 'json')
+    if store.sha256_file(old_path) != status.get('original_manifest_sha256'):
+        raise store.PhaseError('original manifest hash differs from status')
+    old_manifest = store.load_json(old_path)
+    _verify_manifest_files(phase / 'original', old_manifest)
+    changed = set()
+    trace_hashes = {}
+    for identifier, before in old_checkpoints.items():
+        after = new_checkpoints[identifier]
+        for key in ('number', 'id', 'fixture', 'artifacts'):
+            if after[key] != before[key]:
+                raise store.PhaseError(f'{identifier}: rebind cannot change {key}')
+        prior_incidental = before.get('incidental_actions', [])
+        incidental = after.get('incidental_actions', [])
+        if (not isinstance(incidental, list) or len(incidental) != len(set(incidental))
+                or incidental[:len(prior_incidental)] != prior_incidental
+                or any(label not in before['actions'] for label in incidental[len(prior_incidental):])
+                or after['actions'] != [label for label in before['actions']
+                                        if label not in incidental[len(prior_incidental):]]):
+            raise store.PhaseError(f'{identifier}: revised actions must only remove declared incidental actions')
+        if after['setup'] != before['setup'] or after['actions'] != before['actions']:
+            changed.add(identifier)
+        if after['actions'] != before['actions']:
+            trace = next((item for item in old_manifest['artifacts']
+                          if item['checkpoint_id'] == identifier and item['kind'] == 'trace'), None)
+            if trace is None:
+                raise store.PhaseError(f'{identifier}: action rebind requires retained trace')
+            trace_path = phase / 'original' / trace['path']
+            recorded = store.load_json(trace_path).get('actions')
+            if (not isinstance(recorded, list) or
+                    [item.get('step') for item in recorded
+                     if item.get('step') and item['step'] not in prior_incidental]
+                    != before['actions']):
+                raise store.PhaseError(f'{identifier}: source trace differs from old protocol')
+            trace_hashes[identifier] = store.sha256_file(trace_path)
+    manifest = deepcopy(old_manifest)
+    revision = old_manifest['revision'] + 1
+    manifest.update({
+        'revision': revision, 'phase_revision': next_phase_revision,
+        'phase_contract_sha256': store.sha256_file(expected_path),
+        'checkpoint_protocol': [{
+            'id': item['id'], 'fixture': item['fixture'], 'setup': item['setup'],
+            'setup_sha256': store.sha256_json(item['setup']),
+            'actions': item['actions'], 'actions_sha256': store.sha256_json(item['actions']),
+        } for item in revised['checkpoints']],
+        'rebound_from': {'manifest': old_path.name,
+                         'sha256': store.sha256_file(old_path)},
+        'rebind_reason': reason.strip(),
+        'rebound_at': datetime.now(timezone.utc).isoformat(),
+    })
+    for artifact in manifest['artifacts']:
+        identifier = artifact['checkpoint_id']
+        if identifier not in changed:
+            continue
+        before, after = old_checkpoints[identifier], new_checkpoints[identifier]
+        artifact['binding'] = {
+            'setup_sha256': store.sha256_json(after['setup']),
+            'actions_sha256': store.sha256_json(after['actions']),
+            'source_setup_sha256': artifact['controller']['setup_sha256'],
+            'source_actions_sha256': artifact['controller']['actions_sha256'],
+            'source_trace_sha256': (trace_hashes.get(identifier)
+                                    or artifact.get('binding', {}).get('source_trace_sha256')),
+            'incidental_actions': after.get('incidental_actions', []),
+            'reason': reason.strip(),
+        }
+    _verify_manifest_files(phase / 'original', manifest)
+    manifest_path = store.versioned_path(phase / 'original', 'manifest', revision, 'json')
+    with store.phase_lock(phase):
+        _, current_contract, current_status = load_phase(project, phase_id)
+        if current_contract != old_contract or current_status != status:
+            raise store.PhaseError('phase changed during rebind')
+        store.write_immutable_json(manifest_path, manifest)
+        current_status['phase_revision'] = next_phase_revision
+        current_status['original_manifest_revision'] = revision
+        current_status['original_manifest_sha256'] = store.sha256_file(manifest_path)
+        current_status['invalidation_history'].append({
+            'timestamp': manifest['rebound_at'], 'changed_paths': [],
+            'resolved_components': [], 'reopened_checkpoints': sorted(changed),
+            'superseded_results': {}, 'reason': 'original contract rebind: ' + reason.strip(),
+        })
+        store.atomic_write_json(phase / 'status.json', current_status)
+        expected_path.chmod(expected_path.stat().st_mode & ~0o222)
+    return manifest
 
 
 def phase_report(project, phase_id):

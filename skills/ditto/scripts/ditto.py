@@ -80,6 +80,19 @@ def freeze_original(phase_id: str, project: Project = Path.cwd()):
     emit({'ok': True, 'state': status['state']})
 
 
+@phase.command('rebind-original')
+def rebind_original(
+    phase_id: str,
+    contract: Annotated[Path, typer.Option('--contract')],
+    reason: Annotated[str, typer.Option('--reason')],
+    project: Project = Path.cwd(),
+):
+    """Rebind frozen raw oracle evidence to revised wording and incidental actions."""
+    manifest = phase_capture.rebind_original(project, phase_id, contract, reason)
+    emit({'ok': True, 'revision': manifest['revision'],
+          'phase_revision': manifest['phase_revision']})
+
+
 @phase.command('capture-clone')
 def capture_clone(phase_id: str, apk: Annotated[Path, typer.Option('--apk')],
                   controller_export: Annotated[Path, typer.Option('--controller-export')],

@@ -12,6 +12,8 @@ uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py
 uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase collect-original daily_logging --project . --package input/original.apk --controller-export work/original-controller --mcp-export jadx=work/jadx --mcp-export apktool=work/apktool --mcp-export r2flutter=work/r2flutter --build-metadata '{"package_name":"example.original","version":"1.0"}'
 
 uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase freeze-original daily_logging --project .
+# Only when frozen raw evidence still applies to revised wording/incidental actions:
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase rebind-original daily_logging --project . --contract phases/daily_logging/phase.002.json --reason "Permission popup was incidental"
 uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase capture-clone daily_logging --project . --apk build/app.apk --controller-export work/clone-controller --build-metadata '{"package_name":"example.clone","version":"1.0"}'
 uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase compare daily_logging --project .
 uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase verdict daily_logging log_top --project . --dimension visual --status pass --rationale "Content and geometry match." --evidence diff:001_log_top.r001.result.json
@@ -21,6 +23,7 @@ uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py
 ```
 
 `phase ready` returns exit code 1 when the gate is unmet and 2 for malformed input or tool failure. Human review commands are valid only after readiness succeeds.
+The recorder is an optional original-capture control surface; its human actions are evidence collection, not `phase review`.
 
 
 ## Phase contract
@@ -31,6 +34,7 @@ Edit `phases/<id>/phase.001.json` before original freeze. It contains:
 - `runtime_target` with the exact emulator identity; the supplied controller does not yet support physical devices.
 - Named fixtures containing sanitized deterministic setup data.
 - Ordered checkpoints with number, stable ID, fixture, setup, actions, artifact kinds, required dimensions, and dependencies.
+- When rebinding already recorded incidental system actions, `incidental_actions` lists the removed action labels in the revised checkpoint. Preserve the raw trace and state the reason. Do not use rebind for changed screen content or fixtures.
 - `reverse_engineering.include_globs` and targeted questions.
 - A dependency graph with components, path rules, and directed component edges.
 - Ownership for isolated implementation work.
@@ -55,7 +59,7 @@ Ditto's Flutter and verification guidance is in its own `references/`. Preflight
 
 ## Controller capture receipt
 
-`controller-export/capture.json` repeats the active mobile-control server, tool, session, target, environment, limitations, MCP provenance, installed-package SHA-256, and capture timestamp. Each artifact record names its checkpoint, kind, path, source SHA-256, installed-package SHA-256, fixture, setup/action hashes, successful action result, and the same capture-session identity. Executed action records include arguments and protocol step labels; their ordered labels must match the declared actions. The agent supplies an observed-state description for image review. Missing, duplicate, renamed, extra, linked, manually supplied, foreign-build, or foreign-session files are rejected.
+`controller-export/capture.json` repeats the active mobile-control server, tool, session, target, environment, limitations, MCP provenance, installed-package SHA-256, and capture timestamp. Each artifact record names its checkpoint, kind, path, source SHA-256, installed-package SHA-256, fixture, setup/action hashes, successful action result, and the same capture-session identity. Executed action records include arguments and protocol step labels; their ordered labels must match the declared actions. The agent supplies an observed-state description for image review. Missing, duplicate, renamed, extra, linked, manually supplied, foreign-build, or foreign-session files are rejected. MCP `capture` returns compact paths and hashes; `capture.json` retains full provenance.
 
 ## Stored records
 

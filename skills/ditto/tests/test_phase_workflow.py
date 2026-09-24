@@ -46,6 +46,7 @@ class PhaseWorkflowTests(unittest.TestCase):
         root = get_command(ditto.app)
         self.assertIn('phase', root.commands)
         self.assertIn('collect-original', root.commands['phase'].commands)
+        self.assertIn('rebind-original', root.commands['phase'].commands)
 
     def test_init_refuses_overwrite_and_collection_before_preflight(self):
         phase_capture.init_phase(self.root, 'daily_logging')
@@ -232,6 +233,79 @@ class OriginalPackTests(unittest.TestCase):
         self.assertEqual(store.sha256_file(original / '001_log_top.r001.png'), old_hash)
         self.assertTrue((original / '001_log_top.r002.png').is_file())
         self.assertTrue((original / 'manifest.002.json').is_file())
+
+    def test_rebinds_incidental_system_action_without_recapturing_pixels(self):
+        contract_path = self.phase / 'phase.001.json'
+        contract = store.load_json(contract_path)
+        contract['checkpoints'][0]['actions'] = ['tap Log', 'Deny notifications']
+        contract['checkpoints'][0]['artifacts'].append('trace')
+        store.atomic_write_json(contract_path, contract)
+        self._write_controller_export(filenames=(
+            '001_log_top.png', '001_log_top.xml', '001_log_top.trace'))
+        trace = self.controller / '001_log_top.trace'
+        trace.write_text(json.dumps({'actions': [
+            {'action': 'tap', 'step': 'tap Log'},
+            {'action': 'tap', 'step': 'Deny notifications'},
+        ]}), encoding='utf-8')
+        capture = store.load_json(self.controller / 'capture.json')
+        for record in capture['artifacts']:
+            if record['kind'] == 'trace':
+                record['sha256'] = store.sha256_file(trace)
+        store.atomic_write_json(self.controller / 'capture.json', capture)
+        self.collect()
+        phase_capture.freeze_original(self.root, self.phase_id)
+        pixels = store.sha256_file(self.phase / 'original/001_log_top.r001.png')
+
+        revised = store.load_json(contract_path)
+        revised['revision'] = 2
+        revised['checkpoints'][0]['actions'] = ['tap Log']
+        revised['checkpoints'][0]['incidental_actions'] = ['Deny notifications']
+        revised['checkpoints'][0]['setup'] = 'At the same screen after dismissing system prompt'
+        revised_path = self.phase / 'phase.002.json'
+        store.atomic_write_json(revised_path, revised)
+        manifest = phase_capture.rebind_original(
+            self.root, self.phase_id, revised_path,
+            reason='Android permission prompt is incidental to the app checkpoint')
+        self.assertEqual(manifest['revision'], 2)
+        self.assertEqual(manifest['phase_revision'], 2)
+        self.assertEqual(store.sha256_file(self.phase / 'original/001_log_top.r001.png'), pixels)
+        self.assertEqual(store.load_json(self.phase / 'status.json')['phase_revision'], 2)
+        errors = []
+        phase_compare._check_manifest_provenance(
+            manifest, self.preflight, revised, 'original', errors)
+        self.assertEqual(errors, [])
+
+        again = store.load_json(revised_path)
+        again['revision'] = 3
+        again['checkpoints'][0]['setup'] = 'At the same screen after system dialog dismissal'
+        again_path = self.phase / 'phase.003.json'
+        store.atomic_write_json(again_path, again)
+        next_manifest = phase_capture.rebind_original(
+            self.root, self.phase_id, again_path, 'Clarify setup wording')
+        errors = []
+        phase_compare._check_manifest_provenance(
+            next_manifest, self.preflight, again, 'original', errors)
+        phase_compare._check_manifest_provenance(
+            next_manifest, self.preflight, again, 'log_top original', errors)
+        self.assertEqual(errors, [])
+        self.assertEqual(store.sha256_file(self.phase / 'original/001_log_top.r001.png'), pixels)
+
+    def test_rebind_rejects_changed_fixture_or_unrecorded_action(self):
+        self.collect()
+        phase_capture.freeze_original(self.root, self.phase_id)
+        revised = store.load_json(self.phase / 'phase.001.json')
+        revised['revision'] = 2
+        path = self.phase / 'phase.002.json'
+        revised['fixtures']['default']['account'] = 'different-user'
+        store.atomic_write_json(path, revised)
+        with self.assertRaisesRegex(store.PhaseError, 'fixtures'):
+            phase_capture.rebind_original(self.root, self.phase_id, path, 'wording')
+        revised['fixtures']['default']['account'] = 'fixture-user'
+        revised['checkpoints'][0]['actions'] = ['Open settings']
+        store.atomic_write_json(path, revised)
+        with self.assertRaisesRegex(store.PhaseError, 'incidental actions'):
+            phase_capture.rebind_original(self.root, self.phase_id, path, 'wording')
+        self.assertEqual(store.load_json(self.phase / 'status.json')['phase_revision'], 1)
 
     def test_original_recapture_rejects_changed_reverse_export(self):
         self.collect()
