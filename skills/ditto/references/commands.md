@@ -85,7 +85,7 @@ without GPU hardware; `accel` controls CPU virtualization separately. Operations
 MCP probe/begin, which verifies the installed package. Read [runtime workflow](runtime-workflow.md)
 for replay and capture fields.
 
-After `mobile_control(operation="begin", ...)`, a guarded batch call has this shape. Replace the labels, fixture, and observed state with the declared checkpoint; `expect` must identify the resulting UI, not merely an element present on every screen.
+After `mobile_control(operation="begin", ...)`, a guarded batch call has this shape. Replace the labels, fixture, and observed state with the declared checkpoint; `expect` must identify the resulting screen. The MCP waits up to 5 seconds for it by default (`expect_timeout_ms` can raise that to at most 30000). Do not use a shared button label such as `Next` as the screen marker.
 
 ```json
 {"operation":"run_checkpoints","plan":[{"steps":[{"action":"tap_target","selector":"Continue","step":"Continue"}],"expect":"Welcome","checkpoint":{"number":1,"checkpoint_id":"welcome","fixture":"fresh","setup":"Fresh launch","actions":["Continue"],"kinds":["png","xml","trace"],"observed_state":"Welcome screen is visible"}}]}
