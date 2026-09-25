@@ -1,23 +1,17 @@
 # MCP package analysis
 
-Android Flutter phases require successful JADX, Apktool, and r2Flutter MCP sessions for the same original APK hash. Keep the full exports in a shared, ignored cache such as `work/`; each original phase pack retains their matching receipts and result indexes. Missing or incompatible required capability blocks the phase.
+Android Flutter phases require successful JADX, Apktool, and r2Flutter MCP analysis of the same original APK. Keep full exports in a shared ignored cache and reuse them across phases for the same package and analyzer versions. Missing or incompatible required capability blocks the phase.
 
-Start with package-wide indexes and a coarse phase map, then retain only phase-relevant files and findings. Recover useful assets/resources directly and reconstruct behavior from static clues plus runtime evidence; do not promise recovery of the original Dart source. Resolve details as each phase needs them instead of exhaustively analyzing every route up front. The contract's `reverse_engineering.include_globs` controls packaged resources copied into `original/reverse.001/`. The reverse index hashes every retained file and links useful entries to checkpoints. Full MCP analyzer output stays in the shared cache; a phase does not copy thousands of decompiled files.
-
-## Route questions by owner
+Start with package indexes and a coarse phase map. Keep the investigation bounded to the active flow, then retain only useful assets and findings. Recovering resources can guide implementation; decompilation does not promise recovery of the original Dart source.
 
 | Question | MCP evidence |
 | --- | --- |
 | Manifest, components, permissions, platform channels, Java/Kotlin wrapper | JADX |
 | Resource table, strings, dimensions, colors, drawables, XML, assets | Apktool |
-| Dart object pools, strings, functions, cross-references, ABI/profile confirmation | r2Flutter |
+| Dart object pools, strings, functions, cross-references, ABI/profile | r2Flutter |
 
-Use all three required analyzers once per original APK and analyzer version. Reuse the same `output_dir` across phases: `analyze_package` verifies and returns the cached export. Changed APKs or analyzer versions use a new directory. `query_analysis` lists or searches the index and reads bounded file excerpts; it never reruns the analyzer. Cache age and server restarts do not invalidate recorded results. Git ignores the cache but does not delete it; preserve it locally between phases. A fresh machine needs that cache restored or one new analysis run. During investigation, ask the server that owns the unresolved fact. Keep queries bounded around observed anchors such as a label, resource ID, route, storage key, channel method, constant, or function address.
+Reuse an analyzer's verified export instead of rerunning it. Query bounded excerpts around a concrete anchor such as a visible label, resource ID, route, storage key, channel method, constant, or function address. Record the package hash, MCP server/tool/session, relevant ABI or Dart profile, finding, and limitation alongside the phase context.
 
-For each question record the package hash, MCP server/tool/session, ABI or Dart profile where relevant, retained output path, finding, checkpoint link, and limitation. A tool connection proves capability only after it reports the expected package and a useful bounded probe.
+Static findings remain inferred until runtime evidence confirms observable claims. A packaged resource does not prove that a screen uses it; reconstructed pseudocode may omit behavior. Turn useful findings into a checkpoint question or implementation constraint. If runtime evidence conflicts with analysis, retain the distinction and collect the smallest original checkpoint needed to resolve it.
 
-Reverse-engineered findings are inferred until runtime evidence confirms them. A resource proves that content is packaged, not that it is reachable. Decompiled branches may be incomplete. Flutter wrapper DEX does not establish Dart application logic. Generated names and reconstructed pseudocode are analysis aids, not recovered source.
-
-Turn each useful finding into a runtime question or implementation constraint. When static evidence conflicts with controller evidence, retain both, state the conflicting preconditions, and recollect the smallest necessary original checkpoint through mobile-control.
-
-Never execute extracted scripts or binaries during inspection. Reject unsafe archive paths, linked files, duplicate members, encrypted members, and unbounded extraction. Keep complete decompiler output outside agent context; use the reverse index to retrieve only relevant pieces.
+Never execute extracted scripts or binaries. Reject unsafe archive paths, linked files, duplicate or encrypted entries, and unbounded extraction. Keep full decompiler output out of agent context; retrieve only relevant excerpts.

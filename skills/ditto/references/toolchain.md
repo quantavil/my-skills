@@ -7,15 +7,15 @@ The Android Flutter phase has one compulsory stack. Capability is established by
 | JADX MCP | DEX, manifest, wrapper, platform-channel analysis | Healthy bounded probe for the original APK SHA-256 |
 | Apktool MCP | Resources, decoded XML, assets, Smali when needed | Healthy bounded probe for the same APK |
 | r2Flutter MCP | Dart AOT object/function/cross-reference analysis | Supported ABI and Dart profile for the same APK |
-| mobile-control MCP | Device operation, replay, screenshot, hierarchy | Required control probes for the contract target and environment |
+| mobile-control MCP | Human-operated device capture, screenshot, hierarchy, and clone comparison | Required control probes for the contract target and environment |
 
 
-The reconstruction agent uses these MCP interfaces. Their server implementations may invoke the underlying analyzers, Android SDK, emulator, or device bridge internally. Every exported result must retain MCP provenance and its originating session identity.
-The local human recorder is a panel inside the same mobile-control MCP server, not a fifth required service. It serves still images on localhost and routes human input through the controller, and saves exploration candidates with package/session context. AI must review their states and verify the replay before final phase capture. The operator and AI must not drive the same device at once.
+The reconstruction agent uses these MCP interfaces. Their server implementations may invoke the underlying analyzers, Android SDK, emulator, or device bridge internally. Every selected result must retain MCP provenance and its originating session identity.
+The browser recorder is the human interaction surface in the mobile-control MCP server, not a fifth service. It routes navigation through the controller and saves action and screenshot/XML candidates with package and session context. The AI selects trustworthy original candidates directly; an executable replay is not required. The same browser supports clone capture beside the selected original screenshot.
 
 Use `inventory.py` only for a bounded, read-only archive summary before preflight or for diagnosis. It hashes the package, reports safe member statistics, framework indicators, assets, and ABIs. It does not replace any compulsory MCP probe or prove runtime behavior.
 
-`diff_screenshots.py` is the deterministic local metric engine used by `phase compare`. It uses Pillow for PNGs and panel rendering and NumPy for the YIQ comparison, preserves panel resolution, writes the labeled triptych, and optionally compares paired hierarchy XML. Semantic acceptance remains in `phase verdict`.
+`diff_screenshots.py` is the deterministic local metric engine used by clone capture. It uses Pillow for PNGs and panel rendering and NumPy for the YIQ comparison, preserves panel resolution, writes the labeled triptych, and can compare paired hierarchy XML. The AI evaluates the current result and records the semantic judgment in the phase state.
 
 Flutter implementation uses the project's pinned Flutter/Dart toolchain and Ditto's [Flutter build](flutter-build.md) and [stack](flutter-stack.md) guidance. Keep analyzer, unit/widget tests, and build verification proportionate to the implementation. The final parity evidence comes from a freshly identified packaged build captured through mobile-control.
 
@@ -54,7 +54,6 @@ resolution; only the overview is resized. Do not install these packages globally
 
 Analyzer exports are reusable for the same APK and tool version after integrity
 validation; they do not expire by age. Query cached exports for relevant excerpts.
-Historical captures retain their originating sessions after an MCP restart; new
-captures require a live session and a fresh environment check. A single agent can
-run the full pipeline. Parallel agents may handle independent code or analysis,
-with one controller owning each emulator through an OS lock.
+Each new capture records its live MCP session and device environment. Keep a device
+capture within one browser session and do not mix images from different packages,
+targets, or environments.

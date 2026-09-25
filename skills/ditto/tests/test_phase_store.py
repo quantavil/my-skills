@@ -145,10 +145,6 @@ class PhaseStoreTests(unittest.TestCase):
         for value in ('../outside', '/tmp/outside'):
             with self.subTest(value=value), self.assertRaisesRegex(store.PhaseError, 'inside'):
                 store.safe_child(self.root, value)
-        self.assertEqual(store.checkpoint_stem(contract()['checkpoints'][0], 2),
-                         '001_log_top.r002')
-        self.assertEqual(store.versioned_path(self.root, 'manifest', 2, 'json'),
-                         self.root / 'manifest.002.json')
 
     def test_sha256_file(self):
         path = self.root / 'bytes'

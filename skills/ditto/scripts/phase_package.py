@@ -88,7 +88,7 @@ def analyze_package(package, destination, include_globs, checkpoint_links,
     parent = destination.parent
     parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=f'.{destination.name}.', dir=parent))
-    reverse_dir = stage / 'reverse.001'
+    reverse_dir = stage / 'reverse'
     reverse_dir.mkdir()
     retained = []
     try:
@@ -150,7 +150,7 @@ def analyze_package(package, destination, include_globs, checkpoint_links,
                 'Only contract-selected package members are retained in the phase workspace.',
             ],
         }
-        store.write_immutable_json(stage / 'reverse.001.json', result)
+        store.atomic_write_json(stage / 'reverse.json', result)
         os.replace(stage, destination)
         return result
     except Exception:

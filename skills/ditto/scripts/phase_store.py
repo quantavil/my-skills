@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Immutable storage and schema primitives for Ditto phase workspaces."""
+"""Atomic storage and schema primitives for Ditto phase workspaces."""
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
@@ -101,28 +101,6 @@ def safe_child(root, value):
     except ValueError:
         raise PhaseError(f'path must remain inside {root}: {value}') from None
     return candidate
-
-
-def checkpoint_stem(checkpoint, revision):
-    if not isinstance(revision, int) or isinstance(revision, bool) or revision < 1:
-        raise PhaseError('evidence revision must be a positive integer')
-    number = checkpoint.get('number') if isinstance(checkpoint, dict) else None
-    identifier = checkpoint.get('id') if isinstance(checkpoint, dict) else None
-    if not isinstance(number, int) or isinstance(number, bool) or not 1 <= number <= 999:
-        raise PhaseError('checkpoint number must be between 1 and 999')
-    _id(identifier, 'checkpoint id')
-    return f'{number:03d}_{identifier}.r{revision:03d}'
-
-
-def versioned_path(directory, stem, revision, suffix):
-    if not isinstance(stem, str) or not ID_RE.fullmatch(stem):
-        raise PhaseError('versioned file stem must be a lowercase identifier')
-    if not isinstance(revision, int) or isinstance(revision, bool) or revision < 1:
-        raise PhaseError('revision must be a positive integer')
-    suffix = str(suffix).lstrip('.')
-    if not suffix or not re.fullmatch(r'[a-z0-9]+', suffix):
-        raise PhaseError('versioned file suffix must be lowercase alphanumeric')
-    return Path(directory) / f'{stem}.{revision:03d}.{suffix}'
 
 
 def _validated(model, data):

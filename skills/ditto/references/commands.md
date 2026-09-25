@@ -1,125 +1,105 @@
-# Commands and evidence contracts
+# Commands and current evidence records
 
-Replace `<ditto-skill>` with the installed Ditto directory. Run these commands from the reconstruction project root on Linux or Windows; `uv --project` selects dependencies without changing that working directory.
+Replace `<ditto-skill>` with the installed Ditto directory. Run examples from the reconstruction project root. `uv --project` uses Ditto's locked Python dependencies without changing the working directory.
 
-## Command sequence
+## Phase commands
+
+Initialize the phase:
 
 ```text
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase init daily_logging --project .
-
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase preflight daily_logging --project . --package input/original.apk --receipt work/jadx/receipt.json --receipt work/apktool/receipt.json --receipt work/r2flutter/receipt.json --receipt work/mobile-control/receipt.json
-
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase collect-original daily_logging --project . --package input/original.apk --controller-export work/original-controller --mcp-export jadx=work/jadx --mcp-export apktool=work/apktool --mcp-export r2flutter=work/r2flutter --build-metadata '{"package_name":"example.original","version":"1.0"}'
-
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase freeze-original daily_logging --project .
-# Only when frozen raw evidence still applies to revised wording/incidental actions:
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase rebind-original daily_logging --project . --contract phases/daily_logging/phase.002.json --reason "Permission popup was incidental"
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase capture-clone daily_logging --project . --apk build/app.apk --controller-export work/clone-controller --build-metadata '{"package_name":"example.clone","version":"1.0"}'
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase compare daily_logging --project .
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase verdict daily_logging log_top --project . --dimension visual --status pass --rationale "Content and geometry match." --evidence diff:001_log_top.r001.result.json
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase invalidate daily_logging --project . --changed lib/theme.dart
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase ready daily_logging --project .
-uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase review daily_logging --project . --accept --note "Reviewed the identified build and final evidence."
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase init <phase-id> --project .
 ```
 
-`phase ready` returns exit code 1 when the gate is unmet and 2 for malformed input or tool failure. After readiness succeeds, commit the implementation and tracked phase records before requesting final human review; run `phase review --accept` only after actual human acceptance.
-The recorder is an optional original or clone control surface; human navigation is evidence collection or recovery, not `phase review`.
+Edit `phase.json` for the actual phase: set its scope summary, runtime target, named fixtures, and checkpoints. Give each checkpoint a stable ID, a `capture_when` description of the settled visible state, required evidence dimensions, and dependencies. Record phase-specific reverse-engineering questions and only already-authorized differences. Keep the checklist focused on the observable flow; it is not an executable replay protocol.
 
+Then verify the four required MCP capabilities against the original package and selected device:
 
-## Phase contract
+```text
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase preflight <phase-id> --project . --package input/original.apk --receipt work/jadx/receipt.json --receipt work/apktool/receipt.json --receipt work/r2flutter/receipt.json --receipt work/mobile-control/receipt.json
+```
 
-Edit `phases/<id>/phase.001.json` before original freeze. It contains:
+Reuse one raw walkthrough output directory per role and phase. On later runs, pass `replace_output=true` to `mobile_control(begin, ...)`; only a validated completed walkthrough may be replaced, and it stays intact until Done succeeds.
 
-- `scope.summary`, required-scope `unknowns`, and fully evidenced proposed exclusions.
-- `runtime_target` with the exact emulator identity; the supplied controller does not yet support physical devices.
-- Named fixtures containing sanitized deterministic setup data.
-- Ordered checkpoints with number, stable ID, fixture, setup, actions, artifact kinds, required dimensions, and dependencies. For human exploration, supply `capture_when` with an exact visible state and settling instruction; optionally supply a unique `expect` marker for later AI replay. Human taps do not need action-target hints.
-- When rebinding already recorded incidental system actions, `incidental_actions` lists the removed action labels in the revised checkpoint. Preserve the raw trace and state the reason. Do not use rebind for changed screen content or fixtures.
-- `reverse_engineering.include_globs` and targeted questions.
-- A dependency graph with components, path rules, and directed component edges.
-- Ownership for isolated implementation work.
-- Existing authorized differences with stable IDs.
+For original capture, start the package-bound mobile-control session, then call mobile-control `recorder_control` to open the local panel for the phase contract. A checklist can limit which checkpoints appear; navigation itself stays free-form:
 
-Artifact kinds in the contract schema are `png`, `xml`, `trace`, `state`, `network`, and `semantics`; the current local mobile controller can capture only `png`, `xml`, `trace`, and `state`. Declare `network` or `semantics` only when a verified MCP backend supplies them. Dimensions are `visual`, `layout`, `behavior`, `navigation`, `persistence`, `platform`, `network`, and `accessibility`. The controller export must supply every artifact declared for each captured checkpoint, including nonvisual trace or state evidence when required.
+```json
+{"operation":"start","contract_path":"phases/<phase-id>/phase.json","checkpoint_ids":["<checkpoint-id>"],"role":"original"}
+```
 
-Use three-digit checkpoint numbers and lowercase IDs. Controller exports use `<order>_<checkpoint-id>.<kind>`. Canonical retained evidence adds the revision: `001_log_top.r001.png`. Builds use `app.<hash8>.<extension>`.
+The recorder saves candidate screenshots, available XML, and the action log. After the human selects **Done**, review the candidate screenshots and select the image that actually shows each checkpoint. Call `recorder_control` with `operation="select"` to write the provenance-bearing selection file:
 
-## Compulsory MCP receipt
+```json
+{"operation":"select","exploration_dir":"<finished-export-dir>","selections":[{"checkpoint_id":"<checkpoint-id>","candidate_number":1,"observed_state":"The expected screen and content are visible"}]}
+```
 
-Every receipt is JSON with schema version 1 and includes:
+Then select the chosen original evidence and freeze it. Supply verified reverse-engineering exports on the first selection; later selections reuse them:
 
-- `capability`, `server`, `tool`, `tool_version`, and `session_id`.
-- `observed_at`, bounded request and response SHA-256 values, `status`, and `limitations`.
-- `provenance: "mcp"`.
-- Exact target identity.
+```text
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase select-original <phase-id> --project . --selection <finished-export-dir>/selected-candidate.json --package input/original.apk --mcp-export jadx=work/jadx --mcp-export apktool=work/apktool --mcp-export r2flutter=work/r2flutter
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase freeze-original <phase-id> --project .
+```
 
-JADX, Apktool, and r2Flutter target the locally computed original-package SHA-256. r2Flutter also reports support, ABI, and Dart profile. Mobile-control targets the contract device, reports environment facts, exercises launch/tap/type/swipe/back/screenshot/hierarchy commands (semantic outcomes are checked during replay), and hashes a disposable screenshot.
+For clone comparison, begin a package-bound mobile-control session with the fresh debug APK installed, then call `recorder_control` to open the same browser with the project, phase contract, and skill CLI path. It displays the original beside the live clone:
 
-Ditto's Flutter and verification guidance is in its own `references/`. Preflight requires no other skill paths. Static receipts are reusable for the same package and analyzer version. They do not expire with time. New captures require the active controller session; retained captures remain bound to their historical sessions. Changing the package or target requires new preflight. Live device checks occur during capture.
+```json
+{"operation":"start","contract_path":"phases/<phase-id>/phase.json","checkpoint_ids":["<checkpoint-id>"],"role":"clone","project_path":".","phase_cli_path":"<ditto-skill>/scripts/ditto.py"}
+```
 
-## Controller capture receipt
+For each settled checkpoint, the human uses **Capture & compare**; the browser invokes the shared CLI, displays the resulting triptych, and advances with **Next**. **Previous checkpoint** supports a targeted retake. **Notes** are optional. **Done** ends the session. The capture result includes `ok`, `checkpoint_id`, `status`, `result`, `triptych`, and `report`. The browser's per-checkpoint CLI request has this form:
 
-`controller-export/capture.json` repeats the active mobile-control server, tool, session, target, environment, limitations, MCP provenance, installed-package SHA-256, and capture timestamp. Each artifact record names its checkpoint, kind, path, source SHA-256, installed-package SHA-256, fixture, setup/action hashes, successful action result, and the same capture-session identity. Executed action records include arguments and protocol step labels; their ordered labels must match the declared actions. The agent supplies an observed-state description for image review. Missing, duplicate, renamed, extra, linked, manually supplied, foreign-build, or foreign-session files are rejected. MCP `capture` returns compact paths and hashes; `capture.json` retains full provenance. Its `replay.status="candidate"` and `replay.plan` retain executable steps and checkpoint fields for review and reuse. Session `timings` separate total elapsed time from recorded command time; the remainder includes controller processing and gaps between calls, not just AI thinking. These measurements do not establish a speedup without comparable runs.
+```text
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase capture-clone <phase-id> --project . --selection <comparison-request.json> --apk build/app-debug.apk
+```
 
-## Stored records
+Do not run a separate replay as a prerequisite for original or clone capture.
 
-`original/manifest.NNN.json` binds the contract revision, original build, reverse index, fixture protocol, setup/action hashes, controller session, environment, and every artifact hash. `clone/manifest.NNN.json` binds equivalent clone evidence to its exact build. A same-contract recapture creates a new manifest and new evidence revisions without overwriting prior files. After the original is frozen, `collect-original --checkpoint <id>` revises named checkpoints and carries unchanged original artifacts forward by hash; affected clone checkpoints reopen.
+Replacing a frozen original checkpoint is deliberate and invalidates its dependent comparison. Use `--replace-frozen` on `phase select-original` when replacing it. A successful clone retake replaces its current checkpoint files and clears its old verdict. When code or fixture changes affect a checkpoint, explicitly invalidate that scope before recapture. Record AI parity decisions, check readiness, and present the current report for final human review:
 
-`diff/<checkpoint>.result.json` stores immutable metrics, layout status, manifest/build identities, evidence catalog, and comparison revision. `status.json.checkpoints.<id>.dimensions` stores mutable semantic verdicts and history. `diff/report.json` is the active machine-readable view; `diff/phase_overview.png` is a navigation index.
+```text
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase invalidate <phase-id> --project . --changed lib/theme.dart
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase verdict <phase-id> <checkpoint-id> --project . --dimension visual --status pass --rationale "Visible content and geometry match." --evidence <evidence-id>
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase ready <phase-id> --project .
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase report <phase-id> --project .
+uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase review <phase-id> --project . --accept --note "Reviewed the current build and evidence."
+```
 
-Valid semantic statuses are `pass`, `fail`, `accepted_difference`, and `proposed_difference`. Every verdict needs a nonempty rationale and evidence IDs whose kinds support the dimension. Accepted differences cite an ID from `authorized_differences`; proposals carry decision metadata for final review.
+`phase verdict` accepts `pass`, `fail`, `accepted_difference`, or `proposed_difference`; accepted differences require `--authorization <id>`. Use `phase review --request-changes <checkpoint-id>` instead of `--accept` when the human requests another correction. Readiness is not human acceptance.
+
+## Current records
+
+Each phase has one current original manifest, one current clone manifest, and one current report. The scripts maintain current evidence and metadata; successful captures overwrite the current checkpoint files instead of accumulating revisions.
+
+| Evidence | Current path |
+| --- | --- |
+| Phase checklist/contract | `phase.json` |
+| Current MCP preflight | `preflight.json` |
+| Original screenshot and optional hierarchy XML | `original/NNN_<checkpoint-id>.png` and `.xml` |
+| Clone screenshot and optional hierarchy XML | `clone/NNN_<checkpoint-id>.png` and `.xml` |
+| Comparison triptych and machine result | `diff/NNN_<checkpoint-id>.triptych.png` and `.result.json` |
+| Current comparison report and verdict state | `diff/report.json`, `status.json` |
+| Current original/clone capture metadata | `original/manifest.json`, `clone/manifest.json` |
+
+The original selection preserves `provenance: "mcp"`, an inline MCP receipt, server/tool/session, device target and environment, package hash, action-log path/hash, selected PNG and optional XML hashes, timestamp, and observed actions. Keep those references tied to the evidence. Do not hand-edit receipts or promote unrelated screenshots into current evidence.
+
+Preflight receipts identify capability, server/tool/version, session, observed time, status, limitations, MCP provenance, and exact target. JADX, Apktool, and r2Flutter must identify the same original APK hash. r2Flutter also reports ABI and Dart profile. Mobile-control verifies the configured device and captures environment facts. A configured tool path or a successful connection alone does not satisfy a required receipt.
+
+Use [runtime workflow](runtime-workflow.md) for browser capture and device handling. Use [parity](parity.md) for interpreting the current image comparison.
 
 ## Setup and emulator
 
-Run the config generator from the MCP checkout, then merge its output into the
-client's configuration and restart the client. It does not overwrite existing files.
+Run the config generator from the MCP checkout, merge its output into the MCP client's configuration, and restart the client. It does not overwrite existing files.
 
 ```text
 uv run --project servers/ditto-bridge --locked python servers/ditto-bridge/configure.py --dart --output ditto-mcp.json
 ```
 
-Use the mobile-control MCP `manage_emulator` tool with `operation="start"`, the
-contract's `avd` name, and optional `port`, `gpu` and `accel`. Use `gpu="software"`
-without GPU hardware; `accel` controls CPU virtualization separately. Operations:
-`start`, `start-headless`, `status`, `check`, `stop`. APK installation belongs to
-MCP probe/begin, which verifies the installed package. Read [runtime workflow](runtime-workflow.md)
-for replay and capture fields.
+Use the mobile-control MCP `manage_emulator` tool with `operation="start"`, the phase AVD name, and optional `port`, `gpu`, and `accel`. Use `gpu="software"` without GPU hardware; `accel` controls CPU virtualization separately. Operations are `start`, `start-headless`, `status`, `check`, and `stop`. The MCP probe/capture path verifies the installed package.
 
-For iterative Android UI work, keep `flutter run -d <emulator-serial>` open. Once
-the clone is visible, call mobile-control `preview_begin` with `serial`, `target_id`
-(AVD name), and `package_name`; then use `perform`/`replay`, `inspect_ui`, and
-`observe_screen`. Hot reload from the Flutter terminal (`r`). Call `abort` to
-release the preview session. Preview has no APK receipt and cannot be supplied to
-`phase capture-clone`; stop the Flutter run session and build the identified APK
-before the package-bound `begin`/capture path.
-
-After `mobile_control(operation="begin", ...)`, a guarded batch call has this shape. Replace the labels, fixture, and observed state with the declared checkpoint; `expect` must identify the resulting screen. The MCP waits up to 5 seconds for it by default (`expect_timeout_ms` can raise that to at most 30000). Do not use a shared button label such as `Next` as the screen marker.
-
-```json
-{"operation":"run_checkpoints","plan":[{"steps":[{"action":"tap_target","selector":"Continue","step":"Continue"}],"expect":"Welcome","checkpoint":{"number":1,"checkpoint_id":"welcome","fixture":"fresh","setup":"Fresh launch","actions":["Continue"],"kinds":["png","xml","trace"],"observed_state":"Welcome screen is visible"}}]}
-```
-
-For human navigation, start/reuse the emulator (headless is sufficient for browser control), prepare the fixture, then package-bound `begin`. Select all contract checkpoints or a subset as the panel's capture guide:
-
-```json
-{"operation":"start","contract_path":"phases/daily_logging/phase.001.json","checkpoint_ids":["log_top"]}
-```
-
-Open the returned localhost URL and navigate **inside the panel**. The `capture_when` checklist guides exploration; no preparation checkbox or prescribed action order is enforced. Taps, swipes, Back and supported text inputs are logged automatically. Pauses save distinct candidate screens and available XML in the background. **Save screen** bookmarks a useful state; pause until it is saved. **Done** writes `exploration.json`, `actions.jsonl`, and numbered images/XML, then releases the device. AI selects checkpoints and prepares a guarded replay; its successful capture run both validates the route and collects verified phase evidence; it preserves raw detours even when excluding their images.
-
-`recorder_control(operation="finish")` also exports the pack if the tab closes. `stop` closes the panel and capture workers but retains the recorder for `finish`; after finishing, call `stop` to clear it. To discard a stopped session, call mobile `abort`. Status includes the staging/output paths for recovery. Original and clone replay targets may differ; direct emulator clicks are not recorded. See [runtime workflow](runtime-workflow.md) for review and failure handling.
-
-After the AI has built and verified a replay, load `capture.json` directly or a reviewed JSON object containing `{"plan": [...]}`:
-
-```json
-{"operation":"run_checkpoints","plan_path":"work/original-controller/capture.json"}
-```
-
-Every file-loaded entry requires an `expect` marker. Review and adapt original targets and fixtures for the clone before execution; a saved candidate has not yet passed clone validation. If a screen exposes no distinct marker, inspect and capture it individually.
+For iterative Android UI work, keep `flutter run -d <emulator-serial>` open and hot reload with `r`. Preview is for implementation feedback only. Build the fresh debug APK used by clone comparison after related edits; never use a hot-reloaded screenshot as packaged APK evidence.
 
 ## Measurement
 
-Replace checkpoint paths and density with the actual recorded evidence:
+Replace the checkpoint paths and density with the actual recorded evidence:
 
 ```text
 uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/theme_extract.py" phases/<phase-id>/original/<checkpoint>.png --hierarchy phases/<phase-id>/original/<checkpoint>.xml --dpi 420 --dart lib/design/tokens.dart
@@ -127,46 +107,15 @@ uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/theme_ex
 
 ## Flutter project
 
-Run from the clone project root. Use only the applicable dependency groups;
-these are examples, not a batch installation requirement.
+Run from the clone project root. Choose dependencies and generation tools from the [Flutter stack](flutter-stack.md) only when the phase needs them; retain existing project conventions.
 
-```text
-flutter --version
-dart --version
-# Run only the individual additions justified by the active feature:
-flutter pub add flutter_riverpod  # shared async feature state
-flutter pub add dio              # richer HTTP requirements
-flutter pub add go_router        # declarative routing/deep links
-
-# Relational persistence:
-flutter pub add drift drift_flutter path_provider
-flutter pub add --dev drift_dev build_runner
-
-# JSON models:
-flutter pub add json_annotation
-flutter pub add --dev json_serializable build_runner
-
-# Optional union models:
-flutter pub add freezed_annotation
-flutter pub add --dev freezed
-```
-
-Generate only when the corresponding inputs changed:
-
-```text
-dart run build_runner build
-flutter gen-l10n
-```
-
-After related edits, run relevant checks and build the APK to capture. Adapt
-paths/flavors; run integration tests only when present. Review automated fixes
-before applying them.
+After related edits, run appropriate project checks and build a local debug APK for comparison. Adapt project paths and flavors. Run integration tests only when present.
 
 ```text
 dart fix --dry-run
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
-flutter test                                    # includes golden tests, see flutter-build.md
+flutter test
 flutter build apk --debug
 flutter test integration_test -d "<emulator-serial>"
 ```
@@ -189,5 +138,4 @@ bun run check
 bun run deploy
 ```
 
-Update a chosen dependency from its uv project directory with
-`uv lock --upgrade-package <name>`, run the affected checks, and commit the lockfile.
+Update a chosen dependency from its uv project directory with `uv lock --upgrade-package <name>`, run affected checks, and commit the lockfile.

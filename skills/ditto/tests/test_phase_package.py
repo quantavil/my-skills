@@ -90,11 +90,11 @@ class PackageAnalysisTests(unittest.TestCase):
         self.assertEqual(set(result['mcps']), set(self.receipts))
         retained = {item['source']: item for item in result['retained_files']}
         self.assertEqual(retained['res/drawable/icon.png']['checkpoints'], ['log_top'])
-        self.assertTrue((destination / 'reverse.001/res/drawable/icon.png').is_file())
-        self.assertTrue((destination / 'reverse.001/mcp/r2flutter/result.json').is_file())
-        self.assertFalse((destination / 'reverse.001/mcp/r2flutter/analysis').exists())
+        self.assertTrue((destination / 'reverse/res/drawable/icon.png').is_file())
+        self.assertTrue((destination / 'reverse/mcp/r2flutter/result.json').is_file())
+        self.assertFalse((destination / 'reverse/mcp/r2flutter/analysis').exists())
         self.assertTrue((analysis / 'classes.json').is_file())
-        self.assertEqual(store.load_json(destination / 'reverse.001.json'), result)
+        self.assertEqual(store.load_json(destination / 'reverse.json'), result)
         for item in result['retained_files']:
             self.assertEqual(store.sha256_file(destination / item['path']), item['sha256'])
 

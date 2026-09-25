@@ -20,7 +20,7 @@ class PreflightTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         phase_capture.init_phase(self.root, 'daily_logging')
-        contract_path = self.root / 'phases/daily_logging/phase.001.json'
+        contract_path = self.root / 'phases/daily_logging/phase.json'
         contract = store.load_json(contract_path)
         contract['runtime_target'] = {'kind': 'emulator', 'id': 'pixel_api_35'}
         store.atomic_write_json(contract_path, contract)
@@ -86,7 +86,7 @@ class PreflightTests(unittest.TestCase):
         status = store.load_json(self.root / 'phases/daily_logging/status.json')
         self.assertEqual(status['state'], 'collecting_original')
         self.assertEqual(status['preflight_revision'], 1)
-        self.assertTrue((self.root / 'phases/daily_logging/preflight.001.json').is_file())
+        self.assertTrue((self.root / 'phases/daily_logging/preflight.json').is_file())
 
     def test_missing_mcp_blocks(self):
         for label, receipts in (('MCP', self.receipts[:-1]),):

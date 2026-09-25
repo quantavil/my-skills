@@ -86,15 +86,14 @@ def record_preflight(project, phase_id, package, mcp_receipts):
         if errors:
             _block(phase, status, errors)
             raise store.PhaseError('; '.join(errors))
-        revision = len(list(phase.glob('preflight.[0-9][0-9][0-9].json'))) + 1
+        revision = 1
         record = {
             'schema_version': 1, 'phase_id': phase_id, 'revision': revision,
             'phase_revision': contract['revision'], 'package': str(package),
             'package_sha256': package_sha, 'mcps': receipts,
             'recorded_at': datetime.now(timezone.utc).isoformat(),
         }
-        store.write_immutable_json(
-            store.versioned_path(phase, 'preflight', revision, 'json'), record)
+        store.atomic_write_json(phase / 'preflight.json', record)
         status['preflight_revision'] = revision
         if status.get('original_manifest_revision') is None:
             status['state'] = 'collecting_original'
@@ -112,7 +111,7 @@ def require_active_preflight(project, phase_id):
     revision = status.get('preflight_revision')
     if revision is None:
         raise store.PhaseError('active preflight is missing')
-    record = store.load_json(store.versioned_path(phase, 'preflight', revision, 'json'))
+    record = store.load_json(phase / 'preflight.json')
     errors = []
     package_sha, package_path = record.get('package_sha256'), Path(record.get('package', ''))
     if not package_path.is_file() or store.sha256_file(package_path) != package_sha:
