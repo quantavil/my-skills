@@ -33,7 +33,7 @@ Edit `phases/<id>/phase.001.json` before original freeze. It contains:
 - `scope.summary`, required-scope `unknowns`, and fully evidenced proposed exclusions.
 - `runtime_target` with the exact emulator identity; the supplied controller does not yet support physical devices.
 - Named fixtures containing sanitized deterministic setup data.
-- Ordered checkpoints with number, stable ID, fixture, setup, actions, artifact kinds, required dimensions, and dependencies. For new human recording, supply `capture_when` with an exact visible capture condition and settling instruction; optionally supply a unique `expect` marker. These optional fields do not require rewriting archived contracts.
+- Ordered checkpoints with number, stable ID, fixture, setup, actions, artifact kinds, required dimensions, and dependencies. For human exploration, supply `capture_when` with an exact visible state and settling instruction; optionally supply a unique `expect` marker for later AI replay. Human taps do not need action-target hints.
 - When rebinding already recorded incidental system actions, `incidental_actions` lists the removed action labels in the revised checkpoint. Preserve the raw trace and state the reason. Do not use rebind for changed screen content or fixtures.
 - `reverse_engineering.include_globs` and targeted questions.
 - A dependency graph with components, path rules, and directed component edges.
@@ -99,15 +99,17 @@ After `mobile_control(operation="begin", ...)`, a guarded batch call has this sh
 {"operation":"run_checkpoints","plan":[{"steps":[{"action":"tap_target","selector":"Continue","step":"Continue"}],"expect":"Welcome","checkpoint":{"number":1,"checkpoint_id":"welcome","fixture":"fresh","setup":"Fresh launch","actions":["Continue"],"kinds":["png","xml","trace"],"observed_state":"Welcome screen is visible"}}]}
 ```
 
-For human navigation after package-bound `begin`, select all contract checkpoints or a subset executed in contract order:
+For human navigation, start/reuse the emulator (headless is sufficient for browser control), prepare the fixture, then package-bound `begin`. Select all contract checkpoints or a subset as the panel's capture guide:
 
 ```json
 {"operation":"start","contract_path":"phases/daily_logging/phase.001.json","checkpoint_ids":["log_top"]}
 ```
 
-Send this to `recorder_control`, open the returned localhost URL, and let the human navigate and capture. The panel displays fixture, setup, actions, and `capture_when` (setup fallback for older contracts); prepare the actual capture condition before handoff. It can record an optional unique expected-screen selector. Mark focus, scrolling, or popup handling as Preparation / popup action when it should not consume a named protocol step. Return control to AI freezes the panel and sets `progress.handoff_requested` in `recorder_control(operation="status")`; call `recorder_control(operation="stop")` before resuming AI actions. Stopping retains the active session and is not aborting or finalizing. Finalize when the selected evidence is complete.
+Open the returned localhost URL and navigate **inside the panel**. The `capture_when` checklist guides exploration; no preparation checkbox or prescribed action order is enforced. Taps, swipes, Back and supported text inputs are logged automatically. Pauses save distinct candidate screens and available XML in the background. **Save screen** bookmarks a useful state; pause until it is saved. **Done** writes `exploration.json`, `actions.jsonl`, and numbered images/XML, then releases the device. AI selects checkpoints and prepares a guarded replay; its successful capture run both validates the route and collects verified phase evidence; it preserves raw detours even when excluding their images.
 
-After reviewing the saved replay, load `capture.json` directly or a reviewed JSON object containing `{"plan": [...]}`:
+`recorder_control(operation="finish")` also exports the pack if the tab closes. `stop` closes the panel and capture workers but retains the recorder for `finish`; after finishing, call `stop` to clear it. To discard a stopped session, call mobile `abort`. Status includes the staging/output paths for recovery. Original and clone replay targets may differ; direct emulator clicks are not recorded. See [runtime workflow](runtime-workflow.md) for review and failure handling.
+
+After the AI has built and verified a replay, load `capture.json` directly or a reviewed JSON object containing `{"plan": [...]}`:
 
 ```json
 {"operation":"run_checkpoints","plan_path":"work/original-controller/capture.json"}
