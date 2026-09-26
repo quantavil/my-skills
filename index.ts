@@ -385,7 +385,8 @@ export async function deployGlobal(skillsDir: string = SKILLS_DIR): Promise<void
                 continue;
               }
             }
-            await fs.promises.symlink(src, dest);
+            const linkType = process.platform === 'win32' ? 'junction' : 'dir';
+            await fs.promises.symlink(src, dest, linkType);
             linked++;
           } catch (err) {
             console.warn(`    ⚠ Failed to link ${skillName} in ${target.name}: ${(err as Error).message}`);

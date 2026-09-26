@@ -113,7 +113,10 @@ class PackageAnalysisTests(unittest.TestCase):
 
     def test_rejects_symlinked_mcp_export_directory(self):
         alias = self.root / 'jadx-alias'
-        alias.symlink_to(self.exports['jadx'], target_is_directory=True)
+        try:
+            alias.symlink_to(self.exports['jadx'], target_is_directory=True)
+        except OSError:
+            self.skipTest('symlinks not permitted on this host')
         self.exports['jadx'] = alias
         with self.assertRaisesRegex(store.PhaseError, 'real directory'):
             self.analyze()
