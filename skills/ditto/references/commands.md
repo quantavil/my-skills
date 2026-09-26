@@ -10,7 +10,7 @@ Initialize the phase:
 uv run --project "<ditto-skill>" --locked python "<ditto-skill>/scripts/ditto.py" phase init <phase-id> --project .
 ```
 
-Edit `phase.json` for the actual phase: set its scope summary, runtime target, named fixtures, and checkpoints. Give each checkpoint a stable ID, a `capture_when` description of the settled visible state, required evidence dimensions, and dependencies. Record phase-specific reverse-engineering questions and only already-authorized differences. Keep the checklist focused on the observable flow; it is not an executable replay protocol.
+Edit `phase.json` for the actual phase: set its scope summary, runtime target, named fixtures, and checkpoints. Give each checkpoint a stable ID, a `capture_when` description of the settled visible state, required evidence dimensions, and dependencies. Map every shared or global implementation file the phase can touch (shared widgets, navigation shell, theme chrome) into `dependency_graph.path_rules` at init: unmapped files force whole-phase invalidation on change, mapped files limit it to their components. Record phase-specific reverse-engineering questions and only already-authorized differences. Keep the checklist focused on the observable flow; it is not an executable replay protocol.
 
 Then verify the four required MCP capabilities against the original package and selected device:
 
