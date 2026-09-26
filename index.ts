@@ -189,7 +189,7 @@ export async function readSkills(): Promise<Skill[]> {
   const files = await Array.fromAsync(glob.scan({ cwd: SKILLS_DIR }));
   return Promise.all(
     files.map(async (rel) => {
-      const dir = rel.split('/')[0] ?? rel;
+      const dir = path.dirname(rel).replace(/\\/g, '/');
       try {
         const text = await Bun.file(path.join(SKILLS_DIR, rel)).text();
         const { name, description } = parseFrontmatter(text);
@@ -263,12 +263,14 @@ export async function reindex(check = false) {
   }
 
   const after = render(before, buildMarkdown(skills, lock));
+  const normBefore = before.replace(/\r\n/g, '\n');
+  const normAfter = after.replace(/\r\n/g, '\n');
 
   if (!check) {
-    await Bun.write(README, after);
+    await Bun.write(README, normAfter);
     return console.log(`README.md: ${skills.length} skills indexed`);
   }
-  if (after !== before) {
+  if (normAfter !== normBefore) {
     console.error('README.md is stale — run: bun index.ts');
     process.exit(1);
   }
