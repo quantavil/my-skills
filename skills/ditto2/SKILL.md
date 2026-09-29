@@ -9,6 +9,10 @@ Use the independent Ditto2 MCP to collect APK evidence. Reconstruct screens and 
 
 ## Setup
 
+For a Google Play link or package ID, use the [APK acquisition guide](references/play-apk.md)
+and its download script before analysis. Keep the base APK and all delivered splits;
+check whether `lib/arm64-v8a/libapp.so` is in an ABI split before calling Ditto2.
+
 Check required tools before collecting evidence. If DroidBot is missing, follow
 [automatic setup](references/setup.md), reusing existing authorization and respecting
 host build restrictions. Install the approved dependency instead of stopping at
