@@ -87,17 +87,17 @@ Use [runtime workflow](runtime-workflow.md) for browser capture and device handl
 
 ## Setup and emulator
 
-For a lightweight Android 14 x86_64 test device without Google apps or Play
-services, install the `default` AOSP image and create one AVD from it:
+Use the existing Android 14 Google Play x86_64 AVD `ditto2_play_x86_64`
+(`emulator-5556` on this machine). On a fresh host, create the same profile:
 
 ```text
-sdkmanager "platform-tools" "emulator" "build-tools;34.0.0" "system-images;android-34;default;x86_64"
-avdmanager create avd --name floww_parity --package "system-images;android-34;default;x86_64" --device pixel_7
+sdkmanager "platform-tools" "emulator" "build-tools;34.0.0" "system-images;android-34;google_apis_playstore;x86_64"
+avdmanager create avd --name ditto2_play_x86_64 --package "system-images;android-34;google_apis_playstore;x86_64" --device pixel_6
 ```
 
-Use that AVD for the phase's `runtime_target.id`. `default/x86_64` is the AOSP
-image; `google_apis/x86_64` includes Google Play services and is not needed
-for this LocalSend capture. Install only one image for this target.
+Use this AVD for the phase's `runtime_target.id`. It includes Google Play
+services and the Play Store, and supports native x86_64 APKs. The prior
+`floww_parity` AOSP AVD was removed; do not recreate it for this workflow.
 
 Run the config generator from the MCP checkout, merge its output into the MCP client's configuration, and restart the client. It does not overwrite existing files.
 

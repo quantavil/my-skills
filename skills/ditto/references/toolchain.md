@@ -39,9 +39,10 @@ in the MCP integration reference. Java archives and supported Windows launchers
 run with argument lists, including paths containing spaces.
 
 Start/reuse the AVD through the mobile MCP; see [commands](commands.md#setup-and-emulator).
-For the LocalSend trial on this machine, use the Android 14 `default/x86_64`
-AOSP image and the `floww_parity` AVD. It has no Google apps or Play services;
-the setup commands are in the linked reference.
+Use the Android 14 `google_apis_playstore/x86_64` image and the
+`ditto2_play_x86_64` AVD on this machine. It includes Google Play services and
+the Play Store; the setup commands are in the linked reference. The earlier
+LocalSend AOSP trial used a separate AVD that is no longer installed.
 The MCP backend owns SDK discovery and emulator startup; the skill contains no
 second launcher. Its shared Python implementation detects Windows/Linux automatically.
 Use `gpu="software"` without GPU hardware; the default `auto` selects software rendering for headless launches. CPU virtualization
