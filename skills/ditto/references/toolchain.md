@@ -39,9 +39,12 @@ in the MCP integration reference. Java archives and supported Windows launchers
 run with argument lists, including paths containing spaces.
 
 Start/reuse the AVD through the mobile MCP; see [commands](commands.md#setup-and-emulator).
+For the LocalSend trial on this machine, use the Android 14 `default/x86_64`
+AOSP image and the `floww_parity` AVD. It has no Google apps or Play services;
+the setup commands are in the linked reference.
 The MCP backend owns SDK discovery and emulator startup; the skill contains no
 second launcher. Its shared Python implementation detects Windows/Linux automatically.
-Use `gpu="software"` without GPU hardware; the default is `auto`. CPU virtualization
+Use `gpu="software"` without GPU hardware; the default `auto` selects software rendering for headless launches. CPU virtualization
 is a separate `accel="auto|on|off"` choice. Software rendering does not solve an
 incompatible APK ABI or unsupported Dart profile. Never count a crashing app as a
 successful mobile probe. Native Windows validation is a separate check.

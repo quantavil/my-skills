@@ -87,6 +87,18 @@ Use [runtime workflow](runtime-workflow.md) for browser capture and device handl
 
 ## Setup and emulator
 
+For a lightweight Android 14 x86_64 test device without Google apps or Play
+services, install the `default` AOSP image and create one AVD from it:
+
+```text
+sdkmanager "platform-tools" "emulator" "build-tools;34.0.0" "system-images;android-34;default;x86_64"
+avdmanager create avd --name floww_parity --package "system-images;android-34;default;x86_64" --device pixel_7
+```
+
+Use that AVD for the phase's `runtime_target.id`. `default/x86_64` is the AOSP
+image; `google_apis/x86_64` includes Google Play services and is not needed
+for this LocalSend capture. Install only one image for this target.
+
 Run the config generator from the MCP checkout, merge its output into the MCP client's configuration, and restart the client. It does not overwrite existing files.
 
 ```text
@@ -94,6 +106,9 @@ uv run --project servers/ditto-bridge --locked python servers/ditto-bridge/confi
 ```
 
 Use the mobile-control MCP `manage_emulator` tool with `operation="start"`, the phase AVD name, and optional `port`, `gpu`, and `accel`. Use `gpu="software"` without GPU hardware; `accel` controls CPU virtualization separately. Operations are `start`, `start-headless`, `status`, `check`, and `stop`. The MCP probe/capture path verifies the installed package.
+For a headless capture without a display server, use `operation="start-headless"`
+with the default `gpu="auto"`, which selects software rendering for headless
+launches. Explicit `gpu="host"` remains available when the host supports it.
 
 For iterative Android UI work, keep `flutter run -d <emulator-serial>` open and hot reload with `r`. Preview is for implementation feedback only. Build the fresh debug APK used by clone comparison after related edits; never use a hot-reloaded screenshot as packaged APK evidence.
 

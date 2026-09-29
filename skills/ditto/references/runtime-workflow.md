@@ -2,6 +2,21 @@
 
 All device interaction and phase evidence use the required mobile-control MCP. The browser recorder routes human input through that controller and preserves MCP provenance. Screenshots from a development preview are useful while implementing, but they are not phase evidence.
 
+## Animated screens and hierarchy failures
+
+Android's `uiautomator dump` can fail with `could not get idle state` on
+continuously animated screens, including LocalSend's Receive screen. Run the
+required mobile probe from a quiet screen in the same app, such as Settings;
+keep the hierarchy probe mandatory. Record any fixture changes, and restore
+the declared starting state before the walkthrough.
+
+The recorder keeps PNG candidates when XML is unavailable and records the
+reason. Use **Save screen** for a continuously animated view that automatic
+stable-frame sampling does not capture. Review that image and its action log;
+do not require XML for a visual-only checkpoint unless the contract needs it.
+If XML is required, its absence remains a blocker. Do not reuse stale XML or
+claim a screenshot proves hierarchy or accessibility.
+
 ## Capture the original
 
 Use the device and environment selected for the phase. Prepare the starting fixture, then give the human a short checklist of useful checkpoints and the visible state that counts as settled. The checklist names destinations, not a required click order.

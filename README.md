@@ -16,6 +16,7 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 
 | Skill | Use it when |
 | --- | --- |
+| [`ditto2`](skills/ditto2/) | Use when collecting evidence from an Android Flutter APK for cloning with Ditto2, or continuing a Ditto2 reconstruction from that evidence. |
 | [`dms-plugin-maker`](skills/dms-plugin-maker/) | Architect, build, audit, test, and package production-ready plugins for DankMaterialShell (DMS) and Quickshell on Linux Wayland. Use whenever developing, modifying, reviewing, or testing DMS bar widgets, popout panels, desktop widgets, daemons, launchers, settings pages, or Wayland overlays. Enforces Qt 6 QML declarative binding hygiene, pure-JS calculation engine architecture, DMS Material 3 theme tokens, multi-monitor instance safety, and the triple-validation testing rig. |
 | [`flutter-dart`](skills/flutter-dart/) | Master skill for Dart and Flutter development. Covers architecture best practices, UI and responsive layouts, layout debugging (RenderFlex overflow), declarative routing (go_router), localization (l10n/i18n), REST API integration (http), JSON serialization, unit/widget/integration testing (package:test, WidgetTester, package:checks, mockito), static analysis, runtime error debugging, FFI and native assets (ffigen, hooks), CLI apps, and documentation. |
 | [`gstr-wala`](skills/gstr-wala/) | File Indian Goods and Services Tax (GST) returns for regular taxpayers, including GSTR-1 (outward supplies), GSTR-3B (monthly summary return), GSTR-2B reconciliation, and PDF invoice vision extraction. Use when the user wants to file GSTR-1 or GSTR-3B, reconcile purchase registers against GSTR-2B, optimize ITC set-off under Rule 88A / Section 49, compute Section 50 interest or Section 47 late fees, check DRC-01B / DRC-01C mismatch risks, convert multi-page PDF/image bills to page-by-page visual images, generate official GST portal offline JSON returns, render certified CA tax audit statements, check live statutory compliance updates, or asks about GST rates, HSN codes, Table 4 ITC, blocked credit under Section 17(5), or PMT-06 challan generation. |
@@ -118,6 +119,12 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | Skill | Use it when |
 | --- | --- |
 | [`officecli`](skills/officecli/) | Create, analyze, proofread, and modify Office documents (.docx, .xlsx, .pptx) using the officecli CLI tool. Use when the user wants to create, inspect, check formatting, find issues, add charts, or modify Office documents. |
+
+### [paperclipai/paperclip](https://github.com/paperclipai/paperclip)
+
+| Skill | Use it when |
+| --- | --- |
+| [`paperclip`](skills/paperclip/) | Interact with the Paperclip control plane API for task coordination and governance. Use when checking assignments, updating issue status, posting comments, delegating work, managing routines, or calling Paperclip API endpoints. |
 
 ### [TheQtCompanyRnD/agent-skills](https://github.com/TheQtCompanyRnD/agent-skills)
 

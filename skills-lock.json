@@ -11,7 +11,7 @@
       "source": "tt-a1i/archify",
       "sourceType": "github",
       "skillPath": "archify/SKILL.md",
-      "computedHash": "00fe4e2a7a54364c028a91292369b04ad399bae1992a337a7243b6e0627dfd6f"
+      "computedHash": "14b68c8c60493c8885937b2877db4cc67498cf1e303857d7df35e4f21bfaf7fc"
     },
     "brainstorming": {
       "source": "obra/superpowers",
@@ -85,6 +85,12 @@
       "sourceUrl": "https://github.com/quantavil/my-skills/tree/main/skills/ditto",
       "skillPath": "skills/ditto/SKILL.md",
       "computedHash": "e557deeb642c4d3b8b606d301c70382a4de23b0d9130ce60ea8e29a338f381b1"
+    },
+    "ditto2": {
+      "source": "./quantavil/my-skills",
+      "sourceType": "local",
+      "skillPath": "skills/ditto2/SKILL.md",
+      "computedHash": "dc385247f6955856ac6bb43ee673c904b28756b72a82f476ae66e5439f00ae6b"
     },
     "dms-plugin-maker": {
       "source": "./quantavil/my-skills",
@@ -162,7 +168,7 @@
       "source": "blader/humanizer",
       "sourceType": "github",
       "skillPath": "SKILL.md",
-      "computedHash": "0a4518725b506f6c83e65f2d6d87cb56fbc042ba92de5eecb1ef8b995ec69d70"
+      "computedHash": "fa4ffac562a8e7349282f606391ede22d23118e998dc8b5ac931662fa734c1b7"
     },
     "i-have-adhd": {
       "source": "ayghri/i-have-adhd",
@@ -224,6 +230,12 @@
       "sourceType": "local",
       "skillPath": "skills/orchestrator/SKILL.md",
       "computedHash": "d921e6215c8776a5a25f0daa49ad29e19e7f6ffdb35c67e9e5efc1e7d936bd66"
+    },
+    "paperclip": {
+      "source": "paperclipai/paperclip",
+      "sourceType": "github",
+      "skillPath": "skills/paperclip/SKILL.md",
+      "computedHash": "4450b5e85f911e1ec874859607c4821e77b05efed1ee9f4ee22bd634ee02864f"
     },
     "pdf": {
       "source": "anthropics/skills",
@@ -367,7 +379,7 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/writing-plans/SKILL.md",
-      "computedHash": "cc8517a6bc569a0633b585649291688217b8a65d547c2ac5fa0923e56ecffa8c"
+      "computedHash": "c2647b5bf067be353a893e5a39a632cbbeb7ad81e61fa5ae227ece5490029073"
     },
     "writing-skills": {
       "source": "obra/superpowers",
