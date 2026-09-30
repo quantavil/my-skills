@@ -38,7 +38,7 @@ This document contains real-world traps, undocumented implementation quirks, and
 
 ### Trap 4: Color Serialization Format (`ColorSetting`)
 - **The Issue**: QML `color` objects serialize to `{}` when converted via generic JS `JSON.stringify()`.
-- **Consequence**: Storing a raw color object writes `{}` to `settings.json`. On the next shell boot, assigning `{}` to a `property color` causes a silent QML type error and resets the color to black/transparent.
+- **Consequence**: Storing a raw color object writes `{}` to the plugin settings store. On the next shell boot, assigning `{}` to a `property color` causes a silent QML type error and resets the color to black/transparent.
 - **Rule**: Always serialize colors as hex strings via `.toString()` (e.g. `"#ffffffff"`):
   ```qml
   pluginService.savePluginData(pluginId, "myColor", myColor.toString());
@@ -49,7 +49,9 @@ This document contains real-world traps, undocumented implementation quirks, and
 ### Trap 5: Parent Chain Breakage in Settings Layouts
 - **The Issue**: Setting components find their persistence host using `QmlUtils.findSettings(root.parent)`, traversing up the visual hierarchy until an item with `saveValue` and `loadValue` is found.
 - **Consequence**: If a setting component is placed inside an unparented `Item`, a detached `Component`, or a nested visual structure that doesn't propagate `parent`, `findSettings()` returns `null`, and the setting silently fails to load or save.
-- **Rule**: Place setting components directly inside `PluginSettings` or inside direct child containers (`Column`, `ColumnLayout`).
+- **Rule**: Keep an intact visual parent chain to PluginSettings. Ordinary nested
+  containers work if traversal can reach the host; direct-child placement is not
+  itself a framework requirement.
 
 ---
 
@@ -98,7 +100,8 @@ This document contains real-world traps, undocumented implementation quirks, and
 
 ### Trap 11: Startup Gate (`startupCheck`) Visual Item Crash
 - **The Issue**: Declaring an `Item` or `Rectangle` as the root of `startupCheck`.
-- **Consequence**: Visual components instantiated outside of a scene graph during startup checks can cause Wayland surface allocation crashes.
+- **Consequence**: A visual root adds unnecessary scene-graph assumptions to a
+  headless dependency check. Do not claim a compositor crash without evidence.
 - **Rule**: `startupCheck` must always be a non-visual `QtObject`.
 
 ---
@@ -106,3 +109,19 @@ This document contains real-world traps, undocumented implementation quirks, and
 ### Trap 12: `BasePill` Screen Edge Hitbox Expansion (Fitts's Law)
 - **The Issue**: To make edge widgets easy to hit, `BasePill` automatically extends its background hitbox by `1000px` towards the screen edge when touching the border of the bar (`isLeftBarEdge && isFirst`, etc.).
 - **Consequence**: Clicks on the outer monitor bezel trigger the top-level pill. However, child `MouseArea` elements inside your custom pill content do **not** inherit this 1000px expansion.
+
+
+### Trap 13: Visibility and implicit-size feedback
+
+Do not compute a container's height from a child's visible flag when that flag
+also depends on parent visibility or size. This can produce a binding loop or
+hide content while measuring it. Select the active configuration from explicit
+mode/session state, then measure its implicitHeight. Avoid deriving implicit size
+from children that fill that same parent dimension.
+
+### Trap 14: Numeric edits and shortcut routing
+
+Model-bound TextInput fields need a commit/cancel policy and binding restoration.
+Reject or clamp invalid numbers at the shared setter/IPC boundary as well as in
+the UI. Keep global shortcuts out of active editors. Validate actual host key
+routing instead of assuming Keys handlers receive every event.

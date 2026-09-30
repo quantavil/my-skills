@@ -1,141 +1,75 @@
-# DMS Plugin Verification & Testing Rig
+# DMS Verification and Regression Testing
 
-Every production-grade DMS plugin must ship with an automated, multi-phase verification test harness. This guarantees that logic bugs, QML syntax errors, and schema mismatches are caught before deployment.
+Select checks for the behavior under change. Testing a simple widget does not
+require inventing an engine. Execute tests when the task authorizes verification;
+report missing tools and untested layers honestly.
 
----
+## Pure calculations
 
-## The Triple-Validation Suite
+Use deterministic times and plain snapshots. Assert transitions and emitted events,
+not just formatted strings. For timers cover pause/resume, zero/boundary values,
+delayed ticks spanning several phases, next-day alarms, repeated starts, completion
+exactly once, dismissal, and reset. Include clock changes when the chosen clock
+semantics require them. Load QML JS in an isolated module/context if it lacks
+CommonJS exports; avoid changing global loaders or adding production test hooks.
 
-```
-  ┌───────────────────────────────────────────────────────────┐
-  │ 1. Engine Logic (Node.js)    node tests/test_engine.js     │
-  ├───────────────────────────────────────────────────────────┤
-  │ 2. QML Syntax (qmllint)      bash tests/test_qml_syntax.sh│
-  ├───────────────────────────────────────────────────────────┤
-  │ 3. Manifest (Schema Valid)   python3 tests/validate_man...│
-  ├───────────────────────────────────────────────────────────┤
-  │ 4. Live DMS Shell Reload     dms restart && dms ipc call  │
-  └───────────────────────────────────────────────────────────┘
-```
+## State bridge and runtime QML
 
----
+Exercise actual bridge methods with controlled time and stubbed host effects.
+Use Qt runtime tests for actual bindings, focus, visibility, geometry, and event
+routing. Stub unavailable DMS boundaries, not the component logic being tested.
+Pure JS extraction cannot prove QML lifecycle or binding behavior.
 
-## 1. Phase 1: Pure Engine Unit Tests (`tests/test_engine.js`)
+Regression matrix for shared interactive timers:
 
-Because the calculation engine (`*Engine.js`) is pure JavaScript without UI dependencies, it runs directly in Node.js with built-in `node:assert`:
+| Scenario | Required observation |
+|---|---|
+| Multiple widget instances | One effect/save owner; all views share state |
+| Owner removed | Surviving instance takes ownership without replaying effects |
+| Settings hydration/reload | No startup saves; active/paused/completed progress preserved |
+| Temporary IPC configuration | Repeated starts follow contract; reset restores saved defaults |
+| Alarm ringing then dismissed | Sound/timer stop and alarm stays dismissed |
+| Numeric editor commit/cancel | Binding restored; later model changes appear |
+| Typing Space or R | Global start/reset shortcut does not fire |
+| Every mode/state | Content fits; available actions match state |
+| Font 1.5x/2x, corner zero | No clipped fields/actions; custom controls follow Theme |
+| Fullscreen reminder | Created only on intended completion; removed on dismiss/reset |
 
-```javascript
-// tests/test_engine.js
-const assert = require('node:assert');
-const Engine = require('../MyPluginEngine.js');
+Prefer tests that catch a known regression. Remove duplicates and assertions about
+incidental source text. Keep static checks for actual static contracts, such as
+literal translation IDs. Mutation checks can establish whether critical tests
+catch a deliberately broken transition; restore changes immediately. Report
+behavioral cases separately from setup/cleanup hooks rather than inflating counts.
 
-console.log("--- 1. Testing Core Calculations ---");
-const initialState = { count: 0, active: false };
-const next = Engine.increment(initialState);
-assert.strictEqual(next.count, 1);
-assert.strictEqual(next.active, true);
+## QML lint and manifest schema
 
-console.log("--- 2. Testing Boundary Conditions ---");
-const wrapped = Engine.decrement({ count: 0 });
-assert.strictEqual(wrapped.count, 0); // Clamped at 0
+Locate qmllint in PATH or Qt's bin directory; add import paths for the plugin, Qt,
+and the active DMS runtime. Do not disable import checking to get a green result.
+Lint all shipped components. Missing tools/imports are unavailable checks, not a
+pass. Lint cannot prove live focus, rendering, or singleton lifecycle behavior.
 
-console.log("========================================");
-console.log("ALL ENGINE UNIT TESTS PASSED");
-console.log("========================================");
-```
+Validate plugin.json with a JSON Schema validator against the installed DMS
+`PLUGINS/plugin-schema.json`, an explicitly selected schema, or a maintained pinned
+fallback. State the schema source. Required-key checks alone are not schema
+validation. Also verify referenced files exist and IDs agree across entry points.
 
-Run with:
-```bash
-node tests/test_engine.js
-```
+## Authorized live deployment
 
----
+Inspect the existing plugin installation before replacing it. Back up settings
+and installation paths before migration or temporary preference changes. Use a
+symlink for an authorized local development install when appropriate. Query the
+installed plugin through its actual IPC contract; wait for shell readiness rather
+than trusting a fixed delay alone.
 
-## 2. Phase 2: QML Syntax & Module Linting (`tests/test_qml_syntax.sh`)
+Plugin reload may retain cached QML classes or singleton state. Restart DMS when
+checking changed singleton/class definitions if reload does not pick them up.
+Inspect logs for ReferenceError, TypeError, binding loops, and missing properties.
+Observe each mode and relevant running/paused/completed state, keyboard editing,
+completion effects, and overlay dismissal. Check per-screen overlay count and
+keyboard focus policy. Headless simulated monitors do not establish physical
+multi-monitor or cross-compositor compatibility.
 
-Catches broken bindings, missing imports, unclosed brackets, and syntax errors using Qt's official `qmllint` compiler tool:
-
-```bash
-#!/usr/bin/env bash
-set -eo pipefail
-
-QMLLINT=""
-for candidate in qmllint /usr/lib/qt6/bin/qmllint /usr/bin/qmllint; do
-    if command -v "$candidate" >/dev/null 2>&1; then
-        QMLLINT="$candidate"
-        break
-    fi
-done
-
-if [ -z "$QMLLINT" ]; then
-    echo "Warning: qmllint not found, skipping linting phase."
-    exit 0
-fi
-
-echo "=== Running QML Syntax Validation ==="
-for file in *.qml; do
-    [ -e "$file" ] || continue
-    echo "Checking $file..."
-    "$QMLLINT" "$file"
-    echo "  ✔ $file syntax valid"
-done
-echo "=== All QML components passed syntax checks ==="
-```
-
----
-
-## 3. Phase 3: Manifest Schema Compliance (`tests/validate_manifest.py`)
-
-Ensures `plugin.json` adheres strictly to DMS constraints and permissions:
-
-```python
-#!/usr/bin/env python3
-import json
-import sys
-from pathlib import Path
-
-def validate():
-    root = Path(__file__).resolve().parent.parent
-    manifest = root / "plugin.json"
-    if not manifest.exists():
-        sys.exit("Error: plugin.json missing")
-
-    with open(manifest) as f:
-        data = json.load(f)
-
-    # Required keys
-    required = ["id", "name", "description", "version", "author", "type", "capabilities"]
-    for k in required:
-        if k not in data:
-            sys.exit(f"Validation Error: Missing required field '{k}'")
-
-    # Permissions check
-    if data.get("settings") and "settings_write" not in data.get("permissions", []):
-        sys.exit("Validation Error: Plugin declares 'settings' but lacks 'settings_write' permission")
-
-    print("SUCCESS: plugin.json is strictly valid!")
-
-if __name__ == "__main__":
-    validate()
-```
-
----
-
-## 4. Phase 4: Live DMS Deployment & Reload
-
-Symlink the plugin directly to the user's DMS plugins directory for live testing:
-
-```bash
-# 1. Symlink into DMS user plugins
-mkdir -p ~/.config/DankMaterialShell/plugins
-ln -sf "$PWD" ~/.config/DankMaterialShell/plugins/<myPluginId>
-
-# 2. Restart DMS shell cleanly
-dms restart
-
-# 3. Trigger or query via IPC
-dms ipc call <myPluginId> status
-
-# 4. Trigger hot-reload without restarting DMS
-dms ipc call plugins reload <myPluginId>
-```
+Restore temporary font scale, sounds, reminder flags, durations, and other user
+preferences, then verify restoration. Reconcile disk edits with in-memory settings;
+external edits may require a restart. Capture screenshots only after confirming
+that they represent the current deployed code.

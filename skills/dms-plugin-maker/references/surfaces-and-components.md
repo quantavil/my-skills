@@ -1,6 +1,6 @@
 # DMS Plugin Surfaces, Components & Settings Reference
 
-This document details the exact QML APIs, lifecycle hooks, and properties for all DankMaterialShell plugin surfaces.
+These examples describe observed DMS component contracts. Check the installed runtime before copying API names or lifecycle assumptions.
 
 ---
 
@@ -32,7 +32,7 @@ iconSizeLarge        // int: Theme.barIconSize(barThickness, undefined, ...)
 // Framework Services & Data
 pluginId             // string: Plugin ID from plugin.json
 pluginService        // var: Singleton PluginService reference
-pluginData           // var: Reactive settings object from settings.json
+pluginData           // var: Reactive settings object managed by PluginService
 popoutService        // var: Automatically injected PopoutService singleton
 ```
 
@@ -43,7 +43,7 @@ PluginComponent {
     id: root
 
     // Popout dimensions
-    popoutWidth: 420
+    popoutWidth: Theme.fontSizeSmall * 32 + Theme.spacingL * 2
     popoutHeight: 0 // 0 = dynamic content height
 
     // Top / Bottom DankBar
@@ -149,10 +149,9 @@ DesktopPluginComponent {
         radius: Theme.cornerRadius
         color: Theme.surfaceContainer
 
-        // CRITICAL: Disable child interaction while user is in edit/drag mode:
+        // Handle ordinary left clicks; the wrapper owns drag/resize interaction:
         MouseArea {
             anchors.fill: parent
-            enabled: !root.editMode
             onClicked: { /* Normal widget action */ }
         }
     }
@@ -328,3 +327,23 @@ PluginSettings {
     }
 }
 ```
+
+
+## 6. Fullscreen overlays
+
+Create PanelWindow surfaces only for an active feature, with an explicit screen,
+unique layer-shell namespace, intended layer, and exclusive-zone policy. A shared
+session needs one overlay per target screen, not one per bar widget. React to
+screen removal and plugin teardown; dismiss/reset must hide or destroy surfaces
+and stop associated effects. Keep overlay ownership separate from presentation
+instances if those instances can disappear while a session continues.
+
+Choose keyboard focus deliberately: OnDemand allows focus following user
+interaction; Exclusive may take input away from other apps. Calling
+forceActiveFocus on a child does not guarantee that the compositor focuses the
+window. Test actual compositor behavior and provide a visible dismiss control,
+with Escape when keyboard focus is available. A reminder should not accidentally
+reserve desktop work area or leave an invisible input-catching surface behind.
+
+If sessions must continue without any bar instance, choose a daemon/composite
+lifecycle explicitly. A widget-owned singleton is not proof of that behavior.

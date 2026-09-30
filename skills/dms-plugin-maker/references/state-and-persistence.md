@@ -12,8 +12,8 @@ DMS plugins have unique lifecycle and multi-monitor execution characteristics. C
 ├──────────────────┬─────────────────┬───────────────────┬────────────────────────┤
 │ Mechanism        │ Scope           │ Storage Location  │ Primary Purpose        │
 ├──────────────────┼─────────────────┼───────────────────┼────────────────────────┤
-│ PluginSettings / │ Persistent      │ settings.json     │ User preferences, API  │
-│ pluginData       │ (survives boot) │ (pluginSettings)  │ keys, UI toggles       │
+│ PluginSettings / │ Persistent      │ plugin settings   │ User preferences, UI  │
+│ pluginData       │ (survives boot) │ (pluginSettings)  │ options, toggles       │
 ├──────────────────┼─────────────────┼───────────────────┼────────────────────────┤
 │ pluginState      │ Persistent      │ <id>_state.json   │ Application data,      │
 │ API              │ (survives boot) │ in ~/.local/state │ history, notes, caches │
@@ -30,10 +30,11 @@ DMS plugins have unique lifecycle and multi-monitor execution characteristics. C
 
 ## 2. Channel 1: Persistent Configuration (`pluginData`)
 
-- Stored in: `~/.config/DankMaterialShell/settings.json`.
+- Stored in: the plugin settings store managed by PluginService. Inspect the installed runtime: newer deployments may use `~/.config/DankMaterialShell/plugin_settings.json`; do not hardcode a historical settings.json location.
 - Access in components: `root.pluginData.myKey`.
 - Programmatic save: `pluginService.savePluginData(pluginId, key, value)`.
-- Intended for: User options, flags, API endpoints.
+- Intended for: User options, flags, API endpoints. This is not a credential vault;
+  choose a supported secret store when a plugin needs sensitive credentials.
 
 ---
 
@@ -41,7 +42,8 @@ DMS plugins have unique lifecycle and multi-monitor execution characteristics. C
 
 Avoid polluting user configuration with dynamic data arrays, note histories, or cached payloads. Use the dedicated `pluginState` API:
 
-- Stored in: `~/.local/state/quickshell/dms/plugins/<id>_state.json`.
+- Resolve with `pluginService.getPluginStatePath(pluginId)` when available;
+  storage is derived from the runtime Paths.state and can vary by installation.
 - Automatically uses debounced atomic disk writes.
 
 ```qml
@@ -92,6 +94,9 @@ Item {
 ---
 
 ## 5. Channel 4: CLI IPC (`IpcHandler`)
+
+Import `Quickshell.Io` for IpcHandler. Verify argument arity and types against
+the running shell; do not assume omitted CLI arguments acquire JS defaults.
 
 Enables compositor keybindings, terminal scripts, or foreign tools to interact with your plugin:
 
@@ -193,3 +198,24 @@ PluginSettings {
     }
 }
 ```
+
+
+## Session defaults and effect ownership
+
+A write-suppression flag alone does not make hydration safe. Keep a cache of saved
+configuration separate from active session parameters. On pluginData changes,
+apply changed preferences without resetting progress. Protect running, paused,
+and completed sessions; reset restores the cached defaults, including after IPC
+starts with temporary parameters. Publish the new cache before calling setters
+if synchronous signals can re-enter hydration.
+
+For a shared session, register each live widget in a singleton and select one host
+for persistence, notifications, sounds, and overlay creation. Remove it on
+Component.onDestruction and promote a surviving instance. `isFirst` identifies a
+position within a bar and is unsuitable for electing a monitor-wide host. Declare
+whether variants share a session or have independent state before using a singleton.
+
+Test repeated starts in the same mode, owner removal, late instance hydration,
+paused-session settings changes, reset after temporary IPC parameters, and alarm
+completion/dismissal. Keep transition events distinct from effects so repeated
+rendering or multiple monitors cannot replay a completion notification.

@@ -4,7 +4,7 @@ The manifest `plugin.json` resides at the root of every DankMaterialShell plugin
 
 ---
 
-## 1. Complete Manifest Reference
+## 1. Single-surface Manifest Example
 
 ```json
 {
@@ -17,26 +17,25 @@ The manifest `plugin.json` resides at the root of every DankMaterialShell plugin
   "type": "widget",
   "capabilities": ["dankbar-widget", "control-center"],
   "component": "./MyWidget.qml",
-  "components": {
-    "widget": "./MyWidget.qml",
-    "desktop": "./MyDesktopWidget.qml",
-    "daemon": "./MyDaemon.qml",
-    "launcher": "./MyLauncher.qml"
-  },
-  "trigger": "#",
   "icon": "extension",
   "settings": "./MySettings.qml",
   "startupCheck": "./StartupCheck.qml",
-  "requires_dms": ">=0.1.18",
+  "requires_dms": ">=1.4.0",
   "dependencies": ["curl", "jq"],
   "permissions": [
     "settings_read",
-    "settings_write"
+    "settings_write",
+    "process"
   ]
 }
 ```
 
 ---
+
+This example declares process permission for its external commands. Set the
+minimum DMS version from the APIs actually used; the example version is not a
+universal requirement. For composite plugins, use the components map for the
+required surfaces rather than copying both entry-point forms indiscriminately.
 
 ## 2. Field Definitions & Constraints
 
@@ -93,58 +92,16 @@ The manifest `plugin.json` resides at the root of every DankMaterialShell plugin
 
 If your plugin requires system utilities or external daemons (e.g. `bluetoothctl`, `mpd`, `playerctl`), use `startupCheck` to prevent silent broken states.
 
-```qml
-// StartupCheck.qml - MUST be a QtObject (NEVER an Item)
-import QtQuick
-import Quickshell
-
-QtObject {
-    // Asynchronous check: done(null) for success; done(error) for failure
-    function check(done) {
-        Quickshell.execDetached(["which", "curl"], (exitCode, stdout) => {
-            if (exitCode !== 0) {
-                done({
-                    title: "Missing Dependency: curl",
-                    details: "Please install curl using your package manager:\n\nsudo pacman -S curl"
-                });
-            } else {
-                done(null); // Gate passed
-            }
-        });
-    }
-}
-```
+Use the installed startup-check contract for `check(done)`. Use a supported
+asynchronous Process API when exit status or output is required, then call done
+with the framework's expected result. `Quickshell.execDetached([argv...])` does
+not accept an exit/stdout callback; it only starts detached execution.
 
 ---
 
-## 5. Automated Manifest Validation Script
+## 5. Schema validation
 
-Add this validation script to your plugin's `tests/validate_manifest.py`:
-
-```python
-#!/usr/bin/env python3
-import json
-import sys
-from pathlib import Path
-
-def validate():
-    manifest_path = Path(__file__).resolve().parent.parent / "plugin.json"
-    if not manifest_path.exists():
-        sys.exit(f"Error: {manifest_path} not found")
-
-    with open(manifest_path) as f:
-        data = json.load(f)
-
-    required_keys = ["id", "name", "description", "version", "author", "type", "capabilities"]
-    for key in required_keys:
-        if key not in data:
-            sys.exit(f"Validation Error: Missing required key '{key}'")
-
-    if data.get("settings") and "settings_write" not in data.get("permissions", []):
-        sys.exit("Validation Error: Plugin has settings component but lacks 'settings_write' permission")
-
-    print("SUCCESS: plugin.json passes structure & permission checks!")
-
-if __name__ == "__main__":
-    validate()
-```
+Use an actual JSON Schema validator with the installed or explicitly pinned DMS
+schema. See [verification-and-testing.md](verification-and-testing.md). A script
+that checks only required keys and settings permissions is a partial structural
+check, not proof of schema conformance.
