@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 1 || $# -gt 3 || "$1" == "--help" ]]; then
-  echo "Usage: $0 PLAY_URL_OR_PACKAGE [OUTPUT_DIR] [PLAY_AVD_SERIAL]" >&2
+if [[ $# -lt 1 || $# -gt 4 || "$1" == "--help" ]]; then
+  echo "Usage: $0 PLAY_URL_OR_PACKAGE [OUTPUT_DIR] [PLAY_DEVICE_SERIAL] [EXPECTED_ABI]" >&2
   exit 2
 fi
 
@@ -25,6 +25,11 @@ PY
 
 output_dir=${2:-"./play-apks/$package"}
 serial=${3:-emulator-5556}
+expected_abi=${4:-x86_64}
+if [[ $expected_abi != x86_64 && $expected_abi != arm64-v8a ]]; then
+  echo "EXPECTED_ABI must be x86_64 or arm64-v8a" >&2
+  exit 2
+fi
 if [[ -n ${DITTO2_ADB_BIN:-} ]]; then
   adb_bin=$DITTO2_ADB_BIN
 elif command -v adb >/dev/null 2>&1; then
@@ -41,8 +46,8 @@ if [[ $("$adb_bin" -s "$serial" get-state 2>/dev/null) != device ]]; then
   exit 1
 fi
 abi=$("$adb_bin" -s "$serial" shell getprop ro.product.cpu.abi | tr -d '\r')
-if [[ $abi != x86_64 ]]; then
-  echo "Expected an x86_64 Play emulator; $serial reports $abi" >&2
+if [[ $abi != "$expected_abi" ]]; then
+  echo "Expected a $expected_abi Play device; $serial reports $abi" >&2
   exit 1
 fi
 play_path=$("$adb_bin" -s "$serial" shell pm path com.android.vending)
@@ -51,7 +56,20 @@ if [[ $play_path != package:* ]]; then
   exit 1
 fi
 
-paths=$("$adb_bin" -s "$serial" shell pm path "$package" | tr -d '\r')
+diagnostic_file=$(mktemp)
+trap 'rm -f -- "$diagnostic_file"' EXIT
+if raw_paths=$("$adb_bin" -s "$serial" shell pm path "$package" 2>"$diagnostic_file"); then
+  paths=$(tr -d '\r' <<< "$raw_paths")
+else
+  status=$?
+  if [[ $status != 1 || -n $raw_paths || -s $diagnostic_file ]]; then
+    [[ -z $raw_paths ]] || printf '%s\n' "$raw_paths" >&2
+    cat "$diagnostic_file" >&2
+    echo "pm path failed for $package (exit $status)" >&2
+    exit 1
+  fi
+  paths=""
+fi
 if [[ -z $paths ]]; then
   "$adb_bin" -s "$serial" shell am start -a android.intent.action.VIEW \
     -d "market://details?id=$package" com.android.vending >/dev/null
@@ -65,12 +83,12 @@ if [[ $package_details != *installerPackageName=com.android.vending* ]]; then
 fi
 
 mkdir -p "$output_dir"
-if find "$output_dir" -maxdepth 1 -type f -name '*.apk' -print -quit | grep -q .; then
+if [[ -e $output_dir/acquisition.json ]] || find "$output_dir" -maxdepth 1 -type f -name '*.apk' -print -quit | grep -q .; then
   echo "Output already contains APKs; use a fresh directory for this Play delivery" >&2
   exit 1
 fi
 stage_dir=$(mktemp -d "$output_dir/.download.XXXXXX")
-trap 'rm -r -- "$stage_dir"' EXIT
+trap 'rm -r -- "$stage_dir"; rm -f -- "$diagnostic_file"' EXIT
 
 while IFS= read -r line; do
   if [[ $line != package:* ]]; then
@@ -81,8 +99,9 @@ while IFS= read -r line; do
   "$adb_bin" -s "$serial" pull "$apk_path" "$stage_dir/$(basename "$apk_path")"
 done <<< "$paths"
 
-python3 - "$stage_dir" <<'PY'
+python3 - "$stage_dir" "$expected_abi" "$abi" "$package" "$paths" <<'PY'
 import hashlib
+import json
 import sys
 from pathlib import Path
 from zipfile import ZipFile
@@ -92,11 +111,13 @@ apks = sorted(directory.glob("*.apk"))
 if not any(apk.name == "base.apk" for apk in apks):
     sys.exit("Play delivery did not contain base.apk")
 
-other_abi_splits = ("arm64_v8a", "armeabi_v7a", "x86.apk")
+expected = sys.argv[2]
 native_abis = set()
+artifacts = []
 for apk in apks:
-    if any(abi in apk.name for abi in other_abi_splits):
-        sys.exit(f"Non-x86_64 ABI split delivered: {apk.name}")
+    abi_names = {'arm64_v8a': 'arm64-v8a', 'armeabi_v7a': 'armeabi-v7a', 'x86_64': 'x86_64', 'x86.apk': 'x86'}
+    if apk.name != 'base.apk' and any(marker in apk.name and abi != expected for marker, abi in abi_names.items()):
+        sys.exit(f"Incompatible ABI split delivered: {apk.name}")
     with ZipFile(apk) as archive:
         damaged = archive.testzip()
         if damaged:
@@ -109,11 +130,19 @@ for apk in apks:
     with apk.open("rb") as source:
         digest = hashlib.file_digest(source, "sha256").hexdigest()
     print(f"{digest}  {apk.name}")
+    artifacts.append({"filename": apk.name, "sha256": digest})
 
-if native_abis - {"x86_64"}:
-    sys.exit(f"Non-x86_64 native libraries found: {sorted(native_abis)}")
+if native_abis and expected not in native_abis:
+    sys.exit(f"Input has no {expected} native libraries: {sorted(native_abis)}")
+(directory / 'acquisition.json').write_text(json.dumps({
+    'schema_version': 1, 'package': sys.argv[4], 'requested_abi': expected,
+    'device_abi': sys.argv[3], 'installed_paths': sys.argv[5].splitlines(),
+    'reported_installer': 'com.android.vending', 'artifacts': artifacts,
+    'native_abis': sorted(native_abis)
+}, indent=2) + '\n')
 print(f"Native ABIs: {', '.join(sorted(native_abis)) or 'none (universal APK)'}")
 PY
 
 mv "$stage_dir"/*.apk "$output_dir"/
-echo "Saved x86_64 Play APK set to $output_dir"
+mv "$stage_dir/acquisition.json" "$output_dir/"
+echo "Saved $expected_abi Play APK set to $output_dir"

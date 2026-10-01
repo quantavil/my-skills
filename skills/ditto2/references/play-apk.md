@@ -1,36 +1,34 @@
-# Get x86_64 APKs from Google Play
+# Acquire complete ARM64 and x86_64 inputs
 
-The Play Store page is metadata; its URL does not serve an APK. Use the signed-in
-`ditto2_play_x86_64` Google Play emulator. Install the app there through the
-Play Store, then pull the exact base and config splits that Play delivered:
+Google Play URLs identify listings, not downloadable APK files. Install through Play on a compatible signed-in device, then pull the exact installed delivery:
 
 ```bash
 skills/ditto2/scripts/download-play-apks.sh \
-  'https://play.google.com/store/apps/details?id=com.example.app&hl=en_IN' \
-  ./apks/com.example.app-x86_64 \
-  emulator-5556
+  'https://play.google.com/store/apps/details?id=com.example.app' \
+  ./apks/example-x86_64 emulator-5556 x86_64
+
+skills/ditto2/scripts/download-play-apks.sh \
+  com.example.app ./apks/example-arm64 ARM64_DEVICE_SERIAL arm64-v8a
 ```
 
-The package ID may replace the URL. If the app is not installed, the script
-opens its Play listing and exits; install it there and rerun the command. The
-third argument is the ADB serial and defaults to `emulator-5556`. The script
-requires Python 3 and `adb`, checks that the device's primary ABI is x86_64 and
-that Google Play installed the app, pulls every installed split, rejects ARM
-and 32-bit x86 native APKs, checks ZIP integrity, and prints SHA-256 hashes.
-Use a fresh output directory for each version. A universal app may have only a
-base APK; a Flutter app normally has `split_config.x86_64.apk` with
-`lib/x86_64/libapp.so` and `lib/x86_64/libflutter.so`.
+Arguments are URL/package, fresh output directory, explicit ADB serial, and expected primary ABI. Existing three-argument calls default to x86_64. An ARM64 pull needs a compatible ARM64 Play device; the x86_64 emulator does not automatically provide its other ABI delivery. A supplied original ARM64 APK/set is also supported. Do not fetch an unrelated release or use the old anonymous downloader as an automatic fallback.
 
-This acquisition path deliberately collects **only x86_64-compatible APKs**.
-Do not use anonymous `gplaydl` for this path: its older ARM device profile
-returned `config.arm64_v8a` even when asked for x86_64. Google Play chooses
-the app version and splits for the emulator. Record the version and keep
-different versions separate. Install a saved split set with
-`adb install-multiple` and all APKs from that set.
+If absent, the script opens the listing and exits; install through Play and rerun. It checks device state/ABI and reported installer metadata, pulls every installed APK, checks ZIP/native compatibility, and writes SHA-256 hashes plus acquisition.json. Installer metadata is recorded, not proof of a Play Integrity verdict. Native libraries for both ABIs are allowed in a complete universal base. Transport failures are reported separately from an absent app. Existing output APKs/metadata are never overwritten.
 
-The current Ditto2 `analyze_apk` r2Flutter stage requires an ARM64
-`libapp.so`, so an x86_64-only download cannot complete static Flutter AOT
-analysis. Mark that phase incompatible; do not silently fetch ARM64 or claim a
-complete Ditto2 evidence set. Current `analyze_apk` and `explore_apk` also
-accept one APK path rather than an installed split set, so keep all original
-signed APKs and report that integration gap before invoking those tools.
+Retain the original signed base and required language/density/feature/ABI splits. A config split alone is incomplete. Do not merge/re-sign a delivery simply to obtain one file. Keep releases/ABIs in separate directories.
+
+MCP examples for supplied split deliveries:
+
+```text
+analyze_apk(apk_path="/apks/arm64/base.apk",
+            split_paths=["/apks/arm64/split_config.arm64_v8a.apk", ...],
+            output_dir="/evidence/analysis")
+explore_apk(apk_path="/apks/x86/base.apk",
+            split_paths=["/apks/x86/split_config.x86_64.apk", ...],
+            output_dir="/evidence/exploration", device_serial="emulator-5556",
+            install_mode="reuse", script_path="/scripts/onboarding.json")
+```
+
+Replace the illustrated lists with every selected required split; for standalone APKs omit split_paths. The MCP validates manifest/signatures and hashes; matching version names alone are insufficient. Reuse first verifies the installed delivery's bytes. Install mode uses adb install/install-multiple without promising an installer flag fixes licensing or integrity.
+
+Static and runtime bases can differ. Unification links matching package/version/signers, compares common DEX/assets, and records resource/ABI coverage limits in inputs.json and review.json. Preserve source APK files so their hashes can be checked again. Missing ARM64 permits finalized partial Android analysis, with r2Flutter explicitly unsupported.

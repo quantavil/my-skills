@@ -43,3 +43,9 @@ Run a bounded live exploration after installation. A help command proves CLI
 startup only; a nonempty, validated navigation graph establishes runtime output.
 Keep logs and report failures without claiming coverage. Update the host's
 AGENTS.md after package or environment changes.
+
+## Preserve onboarding and dismiss app-specific paywalls
+
+Use explore_apk's existing script_path with a valid DroidBot script (views, states, operations, main). Match verified text/resource IDs or controls from captured states; check the installed DroidBot grammar before writing operations. Keep the script and its recorded run. Use install_mode="reuse" after preparing a persisted session; the MCP verifies every installed APK hash before actions. This does not preserve every in-memory activity.
+
+For a manual walkthrough, retain screenshots/actions in a clearly labeled supplementary directory and list missing graph transitions in review gaps. Do not inject manual steps into UTG or substitute fixed generic close-button coordinates. Repeat exploration into fresh directories rather than overwriting earlier runs. SDK apkanalyzer/apksigner are also required for complete-input validation.

@@ -11,7 +11,7 @@
       "source": "tt-a1i/archify",
       "sourceType": "github",
       "skillPath": "archify/SKILL.md",
-      "computedHash": "14b68c8c60493c8885937b2877db4cc67498cf1e303857d7df35e4f21bfaf7fc"
+      "computedHash": "97190f1668a81e3228b4f69263ddba479b3bd537e58b1065da4034781129f76f"
     },
     "brainstorming": {
       "source": "obra/superpowers",
@@ -90,7 +90,7 @@
       "source": "./quantavil/my-skills",
       "sourceType": "local",
       "skillPath": "skills/ditto2/SKILL.md",
-      "computedHash": "dc385247f6955856ac6bb43ee673c904b28756b72a82f476ae66e5439f00ae6b"
+      "computedHash": "d18e54eed25701112e1942cdf4637339f9aa24672fd186bb2157f29008ba9c01"
     },
     "dms-plugin-maker": {
       "source": "./quantavil/my-skills",
@@ -235,7 +235,7 @@
       "source": "paperclipai/paperclip",
       "sourceType": "github",
       "skillPath": "skills/paperclip/SKILL.md",
-      "computedHash": "4450b5e85f911e1ec874859607c4821e77b05efed1ee9f4ee22bd634ee02864f"
+      "computedHash": "7f9accaa70e246a8cffa0b69479f3e66ca78dbadea4fe831f22d7cc53a26f064"
     },
     "pdf": {
       "source": "anthropics/skills",
@@ -253,7 +253,7 @@
       "source": "TheQtCompanyRnD/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/qt-qml/SKILL.md",
-      "computedHash": "b4f483457bf2deb250053ffe8cffe5727724792bcdca06180d4737184bee9dcb"
+      "computedHash": "00f4b7a0635226a20f424328df26449f7b007036399f4a40157e7ffe13e493ac"
     },
     "qt-qml-review": {
       "source": "TheQtCompanyRnD/agent-skills",
