@@ -7,11 +7,15 @@ description: Use when collecting evidence from an Android Flutter APK for clonin
 
 Use the independent Ditto2 MCP to collect evidence for rebuilding observed app screens and journeys. Honor the user's current milestone; stop after evidence collection when that is the request.
 
+For reconstruction or parity review, read [evidence to implementation](references/evidence-to-code.md). Relevant reverse-engineering evidence must inform behavior, not remain an unused archive behind a screenshot-based imitation.
+
 ## Inputs and setup
 
 Use **ARM64 for primary static analysis and x86_64 for emulator exploration**. Two standalone APKs suffice if complete. For Play split delivery, retain the signed base and every required split; never merge/re-sign them to force two files. Pass the base as `apk_path` and all selected splits explicitly as `split_paths`; sibling files are not automatically installed.
 
 For a Play URL/package, follow [acquisition](references/play-apk.md). Acquire each ABI from a compatible Play device or use supplied complete inputs. Missing ARM64 remains a gap; do not silently substitute another release. The MCP verifies package, version, signer and artifact hashes; differing common DEX/assets block unification. ABI-specific runtime equivalence remains unverified.
+
+Keep the ARM64 requirement for primary Flutter AOT reverse engineering. Supplementary x86 metadata does not replace it or establish recovered application logic. Analyzer success establishes the reported capability only: metadata, constants, disassembly and interpreted behavior are distinct results.
 
 Check Android SDK `apkanalyzer`, `apksigner`, `adb`, Apktool, JADX and r2Flutter. For missing DroidBot follow [automatic setup](references/setup.md), respecting host build restrictions and existing authorization. Discover devices with `adb devices -l`; use an explicit serial and verify its API/ABI. Do not control the same device elsewhere during exploration.
 
@@ -31,6 +35,6 @@ Verify requested screens and transitions explicitly. A nonempty graph or empty u
 
 ## Later milestones
 
-- **Rebuild:** implement evidenced Flutter screens/journeys and reuse relevant assets. Keep unsupported behavior explicit; initially use Dart analysis and focused tests without launching the clone.
-- **Compare:** build Flutter Web and compare screenshots against evidence; use Widget Previewer where useful. Track platform behavior the browser cannot verify.
+- **Rebuild:** follow the [evidence-to-code workflow](references/evidence-to-code.md). For each requested feature, trace relevant native bodies, callers/callees, constants and branches into rules; map those rules to Dart code and original-derived test cases. Review relevant evidence already collected before replacing behavior with a guess. Keep unresolved rules and intentional user-requested differences explicit; continue independently evidenced work. Initially use Dart analysis and focused tests without launching the clone.
+- **Compare:** verify original and clone with identical profiles, settings, records, dates and elapsed time. Compare numerical outputs, transitions and persistence as well as screenshots; use Flutter Web/Widget Previewer for supported visual checks. A seeded screen or clone-only passing tests cannot verify omitted logic or full-app parity. Track platform behavior the browser cannot verify.
 - **Android verification:** emulator/platform checks last, when requested.
