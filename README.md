@@ -126,6 +126,12 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | --- | --- |
 | [`paperclip`](skills/paperclip/) | Interact with the Paperclip control plane API for task coordination and governance. Use when checking assignments, updating issue status, posting comments, delegating work, managing routines, or calling Paperclip API endpoints. |
 
+### [quantavil/my-skills](https://github.com/quantavil/my-skills)
+
+| Skill | Use it when |
+| --- | --- |
+| [`fact-check`](skills/fact-check/) | Use when the user wants to fact-check a video, audio recording, subtitles, or transcript. |
+
 ### [TheQtCompanyRnD/agent-skills](https://github.com/TheQtCompanyRnD/agent-skills)
 
 | Skill | Use it when |

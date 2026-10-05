@@ -116,6 +116,12 @@
       "skillPath": "skills/executing-plans/SKILL.md",
       "computedHash": "5d587b5a8ed12c3d6808bce1561d9a72eab37a9b44d51d9dff99232decaae78e"
     },
+    "fact-check": {
+      "source": "quantavil/my-skills",
+      "sourceType": "local",
+      "skillPath": "skills/fact-check/SKILL.md",
+      "computedHash": "c1df376f2fbe08ff8e5a2fe5588a32a7250b5f04854eac450027e84d955984e4"
+    },
     "finishing-a-development-branch": {
       "source": "obra/superpowers",
       "sourceType": "github",
