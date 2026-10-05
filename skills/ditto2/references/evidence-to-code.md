@@ -66,6 +66,18 @@ Before claiming a feature verified, check that relevant domain dependencies have
 
 An essential unresolved rule, available-but-unread relevant body, or missing required implementation prevents an unqualified feature/full-clone verification claim. Report only the supported cases as verified. A deadline or green clone tests do not lower this standard.
 
+## Lightweight comparison loop
+
+For a parity pass, choose one coherent flow and list its checkpoints in the existing feature map. For each checkpoint, record original capture paths, profile/settings/records, clock/timezone/logical day, device dimensions/density/font scale, clone commit or build identity, comparison paths and verdict. Include active, empty and historical states when they exercise different rules. Keep intentional product differences explicit.
+
+Select a trustworthy original baseline before comparing. Preserve raw captures; deliberately replacing a baseline makes its dependent comparisons stale. After code changes, mark affected verdicts stale in the same map and recapture affected checkpoints, including other flows using changed shared logic/layout. Unaffected verdicts retain the build identity they actually tested. No extra manifest service or evidence database is needed.
+
+For Android visual parity, capture original and clone on the same emulator configuration with matched inputs and settled state. Browser previews and hot reload support iteration; final Android comparisons use the current APK. Countdown screens need a controlled or recorded elapsed time; captures on different days are not interchangeable.
+
+Inspect full-resolution **original / clone / diff** panels. If Ditto is installed, reuse its `scripts/diff_screenshots.py` (inspect `--help` using its declared runtime) with output under the project's ignored evidence directory. Keep Ditto optional; if unavailable, compare full-resolution images side by side and record that no automated diff was produced. Do not copy its phase store or mandate human-operated recording. Preserve Ditto2's existing scripted/manual evidence provenance.
+
+Pixel scores locate differences; they do not decide parity. Do not resize screenshots or hide meaningful UI to obtain a pass. Review numerical outputs and recorded transitions separately, and use write/restart/read checks for persistence. Report build checks, behavioral matches, visual matches and remaining gaps separately.
+
 ## Tool research
 
 Official references checked October 3, 2026:

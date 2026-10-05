@@ -21,3 +21,9 @@ Decision: **partial methodological incorporation**, not full installation or rep
 The repository's own coverage/evidence notes describe some routes as partial, inferred or unverified and require an external snapshot resolver for their AOT workflow. Its measured counts, timing estimates, version claims and suggested alternative analyzers are not results from our machine. They were not adopted as capability guarantees, and Ditto2's ARM64 requirement remains unchanged.
 
 No external source files or scripts were copied. The assessment adopts relevant investigative ideas in original wording and cites their origin. The added workflow uses existing evidence, tools and a small Markdown map; it does not introduce a cache, database, automatic decompiler or new MCP API.
+
+## Lightweight Ditto comparison adoption — October 5, 2026
+
+Reviewed Ditto's parity/runtime references, capability preflight and screenshot comparison script. Adopted matched checkpoints, selected original baselines, affected-verdict invalidation and full-resolution original/clone/diff review in the existing evidence-to-code reference. The existing feature map records comparisons; no MCP API, phase database, copied tool or mandatory human recorder was added. Ditto's diff script is optional, with a side-by-side fallback. Raw Ditto2 evidence remains preserved.
+
+One read-only baseline scenario already rejected unmatched Android/web captures, unconfirmed history and stale verdicts; this was an operational refinement, not evidence that the prior guidance accepted false parity. One fresh-context updated scenario explicitly applied shared-code invalidation, optional diff reuse and the fallback while retaining bounded claims. Skill-format validation, repository selftest, README-index check and whitespace checks passed; the existing diff tool's help ran successfully through its offline declared runtime. These checks validate the guidance and tool availability, not Baby Tracker parity.
