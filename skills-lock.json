@@ -218,6 +218,12 @@
       "skillPath": "skills/minimalist-skill/SKILL.md",
       "computedHash": "08873a3131d3be27bef9bf3304b310b16b44ca6e3561aebe532797be3443f6bd"
     },
+    "myanimelist": {
+      "source": "quantavil/my-skills",
+      "sourceType": "local",
+      "skillPath": "skills/myanimelist/SKILL.md",
+      "computedHash": "931bc91af6646560bc477493b22736de66f69718b24e1c6a9f98c739e0d3bd14"
+    },
     "officecli": {
       "source": "officecli.ai",
       "sourceType": "url",

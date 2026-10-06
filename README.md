@@ -126,6 +126,12 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | --- | --- |
 | [`paperclip`](skills/paperclip/) | Interact with the Paperclip control plane API for task coordination and governance. Use when checking assignments, updating issue status, posting comments, delegating work, managing routines, or calling Paperclip API endpoints. |
 
+### [quantavil/my-skills](https://github.com/quantavil/my-skills)
+
+| Skill | Use it when |
+| --- | --- |
+| [`myanimelist`](skills/myanimelist/) | Use when a user wants to inspect a MyAnimeList anime list, check English dubs, compare personal and community ratings, understand watch history and taste, or get recommendations grounded in watching, completed, planned, dropped, and on-hold anime. |
+
 ### [TheQtCompanyRnD/agent-skills](https://github.com/TheQtCompanyRnD/agent-skills)
 
 | Skill | Use it when |
