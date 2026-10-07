@@ -18,8 +18,10 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | --- | --- |
 | [`ditto2`](skills/ditto2/) | Use when collecting evidence from an Android Flutter APK for cloning with Ditto2, or continuing a Ditto2 reconstruction from that evidence. |
 | [`dms-plugin-maker`](skills/dms-plugin-maker/) | Use when building, modifying, auditing, testing, or packaging DankMaterialShell plugins in Qt 6 QML and Quickshell: bar widgets, popouts, settings, daemons, desktop widgets, launchers, and Wayland overlays. |
+| [`fact-check`](skills/fact-check/) | Use when the user wants to fact-check a video, audio recording, subtitles, or transcript. |
 | [`flutter-dart`](skills/flutter-dart/) | Master skill for Dart and Flutter development. Covers architecture best practices, UI and responsive layouts, layout debugging (RenderFlex overflow), declarative routing (go_router), localization (l10n/i18n), REST API integration (http), JSON serialization, unit/widget/integration testing (package:test, WidgetTester, package:checks, mockito), static analysis, runtime error debugging, FFI and native assets (ffigen, hooks), CLI apps, and documentation. |
 | [`gstr-wala`](skills/gstr-wala/) | File Indian Goods and Services Tax (GST) returns for regular taxpayers, including GSTR-1 (outward supplies), GSTR-3B (monthly summary return), GSTR-2B reconciliation, and PDF invoice vision extraction. Use when the user wants to file GSTR-1 or GSTR-3B, reconcile purchase registers against GSTR-2B, optimize ITC set-off under Rule 88A / Section 49, compute Section 50 interest or Section 47 late fees, check DRC-01B / DRC-01C mismatch risks, convert multi-page PDF/image bills to page-by-page visual images, generate official GST portal offline JSON returns, render certified CA tax audit statements, check live statutory compliance updates, or asks about GST rates, HSN codes, Table 4 ITC, blocked credit under Section 17(5), or PMT-06 challan generation. |
+| [`myanimelist`](skills/myanimelist/) | Use when a user wants to inspect a MyAnimeList anime list, check English dubs, compare personal and community ratings, understand watch history and taste, or get recommendations grounded in watching, completed, planned, dropped, and on-hold anime. |
 | [`orchestrator`](skills/orchestrator/) | Use when delegating bounded, verifiable coding work to a CLI model, then verifying and auditing the result before accepting it. |
 
 ### [./skills/ditto](https://github.com/quantavil/my-skills/tree/main/skills/ditto)
@@ -89,6 +91,14 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | [`redesign-existing-projects`](skills/redesign-existing-projects/) | Upgrades existing websites and apps to premium quality. Audits current design, identifies generic AI patterns, and applies high-end design standards without breaking functionality. Works with any CSS framework or vanilla CSS. |
 | [`stitch-design-taste`](skills/stitch-design-taste/) | Semantic Design System Skill for Google Stitch. Generates agent-friendly DESIGN.md files that enforce premium, anti-generic UI standards — strict typography, calibrated color, asymmetric layouts, perpetual micro-motion, and hardware-accelerated performance. |
 
+### [nagisanzenin/engram](https://github.com/nagisanzenin/engram)
+
+| Skill | Use it when |
+| --- | --- |
+| [`coach`](skills/coach/) | Learning telemetry, strategy, and schedule — retention stats, calibration, grader audit, n-of-1 experiments, HTML dashboard. Use for "how am I doing", weekly check-ins, strategy questions, auditing the grader, or adjusting how Engram teaches. |
+| [`learn`](skills/learn/) | Learn any topic properly — first-principles curriculum, generation-first tutoring, verified free recall, FSRS scheduling. Use when the user wants to learn, understand, study, or continue studying something. |
+| [`review`](skills/review/) | Clear due memory reviews with free recall — the two-minute habit that makes learning permanent. Use when reviews are due, or the user wants to review, practice, or "do my engram reviews". |
+
 ### [Nutlope/hallmark](https://github.com/Nutlope/hallmark)
 
 | Skill | Use it when |
@@ -125,13 +135,6 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | Skill | Use it when |
 | --- | --- |
 | [`paperclip`](skills/paperclip/) | Interact with the Paperclip control plane API for task coordination and governance. Use when checking assignments, updating issue status, posting comments, delegating work, managing routines, or calling Paperclip API endpoints. |
-
-### [quantavil/my-skills](https://github.com/quantavil/my-skills)
-
-| Skill | Use it when |
-| --- | --- |
-| [`fact-check`](skills/fact-check/) | Use when the user wants to fact-check a video, audio recording, subtitles, or transcript. |
-| [`myanimelist`](skills/myanimelist/) | Use when a user wants to inspect a MyAnimeList anime list, check English dubs, compare personal and community ratings, understand watch history and taste, or get recommendations grounded in watching, completed, planned, dropped, and on-hold anime. |
 
 ### [TheQtCompanyRnD/agent-skills](https://github.com/TheQtCompanyRnD/agent-skills)
 

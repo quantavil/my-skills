@@ -61,6 +61,12 @@
       "skillPath": "skills/caveman-review/SKILL.md",
       "computedHash": "36a4007c5c0c6b90b5accfee1cd769a86e4963b651dece2ce5f17a223a0abb4b"
     },
+    "coach": {
+      "source": "nagisanzenin/engram",
+      "sourceType": "github",
+      "skillPath": "skills/coach/SKILL.md",
+      "computedHash": "855e11dd3dcd7093c60583efd45ac24ce15a82790b3b76886a9017bc54a3ed1b"
+    },
     "deploy-to-vercel": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
@@ -117,7 +123,7 @@
       "computedHash": "5d587b5a8ed12c3d6808bce1561d9a72eab37a9b44d51d9dff99232decaae78e"
     },
     "fact-check": {
-      "source": "quantavil/my-skills",
+      "source": "./quantavil/my-skills",
       "sourceType": "local",
       "skillPath": "skills/fact-check/SKILL.md",
       "computedHash": "c1df376f2fbe08ff8e5a2fe5588a32a7250b5f04854eac450027e84d955984e4"
@@ -212,6 +218,12 @@
       "skillPath": "skills/itr-wala/SKILL.md",
       "computedHash": "dc4bb29bcb8f2d9a85c02ed38b98bb231b28971829bbaef36243bd8bd0c244ce"
     },
+    "learn": {
+      "source": "nagisanzenin/engram",
+      "sourceType": "github",
+      "skillPath": "skills/learn/SKILL.md",
+      "computedHash": "36c6086827a3a1ad3a99a86124d31465d54a6bf6729ec5766b648020d3d97fc3"
+    },
     "mcp-builder": {
       "source": "anthropics/skills",
       "sourceType": "github",
@@ -225,7 +237,7 @@
       "computedHash": "08873a3131d3be27bef9bf3304b310b16b44ca6e3561aebe532797be3443f6bd"
     },
     "myanimelist": {
-      "source": "quantavil/my-skills",
+      "source": "./quantavil/my-skills",
       "sourceType": "local",
       "skillPath": "skills/myanimelist/SKILL.md",
       "computedHash": "931bc91af6646560bc477493b22736de66f69718b24e1c6a9f98c739e0d3bd14"
@@ -290,6 +302,12 @@
       "sourceType": "github",
       "skillPath": "skills/requesting-code-review/SKILL.md",
       "computedHash": "2abaeac1de432c76abda0ca7ba618901d2e94f8817b3650f9c523acea2d224f5"
+    },
+    "review": {
+      "source": "nagisanzenin/engram",
+      "sourceType": "github",
+      "skillPath": "skills/review/SKILL.md",
+      "computedHash": "60079c74d26ca83432e6590450329e8d00fe8d56e68d09e711a37ac985ff83a7"
     },
     "stitch-design-taste": {
       "source": "Leonxlnx/taste-skill",
