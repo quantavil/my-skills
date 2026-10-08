@@ -1,7 +1,5 @@
----
-name: minimalist-ui
-description: Clean editorial-style interfaces. Warm monochrome palette, typographic contrast, flat bento grids, muted pastels. No gradients, no heavy shadows.
----
+> Adapted from `minimalist-ui` (Leonxlnx/taste-skill, MIT © 2026 Leonxlnx — https://github.com/Leonxlnx/taste-skill).
+> Merged into the local `design-taste` super-skill; load via its routing table in `../SKILL.md`.
 
 # Protocol: Premium Utilitarian Minimalism UI Architect
 

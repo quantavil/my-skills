@@ -19,7 +19,7 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | [`ditto2`](skills/ditto2/) | Use when collecting evidence from an Android Flutter APK for cloning with Ditto2, or continuing a Ditto2 reconstruction from that evidence. |
 | [`dms-plugin-maker`](skills/dms-plugin-maker/) | Use when building, modifying, auditing, testing, or packaging DankMaterialShell plugins in Qt 6 QML and Quickshell: bar widgets, popouts, settings, daemons, desktop widgets, launchers, and Wayland overlays. |
 | [`fact-check`](skills/fact-check/) | Use when the user wants to fact-check a video, audio recording, subtitles, or transcript. |
-| [`flutter-dart`](skills/flutter-dart/) | Master skill for Dart and Flutter development. Covers architecture best practices, UI and responsive layouts, layout debugging (RenderFlex overflow), declarative routing (go_router), localization (l10n/i18n), REST API integration (http), JSON serialization, unit/widget/integration testing (package:test, WidgetTester, package:checks, mockito), static analysis, runtime error debugging, FFI and native assets (ffigen, hooks), CLI apps, and documentation. |
+| [`flutter-dart`](skills/flutter-dart/) | Master skill for Dart and Flutter development. Covers architecture best practices, UI and responsive layouts, layout debugging (RenderFlex overflow), declarative routing (go_router), localization (l10n/i18n), REST API integration (http), JSON serialization, unit/widget/integration testing (package:test, WidgetTester, package:checks, mockito), static analysis, runtime error debugging, FFI and native assets (ffigen, hooks), CLI apps, documentation, doc-code examples, and file path handling (package:path). |
 | [`gstr-wala`](skills/gstr-wala/) | File Indian Goods and Services Tax (GST) returns for regular taxpayers, including GSTR-1 (outward supplies), GSTR-3B (monthly summary return), GSTR-2B reconciliation, and PDF invoice vision extraction. Use when the user wants to file GSTR-1 or GSTR-3B, reconcile purchase registers against GSTR-2B, optimize ITC set-off under Rule 88A / Section 49, compute Section 50 interest or Section 47 late fees, check DRC-01B / DRC-01C mismatch risks, convert multi-page PDF/image bills to page-by-page visual images, generate official GST portal offline JSON returns, render certified CA tax audit statements, check live statutory compliance updates, or asks about GST rates, HSN codes, Table 4 ITC, blocked credit under Section 17(5), or PMT-06 challan generation. |
 | [`myanimelist`](skills/myanimelist/) | Use when a user wants to inspect a MyAnimeList anime list, check English dubs, compare personal and community ratings, understand watch history and taste, or get recommendations grounded in watching, completed, planned, dropped, and on-hold anime. |
 | [`orchestrator`](skills/orchestrator/) | Use when delegating bounded, verifiable coding work to a CLI model, then verifying and auditing the result before accepting it. |
@@ -74,23 +74,6 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | --- | --- |
 | [`itr-wala`](skills/itr-wala/) | File Indian income tax returns (ITR) for FY 2025-26 / AY 2026-27. Use when the user wants to file their ITR, compute or verify Indian income tax, compare the old vs new tax regime, read a Form 16, AIS, TIS or Form 26AS, reconcile TDS, handle capital gains from Zerodha/Groww/Upstox statements, check their tax refund, or asks about ITR-1/ITR-2/ITR-3/ITR-4, sections 80C/80D/87A/111A/112A, crypto tax, advance tax, or the income-tax e-filing portal - even if they just say "help me with my taxes" in an Indian context. |
 
-### [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)
-
-| Skill | Use it when |
-| --- | --- |
-| [`brandkit`](skills/brandkit/) | Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. Trained for minimalist, cinematic, editorial, dark-tech, luxury, cultural, security, gaming, developer-tool, and consumer-app brand systems. Optimized for intentional logo concepting, refined composition, sparse typography, strong symbolic meaning, premium mockups, art-directed imagery, and flexible grid layouts. |
-| [`design-taste-frontend`](skills/design-taste-frontend/) | Anti-slop frontend skill for landing pages, portfolios, and redesigns. The agent reads the brief, infers the right design direction, and ships interfaces that do not look templated. Real design systems when applicable, audit-first on redesigns, strict pre-flight check. |
-| [`full-output-enforcement`](skills/full-output-enforcement/) | Overrides default LLM truncation behavior. Enforces complete code generation, bans placeholder patterns, and handles token-limit splits cleanly. Apply to any task requiring exhaustive, unabridged output. |
-| [`gpt-taste`](skills/gpt-taste/) | Elite UX/UI & Advanced GSAP Motion Engineer. Enforces Python-driven true randomization for layout variance, strict AIDA page structure, wide editorial typography (bans 6-line wraps), gapless bento grids, strict GSAP ScrollTriggers (pinning, stacking, scrubbing), inline micro-images, and massive section spacing. |
-| [`high-end-visual-design`](skills/high-end-visual-design/) | Teaches the AI to design like a high-end agency. Defines the exact fonts, spacing, shadows, card structures, and animations that make a website feel expensive. Blocks all the common defaults that make AI designs look cheap or generic. |
-| [`image-to-code`](skills/image-to-code/) | Elite website image-to-code skill for Codex. For visually important web tasks, it must first generate the design image(s) itself, deeply analyze them, then implement the website to match them as closely as possible. In Codex, it must prefer large, readable, section-specific images instead of tiny compressed boards, generate fresh standalone images for sections or detail views instead of cropping old ones, avoid lazy under-generation, avoid cards-inside-cards-inside-cards UI, and keep the hero clean, spacious, readable, and visible on a small laptop. |
-| [`imagegen-frontend-mobile`](skills/imagegen-frontend-mobile/) | Elite mobile app image-generation skill for creating premium, app-native screen concepts and flows. Designed for iOS, Android, and cross-platform mobile products. Prioritizes clean hierarchy, comfortably readable text, strong multi-screen consistency, controlled color palettes, non-generic creative direction, textured surfaces, image-led composition, tasteful custom iconography, and clean phone mockup framing. By default, screens should be shown inside a subtle premium iPhone or similar phone mockup with a visible frame, while the main focus stays on the app content itself. This skill generates images only. It does not write code. |
-| [`imagegen-frontend-web`](skills/imagegen-frontend-web/) | Elite frontend image-direction skill for generating premium, conversion-aware website design references. CRITICAL OUTPUT RULE — generate ONE separate horizontal image FOR EVERY section. A landing page with 8 sections produces 8 images. Never compress multiple sections into one image. Enforces composition variety (not always left-text / right-image), background-image freedom, varied CTAs, varied hero scales (giant / mid / mini minimalist), narrative concept spine, second-read moments, and a single consistent palette across all images. Optimized for landing pages, marketing sites, and product comps that developers or coding models can accurately recreate. |
-| [`industrial-brutalist-ui`](skills/industrial-brutalist-ui/) | Raw mechanical interfaces fusing Swiss typographic print with military terminal aesthetics. Rigid grids, extreme type scale contrast, utilitarian color, analog degradation effects. For data-heavy dashboards, portfolios, or editorial sites that need to feel like declassified blueprints. |
-| [`minimalist-ui`](skills/minimalist-ui/) | Clean editorial-style interfaces. Warm monochrome palette, typographic contrast, flat bento grids, muted pastels. No gradients, no heavy shadows. |
-| [`redesign-existing-projects`](skills/redesign-existing-projects/) | Upgrades existing websites and apps to premium quality. Audits current design, identifies generic AI patterns, and applies high-end design standards without breaking functionality. Works with any CSS framework or vanilla CSS. |
-| [`stitch-design-taste`](skills/stitch-design-taste/) | Semantic Design System Skill for Google Stitch. Generates agent-friendly DESIGN.md files that enforce premium, anti-generic UI standards — strict typography, calibrated color, asymmetric layouts, perpetual micro-motion, and hardware-accelerated performance. |
-
 ### [nagisanzenin/engram](https://github.com/nagisanzenin/engram)
 
 | Skill | Use it when |
@@ -136,6 +119,12 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | --- | --- |
 | [`paperclip`](skills/paperclip/) | Interact with the Paperclip control plane API for task coordination and governance. Use when checking assignments, updating issue status, posting comments, delegating work, managing routines, or calling Paperclip API endpoints. |
 
+### [quantavil/my-skills](https://github.com/quantavil/my-skills)
+
+| Skill | Use it when |
+| --- | --- |
+| [`design-taste`](skills/design-taste/) | Master skill for premium interface taste and frontend art direction: anti-slop landing pages and redesigns, minimalist/brutalist/brand/Stitch style systems, image-first web and mobile concept direction, image-to-code builds, and complete untruncated output. Use when the user wants a distinctive website or landing page, a redesign or taste audit, a brand board, app-screen concepts, or design references generated before code. |
+
 ### [TheQtCompanyRnD/agent-skills](https://github.com/TheQtCompanyRnD/agent-skills)
 
 | Skill | Use it when |
@@ -175,6 +164,8 @@ bun run remove obra/superpowers            # drop every skill from that repo
 ```
 
 All four rewrite the table above, so it can't drift; `git diff` shows what changed. `skills-lock.json` pins each skill's origin and content hash — commit it.
+
+`design-taste` is a local super-skill amalgamating the 12 `Leonxlnx/taste-skill` skills (MIT, attributed per reference file). Do not re-add that repo — it would restore the 12 fragmented entries and their trigger collisions.
 
 ## Credit
 

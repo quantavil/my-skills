@@ -1,7 +1,5 @@
----
-name: brandkit
-description: Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. Trained for minimalist, cinematic, editorial, dark-tech, luxury, cultural, security, gaming, developer-tool, and consumer-app brand systems. Optimized for intentional logo concepting, refined composition, sparse typography, strong symbolic meaning, premium mockups, art-directed imagery, and flexible grid layouts.
----
+> Adapted from `brandkit` (Leonxlnx/taste-skill, MIT © 2026 Leonxlnx — https://github.com/Leonxlnx/taste-skill).
+> Merged into the local `design-taste` super-skill; load via its routing table in `../SKILL.md`.
 
 # BRANDKIT IMAGE GENERATION SKILL
 

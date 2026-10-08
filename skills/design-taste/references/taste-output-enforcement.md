@@ -1,7 +1,5 @@
----
-name: full-output-enforcement
-description: Overrides default LLM truncation behavior. Enforces complete code generation, bans placeholder patterns, and handles token-limit splits cleanly. Apply to any task requiring exhaustive, unabridged output.
----
+> Adapted from `full-output-enforcement` (Leonxlnx/taste-skill, MIT © 2026 Leonxlnx — https://github.com/Leonxlnx/taste-skill).
+> Merged into the local `design-taste` super-skill; load via its routing table in `../SKILL.md`.
 
 # Full-Output Enforcement
 
