@@ -16,6 +16,7 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 
 | Skill | Use it when |
 | --- | --- |
+| [`design-taste`](skills/design-taste/) | Master skill for premium interface taste and frontend art direction: anti-slop landing pages and redesigns, minimalist/brutalist/brand/Stitch style systems, image-first web and mobile concept direction, image-to-code builds, and complete untruncated output. Use when the user wants a distinctive website or landing page, a redesign or taste audit, a brand board, app-screen concepts, or design references generated before code. |
 | [`ditto2`](skills/ditto2/) | Use when collecting evidence from an Android Flutter APK for cloning with Ditto2, or continuing a Ditto2 reconstruction from that evidence. |
 | [`dms-plugin-maker`](skills/dms-plugin-maker/) | Use when building, modifying, auditing, testing, or packaging DankMaterialShell plugins in Qt 6 QML and Quickshell: bar widgets, popouts, settings, daemons, desktop widgets, launchers, and Wayland overlays. |
 | [`fact-check`](skills/fact-check/) | Use when the user wants to fact-check a video, audio recording, subtitles, or transcript. |
@@ -119,12 +120,6 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | --- | --- |
 | [`paperclip`](skills/paperclip/) | Interact with the Paperclip control plane API for task coordination and governance. Use when checking assignments, updating issue status, posting comments, delegating work, managing routines, or calling Paperclip API endpoints. |
 
-### [quantavil/my-skills](https://github.com/quantavil/my-skills)
-
-| Skill | Use it when |
-| --- | --- |
-| [`design-taste`](skills/design-taste/) | Master skill for premium interface taste and frontend art direction: anti-slop landing pages and redesigns, minimalist/brutalist/brand/Stitch style systems, image-first web and mobile concept direction, image-to-code builds, and complete untruncated output. Use when the user wants a distinctive website or landing page, a redesign or taste audit, a brand board, app-screen concepts, or design references generated before code. |
-
 ### [TheQtCompanyRnD/agent-skills](https://github.com/TheQtCompanyRnD/agent-skills)
 
 | Skill | Use it when |
@@ -137,19 +132,6 @@ Ditto is maintained in this repository. Install it alone with `bunx skills add q
 | Skill | Use it when |
 | --- | --- |
 | [`archify`](skills/archify/) | Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle/state diagrams as explorable standalone HTML with inline SVG, dark/light themes, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Accept plain-language requirements or pasted Mermaid flowchart, sequenceDiagram, and stateDiagram input; inspect repository evidence when the diagram must reflect real code. Use when the user asks to visualize system architecture, infrastructure, cloud/security/network topology, technical workflows, API call sequences, request lifecycles, data pipelines, ETL/ELT, data lineage, state machines, or to convert/beautify Mermaid. |
-
-### [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)
-
-| Skill | Use it when |
-| --- | --- |
-| [`deploy-to-vercel`](skills/deploy-to-vercel/) | Deploy applications and websites to Vercel. Use when the user requests deployment actions like "deploy my app", "deploy and give me the link", "push this live", or "create a preview deployment". |
-| [`vercel-composition-patterns`](skills/vercel-composition-patterns/) | React composition patterns that scale. Use when refactoring components with boolean prop proliferation, building flexible component libraries, or designing reusable APIs. Triggers on tasks involving compound components, render props, context providers, or component architecture. Includes React 19 API changes. |
-| [`vercel-optimize`](skills/vercel-optimize/) | Use for Vercel cost and performance optimization on deployed projects, especially Next.js, SvelteKit, Nuxt, and limited Astro apps. Collect Vercel metrics, usage, project config, and code scan results first; investigate only metric-backed candidates; produce ranked recommendations grounded in verified files and version-aware Vercel/framework docs. Trigger for Vercel bill reduction, slow or expensive routes, caching opportunities, Function Invocations, Build Minutes, Fast Data Transfer, Core Web Vitals, Bot Management, Fluid compute, or cost breakdown requests. |
-| [`vercel-react-best-practices`](skills/vercel-react-best-practices/) | React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements. |
-| [`vercel-react-native-skills`](skills/vercel-react-native-skills/) | React Native and Expo best practices for building performant mobile apps. Use when building React Native components, optimizing list performance, implementing animations, or working with native modules. Triggers on tasks involving React Native, Expo, mobile performance, or native platform APIs. |
-| [`vercel-react-view-transitions`](skills/vercel-react-view-transitions/) | Guide for implementing smooth, native-feeling animations using React's View Transition API (`<ViewTransition>` component, `addTransitionType`, and CSS view transition pseudo-elements). Use this skill whenever the user wants to add page transitions, animate route changes, create shared element animations, animate enter/exit of components, animate list reorder, implement directional (forward/back) navigation animations, or integrate view transitions in Next.js. Also use when the user mentions view transitions, `startViewTransition`, `ViewTransition`, transition types, or asks about animating between UI states in React without third-party animation libraries. |
-| [`web-design-guidelines`](skills/web-design-guidelines/) | Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices". |
-| [`writing-guidelines`](skills/writing-guidelines/) | Review docs/prose for Writing Guidelines compliance. Use when asked to "review my docs", "check writing style", "audit prose", "review docs voice and tone", or "check this page against the writing handbook". |
 
 <!-- skills:end -->
 

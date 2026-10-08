@@ -61,14 +61,8 @@
       "skillPath": "skills/coach/SKILL.md",
       "computedHash": "855e11dd3dcd7093c60583efd45ac24ce15a82790b3b76886a9017bc54a3ed1b"
     },
-    "deploy-to-vercel": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/deploy-to-vercel/SKILL.md",
-      "computedHash": "d2b5bcc7c09fdb649129ffc7dd7b647ec1b155736974b974292675afd588cb39"
-    },
     "design-taste": {
-      "source": "quantavil/my-skills",
+      "source": "./quantavil/my-skills",
       "sourceType": "local",
       "skillPath": "skills/design-taste/SKILL.md",
       "computedHash": "40f9221ba46be635c971d0844bf028ddf0ffef4f1719da9ee38ed1241cd45980"
@@ -285,59 +279,17 @@
       "skillPath": "skills/using-superpowers/SKILL.md",
       "computedHash": "ef8670c2a2d8e2f6ed52d6f3219759903300ca13afc5ec2e25826a735112562b"
     },
-    "vercel-composition-patterns": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/composition-patterns/SKILL.md",
-      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
-    },
-    "vercel-optimize": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/vercel-optimize/SKILL.md",
-      "computedHash": "9d4ace02972b9b1c462f097c7322eb32c9f04bba6f2fb5cf482086d402eeec33"
-    },
-    "vercel-react-best-practices": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/react-best-practices/SKILL.md",
-      "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
-    },
-    "vercel-react-native-skills": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/react-native-skills/SKILL.md",
-      "computedHash": "2e9088a7333666d8c2833b8ff58bd51b955501c42b4c7244f72b4cbf22dafcc4"
-    },
-    "vercel-react-view-transitions": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/react-view-transitions/SKILL.md",
-      "computedHash": "73fddafed488c308ee0799178432801fe10aa338451948ea05f4200541053040"
-    },
     "verification-before-completion": {
       "source": "obra/superpowers",
       "sourceType": "github",
       "skillPath": "skills/verification-before-completion/SKILL.md",
       "computedHash": "b529822bdac4b197b180fe12225cff86b930b65910435103c10622df7f041651"
     },
-    "web-design-guidelines": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/web-design-guidelines/SKILL.md",
-      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
-    },
     "webapp-testing": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/webapp-testing/SKILL.md",
       "computedHash": "ad5b1fc52807e9afa4635e59218a026b164dc58b6c3f41b0f7c644dcd6ccf572"
-    },
-    "writing-guidelines": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/writing-guidelines/SKILL.md",
-      "computedHash": "e90462d4f801d823603b12c345ad0ff91a7489415274432681d21c7129123c26"
     },
     "writing-plans": {
       "source": "obra/superpowers",
