@@ -48,9 +48,14 @@ rows = [f"[{s.start:.2f}s–{s.end:.2f}s] {s.text.strip()}"
 if not rows:
     raise RuntimeError("No usable speech transcript")
 Path("transcript.txt").write_text("\n".join(rows), encoding="utf-8")
+print(f"Detected language: {info.language} ({info.language_probability:.2f})")
 ```
 
-Check prerequisites before running. A first transcription may download the selected model; disclose this. Use an already-configured speech-to-text service if the user prefers it. If tooling is missing, report what is needed rather than fabricating a transcript. Follow the user's environment/install rules; use prebuilt dependencies.
+Check the detected language and spot-check the transcript against the audio at the beginning, middle, and end. Auto-detection can confuse Hindi and Urdu; if the speech is clearly Hindi, retry with `language="hi"`. A forced language is not proof of accuracy: if text is still garbled, use a larger multilingual model or an already-configured speech-to-text service. Do not fact-check claims from an unreliable transcript; if speech cannot be recovered, say so and mark affected claims unverifiable.
+
+A first transcription may download the selected model; disclose this. Check prerequisites before running. If tooling is missing, report what is needed rather than fabricating a transcript. Follow the user's environment/install rules; use prebuilt dependencies and keep any temporary setup isolated.
+
+Compatibility note: if decoding fails with `TypeError: open() got an unexpected keyword argument 'metadata_errors'`, the installed `faster-whisper` and PyAV versions are incompatible. In the tested `faster-whisper` 1.2.1 + PyAV 19 combination, use `av<19` in an isolated environment or a `faster-whisper` build containing the upstream fix. See the [upstream issue](https://github.com/SYSTRAN/faster-whisper/issues/1589).
 
 ## Fact-check: host-native tools
 
