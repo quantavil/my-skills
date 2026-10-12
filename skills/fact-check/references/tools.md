@@ -2,6 +2,15 @@
 
 Use existing tools; do not build a separate application or install models during skill setup. Work in a new local directory for each video. Substitute the actual URL, paths and subtitle language in the examples, passing them as quoted arguments.
 
+## Choosing a recent channel video
+
+When asked for a channel's latest or a recent video, list its official videos and verify the selected video's upload date and URL:
+
+```bash
+yt-dlp --flat-playlist --playlist-end 8 --print '%(id)s\t%(upload_date)s\t%(title)s' 'CHANNEL_VIDEOS_URL'
+yt-dlp --no-playlist --skip-download --print '%(id)s\t%(upload_date)s\t%(duration_string)s\t%(title)s\t%(webpage_url)s' 'VIDEO_URL'
+```
+
 ## Subtitles: yt-dlp
 
 For supported video URLs, inspect available subtitle tracks:
@@ -16,7 +25,7 @@ Select a track matching the spoken language; prefer human subtitles, then automa
 yt-dlp --no-playlist --skip-download --write-subs --write-auto-subs --sub-langs 'LANGUAGE_CODE' --sub-format vtt -o 'source.%(ext)s' 'VIDEO_URL'
 ```
 
-Read the VTT/SRT cues as the transcript, keeping timestamps and removing repeated rolling-caption overlap. A supplied readable transcript skips downloading. Empty/malformed captions trigger audio transcription.
+Read each VTT/SRT cue through the next timestamp line; YouTube VTT may put caption text after blank lines or include inline word-timing tags. Strip tags, keep cue timestamps, remove repeated rolling-caption overlap, and spot-check the opening and ending speech. A supplied readable transcript skips downloading. Empty/malformed captions trigger audio transcription.
 
 ## Audio fallback: yt-dlp + faster-whisper
 
