@@ -22,6 +22,13 @@ class ReportTests(unittest.TestCase):
         self.assertIn('href="#section-1"', page)
         self.assertIn('<strong class="verdict verdict-supported">Supported</strong>', page)
 
+    def test_claims_are_separate_landmarks_without_losing_content(self):
+        page = self.report.render('# Report\n\n## Findings\n\nBrief summary.\n\n## C1 · A claim\n\n✅ **Supported**\n\n> The actual quotation.\n\nExplanation with [source](https://example.org).\n\n## Coverage\n\nLimited to one claim.')
+        self.assertIn('aria-labelledby="section-2"', page)
+        self.assertEqual(page.count('The actual quotation.'), 1)
+        self.assertEqual(page.count('Limited to one claim.'), 1)
+        self.assertIn('href="https://example.org"', page)
+
     def test_source_content_cannot_execute_or_load_external_images(self):
         page = self.report.render('# <title>\n\n<script>alert(1)</script>\n\n[x](javascript:alert(1))\n\n![tracking](https://example.org/track.png)')
         self.assertNotIn('<script>', page)

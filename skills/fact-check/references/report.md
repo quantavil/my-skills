@@ -28,7 +28,7 @@ Render the same report; never ask the AI to recreate HTML/CSS for each video:
 uv run /path/to/fact-check/scripts/render_report.py /path/to/job/report.md
 ```
 
-This writes `report.html` beside the Markdown. Optional flags: `--output PATH`, `--title TEXT`, `--lang hi` (or the report's actual language code). The script declares its small dependencies, `markdown-it-py` and `Jinja2`; uv caches them separately from the skill. Alternatively run it with Python in an environment containing those packages. HTML opens offline once generated, with embedded styles/maps, a contents menu, and print styling. Return clickable links to both files; use the host's file/browser preview when available. If rendering cannot run, provide the Markdown and explain the specific missing prerequisite.
+This writes `report.html` beside the Markdown. Optional flags: `--output PATH`, `--title TEXT`, `--lang hi` (or the report's actual language code). The script declares its small dependencies, `markdown-it-py` and `Jinja2`; uv caches them separately from the skill. Alternatively run it with Python in an environment containing those packages. HTML opens offline once generated, with embedded styles/maps, a report index, distinct claim sections, and print styling. Return clickable links to both files; use the host's file/browser preview when available. If rendering cannot run, provide the Markdown and explain the specific missing prerequisite.
 
 ## Argument analysis: explain the inference
 

@@ -8,6 +8,7 @@ import argparse
 import base64
 from html import escape
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -33,9 +34,11 @@ def diagram(source):
         raise ValueError('Invalid argument map: ' + result.stderr[-1200:])
     encoded = base64.b64encode(result.stdout.encode('utf-8')).decode('ascii')
     # SVG displayed as an image is inert; never inject SVG source into the HTML DOM.
-    return ('<figure class="argument-map"><img alt="Argument map; premises and conclusion are explained in the accompanying text" '
-            f'src="data:image/svg+xml;base64,{encoded}">'
-            '<figcaption>Argument map · follow the labeled connections; node colors do not indicate truth.</figcaption></figure>\n')
+    return ('<figure class="argument-map"><figcaption><strong>Argument map</strong>'
+            '<span>Follow the labeled connections</span></figcaption>'
+            '<div class="map-canvas"><img alt="Argument map; premises and conclusion are explained in the accompanying text" '
+            f'src="data:image/svg+xml;base64,{encoded}"></div>'
+            '<p class="map-note">Node colors identify roles, not truth.</p></figure>\n')
 
 
 def render(markdown, title=None, language='en'):
@@ -64,24 +67,40 @@ def render(markdown, title=None, language='en'):
     md.renderer.rules['strong_open'] = strong_open
     md.renderer.rules['image'] = lambda tokens, index, options, env: escape(tokens[index].content)
     tokens = md.parse(markdown)
-    contents = []
+    contents, boundaries = [], []
     for index, token in enumerate(tokens):
-        if token.type != 'heading_open':
+        if token.type != 'heading_open' or token.level != 0:
             continue
         inline = tokens[index + 1]
         label = ''.join(child.content for child in (inline.children or []) if child.type in ('text', 'code_inline'))
         if token.tag == 'h1' and title is None:
             title = label
-        if token.tag in ('h2', 'h3'):
+        claim = re.match(r'^(C\d+)\b[\s·:—-]*(.*)', label, re.I)
+        if token.tag == 'h2' or (token.tag == 'h3' and claim):
             anchor = f'section-{len(contents) + 1}'
             token.attrSet('id', anchor)
-            contents.append({'id': anchor, 'label': label, 'level': token.tag})
-    content = md.renderer.render(tokens, md.options, {})
+            entry = {'id': anchor, 'label': label, 'claim_id': claim[1] if claim else '',
+                     'short_label': claim[2] if claim else label}
+            contents.append(entry)
+            boundaries.append(index)
+    intro = md.renderer.render(tokens[:boundaries[0] if boundaries else len(tokens)], md.options, {})
+    sections = []
+    for number, start in enumerate(boundaries):
+        stop = boundaries[number + 1] if number + 1 < len(boundaries) else len(tokens)
+        chunk = tokens[start:stop]
+        entry = dict(contents[number])
+        entry['kind'] = 'claim' if entry['claim_id'] else 'narrative'
+        if not number and not entry['claim_id']:
+            entry['kind'] = 'overview'
+        if any(item.type == 'fence' and item.info.strip().split()[:1] == ['dot'] for item in chunk):
+            entry['kind'] = 'analysis'
+        entry['content'] = md.renderer.render(chunk, md.options, {})
+        sections.append(entry)
     assets = Path(__file__).resolve().parents[1] / 'assets'
     template = Environment(loader=FileSystemLoader(assets),
                            autoescape=select_autoescape(default=True)).get_template('report.html.j2')
     return template.render(title=title or 'Fact-check report', language=language,
-                           content=content, contents=contents)
+                           intro=intro, sections=sections, contents=contents)
 
 
 def main(argv=None):
