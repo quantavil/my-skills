@@ -1,6 +1,6 @@
 # Tools
 
-Use existing tools; do not build a separate application or install models during a routine fact-check. Use a dedicated output directory per source; rerun the same command to reuse completed work. Run only one acquisition process per output directory. Resolve the helper path from the skill directory, not the current working directory.
+Use a dedicated output directory per source and one acquisition process per directory. Rerun the same command to resume. Resolve helper paths from the skill directory. Routine checks reuse installed tools/models; setup is a separate task.
 
 ## Prerequisites and installation
 
@@ -24,14 +24,7 @@ For local audio transcription:
 
 Check only prerequisites for the selected route: subtitles and supplied transcripts do not require a GPU or ASR model. Installations are setup work; routine fact-checking uses the existing installation.
 
-Before audio fallback, inspect the actual system rather than assuming this machine's setup:
-
-1. Check OS/architecture, available RAM, required commands, and the chosen runtime's `--version` and `--list-devices`. On Linux use `uname -sm` and `free -h`; on other systems use their equivalents. `nvidia-smi` can show NVIDIA free VRAM, but its absence does not mean there is no GPU: the runtime may expose Metal or Vulkan devices.
-2. Resolve an existing runtime and both readable, nonempty model files. Prefer user-configured paths or an existing installation; the shared model folder below is a default, not a requirement. Do not redownload a model already available elsewhere. A binary existing on disk is insufficient if it fails to run or lacks ASR support.
-3. Use GPU offload only with a working supported device and sufficient free memory. The earlier 6.4 GB observation is a guide for this configuration, not a universal threshold. With no suitable GPU, a compatible CPU build can run with `--device none -ngl 0 --no-mmproj-offload`, subject to available RAM. Explain that CPU transcription is slower; do not claim the entire fact-check is impossible solely because there is no GPU. Avoid downloading a CPU runtime without setup authorization.
-4. If local transcription cannot run, use a user-configured STT service where permitted, or ask for a transcript. Explain the specific blocker (missing model, incompatible runtime/driver, insufficient memory, or unavailable service), which route is blocked, and the smallest remedy. Do not upload audio to a new external service without user authorization.
-
-Reuse a supplied local audio file instead of downloading it. For a video URL, check these prerequisites before fetching audio. Report platform/authentication errors explicitly rather than treating a failed subtitle request as proof that subtitles do not exist.
+Before audio fallback, run the helper's `doctor` command. Inspect OS/architecture, RAM (on Linux), commands, runtime version/devices, and both readable model files. Prefer user-configured paths or existing installations; do not redownload a model already elsewhere. Runtime startup establishes compatibility and memory fit, not a file merely existing. Missing NVIDIA tools do not rule out Metal/Vulkan devices. If a route is blocked, name the specific problem and smallest remedy. A supplied transcript or usable subtitles bypass ASR entirely. Reuse supplied audio rather than downloading it; external STT uploads require existing authorization.
 
 ## Choosing a recent channel video
 
@@ -73,8 +66,7 @@ Check names, numbers, negations, and the opening/middle/ending speech against th
 
 ## Fact-check: host-native tools
 
-Use the current session's model and available search/page-reading tools. In Codex, use its native web search and page-opening tools; in Claude Code, use `WebSearch` and `WebFetch`; in ChatGPT, use its available search capability. Read relevant sources, prefer primary evidence, and consider contradictory evidence. Tool availability depends on the host.
+Use the current session's model and available search/page-reading tools. In Codex, use its native web search and page-opening tools; in Claude Code, use `WebSearch` and `WebFetch`; in ChatGPT, use its available search capability. Tool availability depends on the host.
 
-The transcript stays in the current session: no separate ChatGPT API call, model SDK, Tavily key, or sending it to another chat is needed. Check search availability early. If unavailable, still obtain the transcript through the normal subtitles/audio route when possible and return the transcript embedded in the fact-check request described in [report and handoff](report.md). State that verification has not been performed; do not present model memory as sourced verification. If acquisition also fails, explain that separate blocker without inventing a transcript.
-
+No separate ChatGPT API call, SDK or Tavily key is needed. Check search availability early; if unavailable, still acquire the transcript when possible, then follow the complete-transcript handoff in [report](report.md).
 Documentation: [yt-dlp](https://github.com/yt-dlp/yt-dlp), [Qwen3-ASR](https://github.com/QwenLM/Qwen3-ASR), [llama.cpp](https://github.com/ggml-org/llama.cpp).

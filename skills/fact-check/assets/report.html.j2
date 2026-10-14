@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="{{ language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>{{ title }}</title>
+<style>
+:root { color-scheme: light; --ink:#243647; --muted:#586a7c; --paper:#fff; --ground:#edf2f7; --blue:#2155c3; --line:#d8e2ed; }
+* { box-sizing:border-box; }
+html { scroll-padding-top:24px; }
+body { margin:0; background:var(--ground); color:var(--ink); font:17px/1.75 "Segoe UI", "Noto Sans", "Noto Sans Devanagari", sans-serif; }
+a { color:var(--blue); text-underline-offset:3px; overflow-wrap:anywhere; }
+a:hover { text-decoration-thickness:2px; }
+a:focus-visible, summary:focus-visible { outline:3px solid var(--blue); outline-offset:4px; }
+.shell { max-width:1160px; margin:48px auto; padding:0 24px; }
+.masthead { display:flex; justify-content:space-between; gap:16px; padding:0 0 16px; color:var(--muted); font-size:14px; }
+.masthead a { color:var(--ink); font-weight:650; text-decoration:none; }
+.page { background:var(--paper); border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:0 12px 38px #24364708; }
+.reading-nav { padding:16px 28px; background:#f7faff; border-bottom:1px solid var(--line); font-size:14px; }
+.reading-nav summary { cursor:pointer; width:fit-content; font-weight:600; }
+.reading-nav ol { columns:2; margin:12px 0 4px; padding-left:22px; }
+.reading-nav li { break-inside:avoid; padding:3px 12px 3px 0; }
+article { padding:48px clamp(24px,6vw,92px) 64px; }
+h1,h2,h3,h4 { line-height:1.25; font-weight:650; letter-spacing:-.025em; overflow-wrap:anywhere; }
+h1 { font-size:clamp(30px,4.4vw,47px); max-width:26ch; margin:0 0 24px; }
+h2 { margin:48px 0 18px; padding-top:28px; border-top:1px solid var(--line); font-size:27px; }
+h3 { margin:34px 0 14px; font-size:22px; }
+h4 { font-size:18px; margin:24px 0 10px; }
+p { margin:0 0 18px; }
+article > h1 + p { color:var(--muted); font-size:15px; }
+article > p, article > ul, article > ol, blockquote { max-width:76ch; }
+ul,ol { padding-left:24px; }
+li { padding-left:4px; margin:6px 0; }
+li > p { margin-bottom:8px; }
+blockquote { margin:22px 0; padding:16px 22px; border-left:4px solid #8aa8e8; border-radius:0 10px 10px 0; background:#f1f5fc; font-size:18px; }
+blockquote p:last-child { margin-bottom:0; }
+.verdict { display:inline-block; padding:3px 11px; border-radius:6px; font-size:14px; letter-spacing:0; line-height:1.6; }
+.verdict-supported { color:#14613b; background:#e5f3eb; }
+.verdict-misleading { color:#805000; background:#fff0ce; }
+.verdict-false { color:#9b2639; background:#fbe9ed; }
+.verdict-unverifiable { color:#48576a; background:#edf0f5; }
+.verdict-opinion { color:#644396; background:#f1ebfa; }
+pre { padding:18px; overflow:auto; border:1px solid var(--line); border-radius:8px; background:#f6f8fb; font-size:13px; line-height:1.6; }
+code { font-family:ui-monospace, "DejaVu Sans Mono", monospace; font-size:.88em; }
+:not(pre) > code { background:#edf2f7; padding:2px 5px; border-radius:4px; overflow-wrap:anywhere; }
+hr { border:0; border-top:1px solid var(--line); margin:32px 0; }
+.argument-map { margin:28px 0; padding:20px; border:1px solid var(--line); border-radius:12px; background:#fbfcff; overflow:auto; }
+.argument-map img { display:block; max-width:100%; height:auto; margin:auto; }
+figcaption { margin-top:14px; font-size:13px; color:var(--muted); line-height:1.5; }
+footer { padding:18px 28px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; }
+@media (max-width:600px) {
+  body { font-size:16px; }
+  .shell { margin:20px auto; padding:0 12px; }
+  .masthead { font-size:12px; }
+  article { padding:30px 22px 40px; }
+  .reading-nav { padding:14px 22px; }
+  .reading-nav ol { columns:1; }
+  .argument-map { padding:10px; }
+  .argument-map img { min-width:540px; }
+  blockquote { padding:14px 16px; font-size:17px; }
+}
+@media print {
+  body { background:white; font-size:11pt; line-height:1.55; }
+  .shell { max-width:none; margin:0; padding:0; }
+  .masthead,.reading-nav,footer { display:none; }
+  .page { border:0; border-radius:0; box-shadow:none; overflow:visible; }
+  article { padding:0; }
+  h1 { font-size:27pt; }
+  h2 { font-size:18pt; margin-top:24px; padding-top:14px; }
+  h3 { font-size:14pt; }
+  h1,h2,h3,h4 { break-after:avoid; }
+  blockquote,figure { break-inside:avoid; }
+  .argument-map { overflow:visible; padding:8px; }
+  .argument-map img { max-width:100%; min-width:0; }
+  .verdict { border:1px solid currentColor; }
+  pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+}
+</style>
+</head>
+<body id="top">
+<div class="shell">
+<header class="masthead"><a href="#top">Fact-check report</a><span>Evidence &amp; reasoning</span></header>
+<div class="page">
+{% if contents %}
+<nav class="reading-nav" aria-label="Report contents">
+<details><summary>Explore this report</summary><ol>{% for item in contents %}<li><a href="#{{ item.id }}">{{ item.label }}</a></li>{% endfor %}</ol></details>
+</nav>
+{% endif %}
+<article>{{ content | safe }}</article>
+<footer>Read the evidence and coverage limits alongside each verdict.</footer>
+</div>
+</div>
+</body>
+</html>
