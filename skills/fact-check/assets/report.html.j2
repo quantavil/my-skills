@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="{{ language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>{{ title }}</title>
+<style>
+:root { color-scheme:light; --ink:#1d2c3e; --muted:#68778a; --ground:#f6f8fb; --paper:#fff; --teal:#197b72; --purple:#6554a4; --line:#e0e6ee; }
+* { box-sizing:border-box; }
+html { scroll-padding-top:32px; }
+body { margin:0; color:var(--ink); background:var(--ground); font:16px/1.75 "Segoe UI","Noto Sans","Noto Sans Devanagari",sans-serif; }
+a { color:var(--teal); text-underline-offset:3px; overflow-wrap:anywhere; }
+a:hover { text-decoration-thickness:2px; }
+a:focus-visible { outline:3px solid var(--teal); outline-offset:4px; border-radius:3px; }
+.skip-link { position:fixed; top:-80px; left:20px; padding:12px; z-index:2; background:white; }
+.skip-link:focus { top:12px; }
+.layout { display:grid; grid-template-columns:236px minmax(0,1fr); gap:56px; max-width:1440px; padding:42px 48px 56px; margin:auto; }
+.sidebar { position:sticky; top:36px; align-self:start; padding-top:6px; }
+.brand { display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none; font-size:21px; font-weight:700; letter-spacing:-.5px; }
+.brand svg { width:30px; height:30px; color:var(--teal); flex:none; }
+.sidebar nav { margin-top:34px; }
+.nav-label { font-size:12px; color:var(--muted); margin-bottom:12px; }
+.index { list-style:none; padding:0; margin:0; }
+.index li { margin:3px 0; }
+.index a { display:flex; gap:10px; padding:9px 10px; border-radius:7px; color:#56667a; text-decoration:none; font-size:13px; line-height:1.55; }
+.index a:hover { background:#e9eff5; color:var(--ink); }
+.index .claim-ref { flex:none; color:var(--teal); font-size:11px; font-weight:700; padding-top:2px; }
+.index .nav-text { overflow-wrap:anywhere; }
+main { min-width:0; max-width:1020px; }
+.report-intro { padding:4px 0 32px; }
+h1,h2,h3,h4 { line-height:1.25; letter-spacing:-.03em; overflow-wrap:anywhere; }
+h1 { font-size:clamp(32px,3.6vw,50px); font-weight:680; margin:0 0 22px; max-width:27ch; line-height:1.13; }
+h2 { font-size:25px; margin:0 0 18px; font-weight:650; }
+h3 { font-size:21px; margin:28px 0 14px; }
+h4 { font-size:18px; margin:24px 0 12px; }
+p { margin:0 0 16px; }
+.report-section > :is(p,ul,ol) { max-width:76ch; }
+.report-section:has(> :target) { border-color:#8fb8b0; }
+.report-intro > h1 + p { font-size:13px; color:var(--muted); max-width:70ch; }
+.report-intro > p:last-child { margin-bottom:0; }
+.report-section { margin-bottom:24px; padding:30px 34px; border:1px solid var(--line); border-radius:12px; background:var(--paper); }
+.report-section > :last-child { margin-bottom:0; }
+.report-section.overview { background:#eaf4f1; border-color:#d5e7e0; }
+.overview h2 { font-size:15px; color:#30685c; letter-spacing:0; margin-bottom:12px; }
+.overview > p { font-size:18px; line-height:1.7; }
+.report-section.claim { border-top:3px solid #bcc9da; }
+.claim h2, .claim h3:first-child { font-size:24px; }
+.claim > h2 + p, .claim > h3:first-child + p { margin-top:-2px; color:var(--muted); font-size:13px; }
+blockquote { margin:22px 0; padding:14px 20px; border-left:3px solid #b6c5d8; background:#f6f8fb; border-radius:0 7px 7px 0; font-size:17px; color:#3c4f65; }
+blockquote p:last-child { margin:0; }
+.verdict { display:inline-flex; align-items:center; padding:3px 10px; border:1px solid transparent; border-radius:5px; font-size:12px; line-height:1.65; font-weight:650; letter-spacing:0; }
+.verdict-supported { color:#19664b; background:#e8f5ee; border-color:#cee8db; }
+.verdict-misleading { color:#8a5a0a; background:#fff4dc; border-color:#efdfb8; }
+.verdict-false { color:#aa3347; background:#fcebf0; border-color:#f2d4dc; }
+.verdict-unverifiable { color:#59697d; background:#edf1f6; border-color:#dde4ed; }
+.verdict-opinion { color:#7054a2; background:#f2edfa; border-color:#e4dbf3; }
+li { margin:6px 0; padding-left:3px; }
+ul,ol { padding-left:24px; }
+pre { overflow:auto; padding:18px; background:#f4f6fa; border:1px solid var(--line); border-radius:7px; font-size:13px; }
+code { font:.88em/1.6 ui-monospace,"DejaVu Sans Mono",monospace; }
+:not(pre) > code { padding:2px 5px; background:#edf1f6; border-radius:4px; overflow-wrap:anywhere; }
+hr { border:0; border-top:1px solid var(--line); margin:24px 0; }
+.analysis { border-color:#dcd6ea; }
+.argument-map { margin:26px -12px 20px; border:1px solid #ddd9eb; border-radius:9px; overflow:hidden; }
+.argument-map figcaption { padding:12px 18px; display:flex; gap:16px; align-items:center; justify-content:space-between; background:#f3f0f9; border-bottom:1px solid #e2ddec; }
+.argument-map figcaption strong { color:#645084; font-size:13px; }
+.argument-map figcaption span { color:#7b728d; font-size:11px; }
+.map-canvas { overflow:auto; padding:28px 18px; background-color:#fdfcff; background-image:radial-gradient(#e2dfed .8px,transparent .8px); background-size:16px 16px; }
+.map-canvas img { display:block; width:100%; min-width:600px; height:auto; margin:auto; }
+.map-note { margin:0; padding:9px 18px; border-top:1px solid #eeeaf4; color:var(--muted); font-size:11px; background:#fdfcff; }
+footer { display:flex; justify-content:space-between; gap:16px; color:var(--muted); font-size:12px; padding:4px 2px 0; }
+@media (max-width:1050px) {
+  .layout { grid-template-columns:190px minmax(0,1fr); gap:28px; padding:28px; }
+  .report-section { padding:26px; }
+  .index a { padding:8px 4px; }
+}
+@media (max-width:760px) {
+  .layout { display:block; padding:20px 16px 32px; }
+  .sidebar { position:static; padding:0 0 24px; }
+  .brand { font-size:19px; }
+  .sidebar nav { margin-top:18px; }
+  .nav-label { display:none; }
+  .index { display:flex; overflow:auto; gap:6px; padding:0 0 6px; scrollbar-width:thin; }
+  .index li { flex:none; margin:0; }
+  .index a { padding:7px 10px; border:1px solid var(--line); background:white; max-width:185px; }
+  .nav-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .report-intro { padding:6px 4px 28px; }
+  h1 { font-size:34px; max-width:100%; }
+  .report-section { padding:23px 22px; margin-bottom:18px; }
+  .claim h2,.claim h3:first-child { font-size:22px; }
+  .overview > p { font-size:17px; }
+  blockquote { padding:12px 16px; font-size:16px; }
+  .argument-map { margin:22px -8px 18px; }
+  .argument-map figcaption { display:block; padding:10px 14px; }
+  .argument-map figcaption span { display:block; margin-top:2px; }
+  .map-canvas { padding:20px 12px; }
+}
+@media print {
+  body { background:white; font-size:10.5pt; line-height:1.5; }
+  .layout { display:block; max-width:none; padding:0; }
+  .sidebar,.skip-link,footer { display:none; }
+  main { max-width:none; }
+  .report-intro { padding:0 0 20px; }
+  h1 { font-size:27pt; }
+  .report-section { padding:18px 0; border:0; border-top:1px solid #bbb; border-radius:0; background:white!important; }
+  h2,.claim h2 { font-size:16pt; }
+  h1,h2,h3,h4 { break-after:avoid; }
+  blockquote,figure { break-inside:avoid; }
+  .argument-map { margin:18px 0; }
+  .map-canvas { overflow:visible; background:none; padding:12px; }
+  .map-canvas img { min-width:0; max-width:100%; }
+  .verdict { border:1px solid currentColor; }
+  pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+}
+</style>
+</head>
+<body id="top">
+<a class="skip-link" href="#report">Skip to report</a>
+<div class="layout">
+<aside class="sidebar">
+<a class="brand" href="#top"><svg aria-hidden="true" viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="28" height="28" rx="9" stroke="currentColor" stroke-width="1.5"/><path d="m9 16 5 5 9-10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Fact check</a>
+{% if contents %}
+<nav aria-label="Report contents">
+<div class="nav-label">In this report</div>
+<ol class="index">{% for item in contents %}<li><a href="#{{ item.id }}" title="{{ item.label }}">{% if item.claim_id %}<span class="claim-ref">{{ item.claim_id }}</span>{% endif %}<span class="nav-text">{{ item.short_label }}</span></a></li>{% endfor %}</ol>
+</nav>
+{% endif %}
+</aside>
+<main id="report">
+<header class="report-intro">{{ intro | safe }}</header>
+{% for section in sections %}
+<section class="report-section {{ section.kind }}" aria-labelledby="{{ section.id }}">{{ section.content | safe }}</section>
+{% endfor %}
+<footer><span>Evidence &amp; reasoning</span><a href="#top">Back to top</a></footer>
+</main>
+</div>
+</body>
+</html>

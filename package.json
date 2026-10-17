@@ -1,0 +1,19 @@
+{
+  "name": "my-skills",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "my-skills": "./run.sh"
+  },
+  "scripts": {
+    "check": "./run.sh check",
+    "test": "bun test tests",
+    "typecheck": "tsc --noEmit",
+    "build": "./run.sh"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "skills": "1.7.2",
+    "typescript": "5.9.3"
+  }
+}

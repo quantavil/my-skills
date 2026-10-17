@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GSTR1PortalSchema",
+  "description": "GSTN Official Offline Return Schema for GSTR-1",
+  "type": "object",
+  "required": ["gstin", "fp"],
+  "properties": {
+    "gstin": { "type": "string" },
+    "fp": { "type": "string" },
+    "gt": { "type": "number" },
+    "cur_gt": { "type": "number" },
+    "b2b": { "type": "array" },
+    "b2cl": { "type": "array" },
+    "b2cs": { "type": "array" },
+    "cdnr": { "type": "array" },
+    "cdnur": { "type": "array" },
+    "exp": { "type": "array" },
+    "at": { "type": "array" },
+    "atadj": { "type": "array" },
+    "exemp": { "type": "object" },
+    "hsn": {
+      "type": "object",
+      "properties": {
+        "data": { "type": "array" }
+      }
+    },
+    "doc_issue": {
+      "type": "object",
+      "properties": {
+        "doc_det": { "type": "array" }
+      }
+    }
+  }
+}

@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-browser": {
+      "type": "upstream",
+      "contentHash": "dd491d53824ad9286ec950aee667098446332429a6d41fe28b4ba11f1959264c"
+    },
+    "anthropic": {
+      "type": "superskill",
+      "contentHash": "eb486e20b9a014a7e529baacb137ac2be9d3c0cfdb37b88e5b723822e3b2dd11"
+    },
+    "archify": {
+      "type": "upstream",
+      "contentHash": "0ab1326212791f367efe2729c3eac48bca1e21f1bdcb02fba88edf8c12f21b61"
+    },
+    "brainstorming": {
+      "type": "upstream",
+      "contentHash": "fc6339f0e5b48c63279bd4f6c6340db55301b69ccc37a13e1e52bd5b3062746c"
+    },
+    "brandkit": {
+      "type": "upstream",
+      "contentHash": "4bf33908992cde092395205122fad7a59e117190292bc8847cdba324b6f1c5b2"
+    },
+    "cavecrew": {
+      "type": "upstream",
+      "contentHash": "2e122d819a812bef0e4958706f306e4346e78ecb5a4893997b99cbc19866f514"
+    },
+    "caveman": {
+      "type": "upstream",
+      "contentHash": "71b600c88c8d1d36f18c4875db23b53c5d6cb9ba3195e19451d6b1bb67db07c4"
+    },
+    "caveman-commit": {
+      "type": "upstream",
+      "contentHash": "b416cf134b0f33ddadeca7977aebdbb2d3db79a166d0fce2e1aabeec98132766"
+    },
+    "caveman-compress": {
+      "type": "upstream",
+      "contentHash": "d820dbf2fa00a84f4a8e4c508444d88958f2140585d9c212828675e4e59d3ace"
+    },
+    "caveman-kit": {
+      "type": "superskill",
+      "contentHash": "ccd32a1f139687864739d4437fb3f7dc7f42bf896baaa35154bd7d9d0ba6a24d"
+    },
+    "caveman-review": {
+      "type": "upstream",
+      "contentHash": "36a4007c5c0c6b90b5accfee1cd769a86e4963b651dece2ce5f17a223a0abb4b"
+    },
+    "coach": {
+      "type": "upstream",
+      "contentHash": "855e11dd3dcd7093c60583efd45ac24ce15a82790b3b76886a9017bc54a3ed1b"
+    },
+    "design-taste": {
+      "type": "superskill",
+      "contentHash": "5c91d62184cc9abf9bffdaac473adb1fabf782a192cf4e383bd891e74a4c31a1"
+    },
+    "design-taste-frontend": {
+      "type": "upstream",
+      "contentHash": "18f81679d2b0247ce9da298b03ed8e47ecd3c206f2951d70eefb1b65d3219345"
+    },
+    "design-taste-frontend-v1": {
+      "type": "upstream",
+      "contentHash": "c6746fba186bed90e57923b80454984ad45126ae0e585c00ceaa7f96657911b7"
+    },
+    "design-taste-frontend-v2-experimental": {
+      "type": "upstream",
+      "contentHash": "2c015feb005bbc65c053b7b7e176e53bb1457b9a5cf7a3c05232c4b4e482a369"
+    },
+    "diagnosing-superpowers": {
+      "type": "upstream",
+      "contentHash": "0f33f20feb5340f7be932581880325725b0d2894e15193bffeab53ad474c3267"
+    },
+    "dispatching-parallel-agents": {
+      "type": "upstream",
+      "contentHash": "b011107f17188e0b2898bb1856b5bac8b49537cc86e737c82126558a235bd62a"
+    },
+    "ditto2": {
+      "type": "local",
+      "contentHash": "207e9da1a159c26a57615774fccf441b842d6273ad06d143da12f75d4990b41d"
+    },
+    "dms-plugin-maker": {
+      "type": "local",
+      "contentHash": "e4781ab3cbbab6fbca7b67ed369b0dc28e2526653cb3c683043dd0909ed2721b"
+    },
+    "doc-coauthoring": {
+      "type": "upstream",
+      "contentHash": "b964e4c3ffe13f66f76dd7919073e60c7aec622cd8a8363bb36323188100cf8e"
+    },
+    "docx": {
+      "type": "upstream",
+      "contentHash": "59c70107f8eae818bdfca7da685a6e4111aa519638b667775b794cb74987ec47"
+    },
+    "engram": {
+      "type": "superskill",
+      "contentHash": "a06d71524cf8f9ea539f9f4b5605c72de55703a4515fcbc238760e3f3a9503b4"
+    },
+    "executing-plans": {
+      "type": "upstream",
+      "contentHash": "ebf526e8565d02852f57f473bfb97c1baf142d4afe97dc6d169e966514382963"
+    },
+    "fact-check": {
+      "type": "local",
+      "contentHash": "73bf9653bc329c7e99a54158c11ab6d9e8b525487b1f901e32477667e23e328a"
+    },
+    "finishing-a-development-branch": {
+      "type": "upstream",
+      "contentHash": "4f571e7befb8b0946d9d7770232c818812412e9ab1dfb811f847edfba1fc6275"
+    },
+    "full-output-enforcement": {
+      "type": "upstream",
+      "contentHash": "26bd29ce4c5e02c7666b2d503609bf466bd32290822e91f0e984147048dbb924"
+    },
+    "gpt-taste": {
+      "type": "upstream",
+      "contentHash": "a7517d2f71baa638a57ffdba2d712f9debddda96c9a8f264006e64c2a9cca1f5"
+    },
+    "gstr-wala": {
+      "type": "local",
+      "contentHash": "d90312d147386439612ecee4b2c76c9dd0ed98ad1bc402fed23d5b2d02c1ad5d"
+    },
+    "high-end-visual-design": {
+      "type": "upstream",
+      "contentHash": "7db385e4c5370e5a7fca9704a1361b056e4504ea6a03924bb86f33a4f00b5c73"
+    },
+    "humanizer": {
+      "type": "upstream",
+      "contentHash": "d85c4727f62296887c3206e32a99caeed7611af7c4701c1b9931897260e31a73"
+    },
+    "i-have-adhd": {
+      "type": "upstream",
+      "contentHash": "e12ff08dfe4b5baae7065c2f05a5738b8a55f3ccbed82ba45f5496c8e83b2a25"
+    },
+    "image-to-code": {
+      "type": "upstream",
+      "contentHash": "58517b03b2a01f4c9ba65861559d03df931400871bbc200978c975b24bb92c73"
+    },
+    "imagegen-frontend-mobile": {
+      "type": "upstream",
+      "contentHash": "9ab7f4f6ce66a3cff02bbf5894e5bd5af50bf5d6ef0adffdc88e8fab772fe44f"
+    },
+    "imagegen-frontend-web": {
+      "type": "upstream",
+      "contentHash": "65f5ae59fa317567809438310b1c54f78cd133426deb43e4d3d4ca4c8f541628"
+    },
+    "industrial-brutalist-ui": {
+      "type": "upstream",
+      "contentHash": "8fc355c4aadb7d29c53ca28bc41be3cd6eea765d121e3737c4dc2d0f90a8effa"
+    },
+    "itr-wala": {
+      "type": "upstream",
+      "contentHash": "0402a4c27c966e13c195f0ba050a3912358a4b03241419b8c74ad42e32ae8adf"
+    },
+    "learn": {
+      "type": "upstream",
+      "contentHash": "36c6086827a3a1ad3a99a86124d31465d54a6bf6729ec5766b648020d3d97fc3"
+    },
+    "mcp-builder": {
+      "type": "upstream",
+      "contentHash": "826e46adf81e1372282e205c34e1a2ee876e72148007726e4a2512599d2fef7b"
+    },
+    "minimalist-ui": {
+      "type": "upstream",
+      "contentHash": "b201c0763796192405cfed7933b55e3dab6d530ca7f06a5e8095063d476635d7"
+    },
+    "myanimelist": {
+      "type": "local",
+      "contentHash": "373bcd73fdbe96feb7aa49e2adb246bd987ad5e6cf9a1b3f1a00d14677f3b871"
+    },
+    "orchestrator": {
+      "type": "local",
+      "contentHash": "2e32906434e0969c6a97cfd8341458f99b4fb3acb5a9c2bd4e69638ff743025b"
+    },
+    "paperclip": {
+      "type": "upstream",
+      "contentHash": "743a1715735451021f6c32d580a371a51b27eb1c85021d8816bc8432583afd72"
+    },
+    "pdf": {
+      "type": "upstream",
+      "contentHash": "cfbc539377088ca7e44a813b30c306327385bbd973cd7a721e1743f60837dd62"
+    },
+    "pptx": {
+      "type": "upstream",
+      "contentHash": "82eaf5daede5a1779aa17ccf06597cb209a0c2bd41d3a2f18bd45e0301a387fb"
+    },
+    "qt": {
+      "type": "superskill",
+      "contentHash": "4c4337c0fbb1ef4b30a69e5218e6c93c19b99896b6ccb2e30465d6e9dad3c6c6"
+    },
+    "qt-qml": {
+      "type": "upstream",
+      "contentHash": "47125bf78db12798e1bf3dcf77d6b65c58aa4efc6b9e0b445a43d36986a938f0"
+    },
+    "qt-qml-review": {
+      "type": "upstream",
+      "contentHash": "65a9ed8ed18927dc3c46951e167397bc94536fe10eb54fcd4dc6dc9632d29cf8"
+    },
+    "receiving-code-review": {
+      "type": "upstream",
+      "contentHash": "59361179fc9225173e0c145ffd9bafbf9fdbf8b43ce3dc308497a0b4f83a6063"
+    },
+    "redesign-existing-projects": {
+      "type": "upstream",
+      "contentHash": "52f2ade5449b7005942ebd221e53808a245b3e088ff096c44a374e1e481e9f6b"
+    },
+    "requesting-code-review": {
+      "type": "upstream",
+      "contentHash": "b095ac8c980339436b41de9989328f3f288f2e2a70452df28452bbeb6531d604"
+    },
+    "review": {
+      "type": "upstream",
+      "contentHash": "60079c74d26ca83432e6590450329e8d00fe8d56e68d09e711a37ac985ff83a7"
+    },
+    "stitch-design-taste": {
+      "type": "upstream",
+      "contentHash": "13322f38406cd3abf16ba45e35bdc9b18002d0153a79b4612b97aefc65d5a335"
+    },
+    "subagent-driven-development": {
+      "type": "upstream",
+      "contentHash": "71259c008c49ff734e64c61045f1aa235b9aa99642a9aca9398beb775f6c59c5"
+    },
+    "superpowers": {
+      "type": "superskill",
+      "contentHash": "f0e652e00320927003b9cf041e2e614ac4930063da13cfe8459f7b8ea5c287c3"
+    },
+    "systematic-debugging": {
+      "type": "upstream",
+      "contentHash": "276fb0aadb002ab930cc2a56de89e16995a2e3e70b33587652bf0a5fb123148d"
+    },
+    "test-driven-development": {
+      "type": "upstream",
+      "contentHash": "3cfe4ebb6fa7288f668d87880d279c8e48f7a92b63415e296857060f5ce22e05"
+    },
+    "using-git-worktrees": {
+      "type": "upstream",
+      "contentHash": "48c8a1040e378e0cb7208107294e3afa9067b9370c3f33b49a443eb6b7528b0d"
+    },
+    "using-superpowers": {
+      "type": "upstream",
+      "contentHash": "ef8670c2a2d8e2f6ed52d6f3219759903300ca13afc5ec2e25826a735112562b"
+    },
+    "verification-before-completion": {
+      "type": "upstream",
+      "contentHash": "b529822bdac4b197b180fe12225cff86b930b65910435103c10622df7f041651"
+    },
+    "webapp-testing": {
+      "type": "upstream",
+      "contentHash": "ad5b1fc52807e9afa4635e59218a026b164dc58b6c3f41b0f7c644dcd6ccf572"
+    },
+    "writing-plans": {
+      "type": "upstream",
+      "contentHash": "c2647b5bf067be353a893e5a39a632cbbeb7ad81e61fa5ae227ece5490029073"
+    },
+    "writing-skills": {
+      "type": "upstream",
+      "contentHash": "f06bbb471439736c838e89a57a2a371bcc687931ba878901d97373194e212ea9"
+    },
+    "xlsx": {
+      "type": "upstream",
+      "contentHash": "f5945e6e76dc7c178375e5cdf3140959b30cbcd4570ec3dc62296812259fc38d"
+    }
+  },
+  "superskills": {
+    "anthropic": {
+      "members": [
+        "doc-coauthoring",
+        "docx",
+        "mcp-builder",
+        "pdf",
+        "pptx",
+        "webapp-testing",
+        "xlsx"
+      ],
+      "description": "Use for Word, Excel, PowerPoint, PDF, document coauthoring, building MCP servers, and testing web applications with Playwright. Load only the matching guide."
+    },
+    "caveman-kit": {
+      "members": [
+        "caveman",
+        "cavecrew",
+        "caveman-commit",
+        "caveman-compress",
+        "caveman-review"
+      ],
+      "description": "Use for terse response styles, concise code reviews and commit messages, or compressing prose files. Load only the matching guide."
+    },
+    "design-taste": {
+      "members": [
+        "brandkit",
+        "design-taste-frontend",
+        "design-taste-frontend-v1",
+        "design-taste-frontend-v2-experimental",
+        "full-output-enforcement",
+        "gpt-taste",
+        "high-end-visual-design",
+        "image-to-code",
+        "imagegen-frontend-mobile",
+        "imagegen-frontend-web",
+        "industrial-brutalist-ui",
+        "minimalist-ui",
+        "redesign-existing-projects",
+        "stitch-design-taste"
+      ],
+      "description": "Use for website and interface design, redesigns, brand systems, or converting visual references into frontend code. Route to the matching design guide; default to design-taste-frontend."
+    },
+    "engram": {
+      "members": [
+        "learn",
+        "review",
+        "coach"
+      ],
+      "description": "Use to learn a topic, practice due memory reviews, or assess learning progress and study strategy. Load only the matching guide."
+    },
+    "qt": {
+      "members": [
+        "qt-qml",
+        "qt-qml-review"
+      ],
+      "description": "Use to write, debug, optimize, or review Qt 6 QML code. Load the authoring or review guide as needed."
+    },
+    "superpowers": {
+      "members": [
+        "brainstorming",
+        "diagnosing-superpowers",
+        "dispatching-parallel-agents",
+        "executing-plans",
+        "finishing-a-development-branch",
+        "receiving-code-review",
+        "requesting-code-review",
+        "subagent-driven-development",
+        "systematic-debugging",
+        "test-driven-development",
+        "using-git-worktrees",
+        "using-superpowers",
+        "verification-before-completion",
+        "writing-plans",
+        "writing-skills"
+      ],
+      "description": "Use for software development: planning features, implementing changes, debugging failures, reviewing code, testing, and finishing branches. Load only the guide for the current step."
+    }
+  }
+}
