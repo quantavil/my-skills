@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from unittest import mock
 
 
 class ReportTests(unittest.TestCase):
@@ -65,6 +66,35 @@ class ReportTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.report.main([str(source), '--output', str(source)])
 
+    def test_local_identity_paths_are_scrubbed(self):
+        page = self.report.render('# Report\n\nPreserved in [transcript](file:///home/secretuser/projects/job/clean_transcript.txt).')
+        self.assertNotIn('/home/secretuser', page)
+        self.assertIn('clean_transcript.txt', page)
+
+    @mock.patch('urllib.request.urlopen')
+    def test_share_html_uploads_and_returns_url(self, mock_urlopen):
+        mock_response = mock.MagicMock()
+        mock_response.read.return_value = b'{"url": "https://example.ship.place/", "expires_at": "2026-11-18T00:00:00Z"}'
+        mock_response.__enter__.return_value = mock_response
+        mock_urlopen.return_value = mock_response
+
+        res = self.report.share_html('<h1>Report</h1>')
+        self.assertEqual(res['url'], 'https://example.ship.place/')
+        self.assertEqual(res['expires_at'], '2026-11-18T00:00:00Z')
+
+    @mock.patch('urllib.request.urlopen')
+    def test_cli_share_flag(self, mock_urlopen):
+        mock_response = mock.MagicMock()
+        mock_response.read.return_value = b'{"url": "https://example.ship.place/", "expires_at": "2026-11-18T00:00:00Z"}'
+        mock_response.__enter__.return_value = mock_response
+        mock_urlopen.return_value = mock_response
+
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / 'report.md'
+            source.write_text('# A report\n\nEvidence pending.', encoding='utf-8')
+            self.assertEqual(self.report.main([str(source), '--share']), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
+

@@ -7,11 +7,13 @@
 import argparse
 import base64
 from html import escape
+import json
 from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
+import urllib.request
 
 
 VERDICTS = {'Supported': 'supported', 'Misleading': 'misleading', 'False': 'false',
@@ -44,6 +46,8 @@ def diagram(source):
 def render(markdown, title=None, language='en'):
     if not markdown.strip():
         raise ValueError('Report is empty')
+    # Strip local machine user paths to protect user identity when reports are shared
+    markdown = re.sub(r'file:///(?:home|Users)/[^\s"\')]+(?:/[^\s"\')]+)*/([^/\s"\')]+)', r'\1', markdown)
     try:
         from markdown_it import MarkdownIt
         from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -103,12 +107,26 @@ def render(markdown, title=None, language='en'):
                            intro=intro, sections=sections, contents=contents)
 
 
+def share_html(content):
+    """Deploy HTML anonymously to ship.page for a free 30-day shareable link."""
+    body = content if isinstance(content, bytes) else content.encode('utf-8')
+    req = urllib.request.Request(
+        'https://ship.page/deploy',
+        data=body,
+        headers={'Content-Type': 'text/html; charset=utf-8', 'User-Agent': 'fact-check/1.0'},
+        method='POST'
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('report', type=Path, help='Existing Markdown report; never rewritten')
     parser.add_argument('--output', type=Path, help='Defaults to the input path with .html extension')
     parser.add_argument('--title', help='Optional browser-tab title')
     parser.add_argument('--lang', default='en', help='Report language code, e.g. en or hi')
+    parser.add_argument('--share', action='store_true', help='Upload anonymously for an instant 30-day public shareable link')
     args = parser.parse_args(argv)
     source = args.report.expanduser().resolve()
     output = args.output.expanduser().resolve() if args.output else source.with_suffix('.html')
@@ -120,6 +138,10 @@ def main(argv=None):
     temporary.write_text(page, encoding='utf-8')
     temporary.replace(output)
     print(output)
+    if args.share:
+        result = share_html(page)
+        share_url = result.get('url')
+        print(f"Shareable link (30 days): {share_url}")
     return 0
 
 

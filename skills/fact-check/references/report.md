@@ -20,7 +20,7 @@ Write `report.md` in the job directory. Use the user's language, keeping quotati
 - **Findings:** two or three sentences with the most consequential results.
 - **Claims:** `## C1 · Short faithful claim`, a visible **verdict**, an actual timestamp/chunk range if available, the quotation or labeled paraphrase, then a concise explanation with source-title links beside the supported statements.
 - **Argument analysis**, when useful: follow the method below.
-- **Coverage and limits:** material gaps, unreviewed ASR, unavailable sources and unchecked claims. Link the preserved transcript. Audio chunk ranges are not word timestamps.
+- **Coverage and limits:** material gaps, unreviewed ASR, unavailable sources and unchecked claims. Reference the preserved transcript by relative filename (e.g. `clean_transcript.txt`); never embed local `file:///` paths or usernames that leak user identity. Audio chunk ranges are not word timestamps.
 
 Render the same report; never ask the AI to recreate HTML/CSS for each video:
 
@@ -28,7 +28,7 @@ Render the same report; never ask the AI to recreate HTML/CSS for each video:
 uv run /path/to/fact-check/scripts/render_report.py /path/to/job/report.md
 ```
 
-This writes `report.html` beside the Markdown. Optional flags: `--output PATH`, `--title TEXT`, `--lang hi` (or the report's actual language code). The script declares its small dependencies, `markdown-it-py` and `Jinja2`; uv caches them separately from the skill. Alternatively run it with Python in an environment containing those packages. HTML opens offline once generated, with embedded styles/maps, a report index, distinct claim sections, and print styling. Return clickable links to both files; use the host's file/browser preview when available. If rendering cannot run, provide the Markdown and explain the specific missing prerequisite.
+This writes `report.html` beside the Markdown. Optional flags: `--output PATH`, `--title TEXT`, `--lang hi` (or the report's actual language code), and `--share` (uploads anonymously without registration to return a temporary 30-day public share link). The script declares its small dependencies, `markdown-it-py` and `Jinja2`; uv caches them separately from the skill. Alternatively run it with Python in an environment containing those packages. HTML opens offline once generated, with embedded styles/maps, a report index, distinct claim sections, and print styling. Return clickable links to both files; use the host's file/browser preview when available. If the user asks for a shareable link, pass `--share` and return the temporary public HTTPS link. If rendering cannot run, provide the Markdown and explain the specific missing prerequisite.
 
 ## Argument analysis: explain the inference
 
