@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Pull an app's private data from a rooted emulator and decode it to JSON.
 
-Usage: capture_state.py PACKAGE OUT_DIR [--serial emulator-5558]
+Usage: capture_state.py PACKAGE OUT_DIR [--serial emulator-5556]
 
 Writes OUT_DIR/raw/<package>/... (exact files) and OUT_DIR/state.json:
   prefs      shared_prefs XML as {file: {key: value}} (Flutter keys keep their "flutter." prefix)
@@ -252,9 +252,8 @@ def decode_tree(root: Path) -> dict:
 # ------------------------------------------------------------------- pull --
 
 def pull(adb: Adb, package: str, dest: Path) -> Path:
-    adb.ensure_root()
     adb.app_uid(package)
-    data = adb.run("exec-out", f"tar -C /data/data -cf - {package}", binary=True, timeout=300)
+    data = adb.run("exec-out", adb.root_command(f"tar -C /data/data -cf - {package}"), binary=True, timeout=300)
     dest.mkdir(parents=True, exist_ok=True)
     with tarfile.open(fileobj=io.BytesIO(data)) as archive:
         archive.extractall(dest, filter="data")
@@ -288,7 +287,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("package")
     parser.add_argument("out", type=Path)
-    parser.add_argument("--serial", default="emulator-5558")
+    parser.add_argument("--serial", default="emulator-5556")
     args = parser.parse_args()
     state = capture(Adb(args.serial), args.package, args.out)
     print(summary(state))

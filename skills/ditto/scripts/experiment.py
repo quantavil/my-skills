@@ -86,9 +86,8 @@ class Lab:
         The timezone is fixed when the emulator starts (-timezone); see SKILL.md.
         """
         moment = datetime.fromisoformat(when)
-        self.adb.ensure_root()
         self.adb.shell("settings put global auto_time 0")
-        self.adb.shell(f"date {moment:%m%d%H%M%Y.%S}")
+        self.adb.root_shell(f"date {moment:%m%d%H%M%Y.%S}")
 
     def launch(self, wait: float = 2.0) -> None:
         self.d.app_start(self.package, wait=True)
@@ -110,7 +109,6 @@ class Lab:
         import tempfile
 
         raw_dir = Path(raw_dir)
-        self.adb.ensure_root()
         uid = self.adb.app_uid(self.package)
         self.stop()
         with tempfile.NamedTemporaryFile(suffix=".tar") as archive_file:
@@ -120,7 +118,7 @@ class Lab:
                         archive.add(child, arcname=child.name)
             self.adb.run("push", archive_file.name, "/data/local/tmp/ditto_state.tar")
         base = f"/data/data/{self.package}"
-        self.adb.shell(
+        self.adb.root_shell(
             f"cd {base} && rm -rf shared_prefs databases files app_flutter no_backup && "
             f"tar -xf /data/local/tmp/ditto_state.tar && chown -R {uid}:{uid} {base} && "
             f"restorecon -R {base} && rm /data/local/tmp/ditto_state.tar"
@@ -195,7 +193,7 @@ def main() -> None:
     parser.add_argument("--package", required=True)
     parser.add_argument("--label", required=True, help="original or clone")
     parser.add_argument("--out", type=Path, default=Path("traces"))
-    parser.add_argument("--serial", default="emulator-5558")
+    parser.add_argument("--serial", default="emulator-5556")
     parser.add_argument("--no-state", action="store_true", help="skip data capture (non-root device)")
     args = parser.parse_args()
 

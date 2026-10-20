@@ -13,16 +13,20 @@ All tools are plain CLIs (no MCP server): `apktool`, `adb`, `sqlite3`, Python `u
 
 ## Setup (once per machine)
 
-Data capture and seeding need **root**, so experiments run on a `google_apis` image. Play Store images refuse `adb root`; use them only to download APKs.
+One emulator does everything: a **Google Play** image (so Play-protected apps run and APKs download) rooted with **Magisk via rootAVD** (so data capture, seeding and clock control work). Plain `google_apis` images can `adb root` but many apps refuse to run there ("Check that Google Play is enabled…" = Play automatic integrity protection), so don't use them.
 
 ```bash
-sdkmanager "system-images;android-34;google_apis;x86_64"
-avdmanager create avd -n ditto_root_x86_64 -k "system-images;android-34;google_apis;x86_64" -d pixel_6
-emulator -avd ditto_root_x86_64 -port 5558 -timezone Asia/Kolkata -no-boot-anim &
-adb -s emulator-5558 root
+sdkmanager "system-images;android-34;google_apis_playstore;x86_64"
+avdmanager create avd -n ditto2_play_x86_64 -k "system-images;android-34;google_apis_playstore;x86_64" -d pixel_6
+emulator -avd ditto2_play_x86_64 -port 5556 -timezone Asia/Kolkata -no-boot-anim &   # sign in to Play once
+git clone --depth 1 https://gitlab.com/newbit/rootAVD.git ~/.local/share/ditto-toolchain/rootAVD
+cd ~/.local/share/ditto-toolchain/rootAVD
+ANDROID_SERIAL=emulator-5556 ./rootAVD.sh system-images/android-34/google_apis_playstore/x86_64/ramdisk.img
 ```
 
-Fix the timezone at launch (`-timezone`); experiments then set only the clock. Default serial in the scripts is `emulator-5558`. Add `-no-window` to run headless.
+rootAVD patches the image's `ramdisk.img` (stock copy kept as `ramdisk.img.backup`; copy it back to unroot) and shuts the emulator down. Cold-boot it (`-no-snapshot-load`), open the Magisk app, accept "Requires additional setup" (it reboots), then run `adb shell su -c id` and, in Magisk › Superuser, switch **Shell** on. Use the current Magisk: if the bundled `Magisk.zip` is old, update the app from inside Magisk, pull its APK (`adb shell pm path com.topjohnwu.magisk`) over `Magisk.zip`, restore the stock ramdisk and rerun rootAVD. Old snapshots are invalid after patching.
+
+The scripts get root through `su` automatically (or `adb root` where adbd allows it). Fix the timezone at launch (`-timezone`); experiments then set only the clock. Default serial is `emulator-5556`; add `-no-window` to run headless. Never patch the target APK to get past a check.
 
 ## 1. Get the APK
 
@@ -32,9 +36,7 @@ From Play, on a signed-in Play emulator:
 scripts/download-play-apks.sh 'https://play.google.com/store/apps/details?id=PKG' ./apks/PKG-x86_64 emulator-5556 x86_64
 ```
 
-It opens the listing if the app is absent; install it there and rerun. Keep base + splits together. Install on the root emulator with `adb -s emulator-5558 install-multiple base.apk split_*.apk`.
-
-**If the app shows "Check that Google Play is enabled…" on the root emulator**, it uses Play's automatic integrity protection and runs only where the Play Store is present. Do not patch the APK. Either run experiments on the Play emulator with `--no-state` (no data capture or seeding), or root the Play emulator (for example with Magisk via rootAVD) after the user approves that download.
+It opens the listing if the app is absent; install it there and rerun. Keep base + splits together; experiments run on the same emulator, against the Play-installed app.
 
 ## 2. Catalog: what exists
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import shutil
 import subprocess
 import time
@@ -26,6 +27,7 @@ class Adb:
     def __init__(self, serial: str):
         self.serial = serial
         self.bin = adb_bin()
+        self.via_su: bool | None = None  # None until ensure_root() decides
 
     def run(self, *args: str, check: bool = True, binary: bool = False, timeout: int = 120):
         result = subprocess.run(
@@ -44,19 +46,36 @@ class Adb:
         return self.run("shell", command, check=check).replace("\r\n", "\n")
 
     def ensure_root(self) -> None:
-        if self.shell("id -u").strip() == "0":
+        """Get root: adbd root (google_apis images) or Magisk su (rooted Play images)."""
+        if self.via_su is not None:
             return
-        self.run("root", check=False)
-        time.sleep(1)
-        self.run("wait-for-device", timeout=60)
-        if self.shell("id -u").strip() != "0":
-            raise SystemExit(
-                f"{self.serial} refused adb root. Use a google_apis (not Play Store) "
-                "emulator image; see SKILL.md › Setup."
-            )
+        if self.shell("id -u").strip() == "0":
+            self.via_su = False
+            return
+        if self.shell("su -c 'id -u'", check=False).strip() == "0":
+            self.via_su = True
+            return
+        if "production" not in self.run("root", check=False):
+            time.sleep(1)
+            self.run("wait-for-device", timeout=60)
+            if self.shell("id -u").strip() == "0":
+                self.via_su = False
+                return
+        raise SystemExit(
+            f"{self.serial} has no root. Root the Play emulator with Magisk and allow "
+            "Shell in Magisk > Superuser; see SKILL.md > Setup."
+        )
+
+    def root_command(self, command: str) -> str:
+        """`command` wrapped so it runs as root on this device."""
+        self.ensure_root()
+        return f"su -c {shlex.quote(command)}" if self.via_su else command
+
+    def root_shell(self, command: str, check: bool = True) -> str:
+        return self.shell(self.root_command(command), check=check)
 
     def app_uid(self, package: str) -> str:
-        uid = self.shell(f"stat -c %u /data/data/{package}", check=False).strip()
+        uid = self.root_shell(f"stat -c %u /data/data/{package}", check=False).strip()
         if not uid.isdigit():
             raise SystemExit(f"{package} is not installed on {self.serial}")
         return uid

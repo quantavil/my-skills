@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+import adbutil  # noqa: E402
 import capture_state  # noqa: E402
 import experiment  # noqa: E402
 import inventory  # noqa: E402
@@ -124,6 +125,16 @@ class ExperimentTest(unittest.TestCase):
           <node text="Wifi signal full." package="com.android.systemui" bounds="[0,0][50,20]"/>
         </hierarchy>"""
         self.assertEqual(experiment.visible_texts(xml), ["Home", "Stats", "Next nap\n10:30"])
+
+
+class RootCommandTest(unittest.TestCase):
+    def test_su_wraps_and_quotes_command(self):
+        adb = adbutil.Adb.__new__(adbutil.Adb)
+        adb.via_su = True
+        self.assertEqual(adb.root_command("cd /data/data/x && tar -cf - 'a b'"),
+                         "su -c 'cd /data/data/x && tar -cf - '\"'\"'a b'\"'\"''")
+        adb.via_su = False
+        self.assertEqual(adb.root_command("date 0101"), "date 0101")
 
 
 class InventoryTest(unittest.TestCase):
