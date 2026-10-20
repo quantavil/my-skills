@@ -17,10 +17,6 @@ While building the clone (step 5), use two MCP servers when the client has them:
 
 Never wrap the analysis tools above in an MCP.
 
-## Step 0: confirm the right to do this
-
-Before starting, ask the user to confirm: the app is theirs or licensed to them, or it is for personal learning, and the clone reuses **behaviour, not strings, artwork or branding**. Use a disposable Google account for the Play emulator. If the user cannot confirm, stop.
-
 ## One folder per clone
 
 Everything for one app lives in **one folder**: `~/Documents/<name>-clone/`, where `<name>` is what the user calls it, else the app's short name (`baby-tracker-clone`). Never scatter APKs, captures or evidence into other folders under `~/Documents`.
