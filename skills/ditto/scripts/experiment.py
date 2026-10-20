@@ -83,11 +83,14 @@ class Lab:
     def set_time(self, when: str) -> None:
         """Set the device clock to a local time like '2026-10-01 07:00' (needs root).
 
+        Only the wall clock moves: monotonic timers, AlarmManager/WorkManager and server
+        time do not follow. Restart the app (stop, launch) after a jump if it caches time.
         The timezone is fixed when the emulator starts (-timezone); see SKILL.md.
         """
         moment = datetime.fromisoformat(when)
         self.adb.shell("settings put global auto_time 0")
         self.adb.root_shell(f"date {moment:%m%d%H%M%Y.%S}")
+        self.adb.shell("am broadcast -a android.intent.action.TIME_SET", check=False)
 
     def launch(self, wait: float = 2.0) -> None:
         self.d.app_start(self.package, wait=True)
@@ -159,9 +162,32 @@ class Lab:
                 return match.group(1) if match.groups() else match.group(0)
         return None
 
+    def wait_idle(self, timeout: float = 4.0, interval: float = 0.4) -> None:
+        """Wait until the UI hierarchy stops changing (animations, loading)."""
+        deadline, previous = time.time() + timeout, None
+        while time.time() < deadline:
+            current = self.d.dump_hierarchy()
+            if current == previous:
+                return
+            previous = current
+            time.sleep(interval)
+
+    def notifications(self) -> str:
+        """Posted notifications of the app (title, text, actions) from dumpsys."""
+        return self.adb.root_shell(f"dumpsys notification --noredact | grep -A25 'pkg={self.package}'", check=False)
+
+    def alarms(self) -> str:
+        """Alarms the app has scheduled (AlarmManager) from dumpsys."""
+        return self.adb.root_shell(f"dumpsys alarm | grep -B1 -A6 '{self.package}'", check=False)
+
     # --- recording ----------------------------------------------------------
-    def note(self, key: str, value) -> None:
-        """Record an observed output, e.g. lab.note('next_nap', lab.read(r'Next nap\\s*(\\S+)'))."""
+    def note(self, key: str, value, allow_none: bool = False) -> None:
+        """Record an observed output, e.g. lab.note('next_nap', lab.read(r'Next nap\\s*(\\S+)')).
+
+        None means nothing was read (bad regex, wrong screen) and raises unless allow_none.
+        """
+        if value is None and not allow_none:
+            raise ValueError(f"note '{key}' is None: nothing matched; screen has {self.texts()[:20]}")
         self.notes[key] = value
         (self.out / "notes.json").write_text(json.dumps(self.notes, indent=1, ensure_ascii=False) + "\n")
 
@@ -169,6 +195,7 @@ class Lab:
         self.step += 1
         folder = self.out / f"{self.step:02d}-{re.sub(r'[^a-zA-Z0-9_-]+', '-', name)}"
         folder.mkdir(parents=True, exist_ok=True)
+        self.wait_idle()
         self.d.screenshot(str(folder / "screen.png"))
         xml = self.d.dump_hierarchy()
         (folder / "ui.xml").write_text(xml)
@@ -207,8 +234,10 @@ def main() -> None:
     try:
         module.run(lab)
     finally:
+        version = lab.adb.shell(f"dumpsys package {args.package} | grep -E 'versionName|versionCode'", check=False)
         meta = {"script": str(args.script), "package": args.package, "label": args.label,
-                "serial": args.serial, "steps": lab.step, "seconds": round(time.time() - started, 1)}
+                "serial": args.serial, "steps": lab.step, "seconds": round(time.time() - started, 1),
+                "version": " ".join(version.split()), "started": datetime.now().isoformat(timespec="seconds")}
         (out / "run.json").write_text(json.dumps(meta, indent=1) + "\n")
     print(f"{lab.step} steps, notes={lab.notes} → {out}")
 

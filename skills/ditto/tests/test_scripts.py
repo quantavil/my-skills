@@ -11,8 +11,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import adbutil  # noqa: E402
 import capture_state  # noqa: E402
+import diff  # noqa: E402
 import experiment  # noqa: E402
 import inventory  # noqa: E402
+import parity  # noqa: E402
 
 
 def varint(value: int) -> bytes:
@@ -127,6 +129,77 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(experiment.visible_texts(xml), ["Home", "Stats", "Next nap\n10:30"])
 
 
+class DiffNotesTest(unittest.TestCase):
+    def test_equal_notes_pass_and_float_noise_is_ignored(self):
+        self.assertEqual(diff.compare_notes({"a": "10:30", "b": 0.1 + 0.2}, {"a": "10:30", "b": 0.3}), [])
+
+    def test_none_on_both_sides_is_a_failure(self):
+        self.assertEqual(len(diff.compare_notes({"a": None}, {"a": None})), 1)
+
+    def test_empty_original_notes_fail(self):
+        self.assertTrue(diff.compare_notes({}, {}))
+
+    def test_missing_and_different_values_fail(self):
+        problems = diff.compare_notes({"a": "1", "b": "2"}, {"a": "9", "c": "3"})
+        self.assertEqual(len(problems), 3)
+
+    def test_repeated_step_names_do_not_collapse(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in ("01-home", "02-home", "03-stats"):
+                (Path(tmp) / name).mkdir()
+            self.assertEqual(list(diff.steps(Path(tmp))), ["home", "home#2", "stats"])
+
+
+class NoteTest(unittest.TestCase):
+    def test_none_note_raises_unless_allowed(self):
+        lab = experiment.Lab.__new__(experiment.Lab)
+        lab.notes, lab.out = {}, Path(tempfile.mkdtemp())
+        lab.texts = lambda: ["Home"]
+        with self.assertRaises(ValueError):
+            lab.note("next_nap", None)
+        lab.note("next_nap", None, allow_none=True)
+        self.assertEqual(lab.notes, {"next_nap": None})
+
+
+class StablePullTest(unittest.TestCase):
+    def test_returns_when_two_pulls_match(self):
+        pulls = iter([b"a", b"b", b"b"])
+        self.assertEqual(capture_state.stable_tar(lambda: next(pulls)), b"b")
+
+    def test_gives_up_with_last_copy(self):
+        pulls = iter([b"1", b"2", b"3", b"4"])
+        self.assertEqual(capture_state.stable_tar(lambda: next(pulls)), b"4")
+
+
+class ParityTest(unittest.TestCase):
+    def make_trace(self, root: Path, name: str, original: dict, clone: dict) -> None:
+        for label, notes in (("original", original), ("clone", clone)):
+            folder = root / name / label
+            (folder / "01-home").mkdir(parents=True)
+            (folder / "notes.json").write_text(__import__("json").dumps(notes))
+
+    def test_counts_and_table(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.make_trace(root, "nap_ok", {"next": "10:30"}, {"next": "10:30"})
+            self.make_trace(root, "nap_bad", {"next": "10:30"}, {"next": "11:00"})
+            self.make_trace(root, "nap_none", {"next": None}, {"next": None})
+            results = parity.collect(root, 2.0)
+            features = {"Next nap": {"present": True, "experiments": ["nap_ok", "nap_bad"]},
+                        "Widgets": {"present": False}}
+            count = parity.totals(results, features)
+            text = parity.render(results, features, count)
+        self.assertEqual((count["behaviour_ok"], count["behaviour_total"]), (1, 3))
+        self.assertEqual((count["breadth_ok"], count["breadth_total"]), (1, 2))
+        self.assertIn("| Next nap | nap_ok, nap_bad | 1/2 match |", text)
+        self.assertIn("| Widgets | - | missing |", text)
+
+    def test_regression_is_reported(self):
+        self.assertEqual(parity.regressions({"behaviour_ok": 3, "visual_ok": 5, "breadth_ok": 2},
+                                            {"behaviour_ok": 4, "visual_ok": 5, "breadth_ok": 2}),
+                         ["behaviour_ok: 4 -> 3"])
+
+
 class RootCommandTest(unittest.TestCase):
     def test_su_wraps_and_quotes_command(self):
         adb = adbutil.Adb.__new__(adbutil.Adb)
@@ -165,6 +238,10 @@ class InventoryTest(unittest.TestCase):
         data[0x38:0x3C] = len(strings).to_bytes(4, "little")
         data[0x3C:0x40] = table_at.to_bytes(4, "little")
         self.assertEqual(inventory.dex_strings(bytes(data)), ["Lcom/app/SleepActivity;", "hello"])
+
+    def test_dex_constants_become_ui_text_candidates(self):
+        kept = inventory.ui_strings(["Lcom/app/A;", "Start the nap timer", "Tap here to add a feeding"])
+        self.assertEqual(kept, ["Start the nap timer", "Tap here to add a feeding"])
 
     def test_manifest_widgets_and_deep_links(self):
         manifest = """<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.x">

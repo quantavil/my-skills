@@ -194,10 +194,13 @@ def dump_sqlite(path: Path) -> tuple[dict, dict | None]:
         for name, sql in db.execute("select name, sql from sqlite_master where type='table'"):
             if name.startswith("sqlite_") or name == "android_metadata":
                 continue
-            cursor = db.execute(f'select * from "{name}" limit {MAX_ROWS}')
+            cursor = db.execute(f'select * from "{name}" limit {MAX_ROWS + 1}')
             columns = [c[0] for c in cursor.description]
             rows = [dict(zip(columns, map(_cell, row))) for row in cursor]
-            tables[name] = {"schema": sql, "rows": rows}
+            tables[name] = {"schema": sql, "rows": rows[:MAX_ROWS]}
+            if len(rows) > MAX_ROWS:
+                tables[name]["truncated"] = True
+                print(f"warning: {path.name}.{name} has more than {MAX_ROWS} rows; truncated", file=sys.stderr)
         firestore = firestore_from_db(db) if path.name.startswith("firestore.") else None
         return tables, firestore
     finally:
@@ -251,9 +254,22 @@ def decode_tree(root: Path) -> dict:
 
 # ------------------------------------------------------------------- pull --
 
+def stable_tar(fetch, attempts: int = 4) -> bytes:
+    """Fetch twice until two pulls are byte-identical, so a write in flight cannot tear the copy."""
+    previous = fetch()
+    for _ in range(attempts - 1):
+        current = fetch()
+        if current == previous:
+            return current
+        previous = current
+    print("warning: app data kept changing during the pull; the copy may be inconsistent", file=sys.stderr)
+    return previous
+
+
 def pull(adb: Adb, package: str, dest: Path) -> Path:
     adb.app_uid(package)
-    data = adb.run("exec-out", adb.root_command(f"tar -C /data/data -cf - {package}"), binary=True, timeout=300)
+    command = adb.root_command(f"tar -C /data/data -cf - {package}")
+    data = stable_tar(lambda: adb.run("exec-out", command, binary=True, timeout=300))
     dest.mkdir(parents=True, exist_ok=True)
     with tarfile.open(fileobj=io.BytesIO(data)) as archive:
         archive.extractall(dest, filter="data")

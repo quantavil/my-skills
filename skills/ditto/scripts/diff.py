@@ -8,9 +8,10 @@
 Usage: diff.py traces/<experiment>  [--original original] [--clone clone] [--pixel-threshold 2.0]
 
 Compares, step by step (matched by step name):
-  notes   recorded output values: must be equal (this is the behaviour verdict)
+  notes   recorded output values: must be equal (this is the behaviour verdict);
+          empty notes or a None value fail
   texts   visible text in reading order: unified diff
-  screen  percentage of differing pixels; writes diff.png next to the clone's step
+  screen  percentage of differing pixels (status and nav bars ignored); writes diff.png next to the clone's step
 Writes traces/<experiment>/report.md. Exit 1 when notes or texts differ.
 """
 
@@ -24,22 +25,43 @@ from pathlib import Path
 
 
 def steps(folder: Path) -> dict[str, Path]:
-    """Step folders keyed by name without the NN- prefix."""
-    return {p.name.split("-", 1)[-1]: p for p in sorted(folder.iterdir()) if p.is_dir()}
+    """Step folders keyed by name without the NN- prefix; repeated names get #2, #3..."""
+    result: dict[str, Path] = {}
+    for path in sorted(p for p in folder.iterdir() if p.is_dir()):
+        name = path.name.split("-", 1)[-1]
+        key, count = name, 1
+        while key in result:
+            count += 1
+            key = f"{name}#{count}"
+        result[key] = path
+    return result
 
 
 def load(path: Path, default):
     return json.loads(path.read_text()) if path.exists() else default
 
 
+def same_value(original, clone) -> bool:
+    """Exact equality, except numbers may differ by 1e-9 (float noise)."""
+    numbers = (int, float)
+    if isinstance(original, numbers) and isinstance(clone, numbers) and not isinstance(original, bool):
+        return abs(original - clone) <= 1e-9
+    return original == clone
+
+
 def compare_notes(original: dict, clone: dict) -> list[str]:
+    """Fail closed: empty notes, and a None (nothing read) on either side, are failures."""
+    if not original:
+        return ["original recorded no notes: nothing to compare (use lab.note)"]
     problems = []
     for key in sorted(set(original) | set(clone)):
         if key not in clone:
             problems.append(f"`{key}`: missing in clone (original {original[key]!r})")
         elif key not in original:
             problems.append(f"`{key}`: clone-only value {clone[key]!r}")
-        elif original[key] != clone[key]:
+        elif original[key] is None or clone[key] is None:
+            problems.append(f"`{key}`: nothing was read (original {original[key]!r}, clone {clone[key]!r})")
+        elif not same_value(original[key], clone[key]):
             problems.append(f"`{key}`: original {original[key]!r} ≠ clone {clone[key]!r}")
     return problems
 
@@ -49,14 +71,18 @@ def compare_texts(original: list[str], clone: list[str]) -> list[str]:
 
 
 def compare_screens(original: Path, clone: Path, out: Path) -> float | None:
-    from PIL import Image, ImageChops
-
     if not original.exists() or not clone.exists():
         return None
+    from PIL import Image, ImageChops
+
     a = Image.open(original).convert("RGB")
     b = Image.open(clone).convert("RGB")
     if a.size != b.size:
         return 100.0
+    # ignore the status bar (clock, battery) and the gesture/nav bar
+    top, bottom = round(a.size[1] * 0.04), round(a.size[1] * 0.03)
+    box = (0, top, a.size[0], a.size[1] - bottom)
+    a, b = a.crop(box), b.crop(box)
     delta = ImageChops.difference(a, b).convert("L").point(lambda v: 255 if v > 24 else 0)
     changed = sum(1 for v in delta.getdata() if v)
     Image.composite(Image.new("RGB", a.size, (255, 0, 64)), b, delta).save(out)

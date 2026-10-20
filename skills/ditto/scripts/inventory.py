@@ -23,6 +23,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -148,8 +149,10 @@ def analyse(apks: list[Path], out: Path) -> dict:
                     raw_strings += printable_runs(archive.read(name))
                 elif re.fullmatch(r"classes\d*\.dex", name) and framework != "flutter":
                     for value in dex_strings(archive.read(name)):
-                        if value.startswith("L") and value.endswith(";") and "$" not in value:
+                        if value.startswith("L") and value.endswith(";"):
                             app_sources.append(value[1:-1].replace("/", "."))
+                        else:
+                            raw_strings.append(value)
                 elif name.startswith(("assets/flutter_assets/", "assets/")) and not name.endswith("/"):
                     assets.append(name)
 
@@ -162,6 +165,7 @@ def analyse(apks: list[Path], out: Path) -> dict:
         res = resource_strings(apktool_dir)
         raw_strings += list(res.values())
     else:
+        print("warning: apktool not found; manifest, permissions, widgets and resources are skipped", file=sys.stderr)
         res = {}
 
     app_package = manifest.get("package") or ""

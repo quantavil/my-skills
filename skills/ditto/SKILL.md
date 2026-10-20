@@ -17,6 +17,10 @@ While building the clone (step 5), use two MCP servers when the client has them:
 
 Never wrap the analysis tools above in an MCP.
 
+## Step 0: confirm the right to do this
+
+Before starting, ask the user to confirm: the app is theirs or licensed to them, or it is for personal learning, and the clone reuses **behaviour, not strings, artwork or branding**. Use a disposable Google account for the Play emulator. If the user cannot confirm, stop.
+
 ## One folder per clone
 
 Everything for one app lives in **one folder**: `~/Documents/<name>-clone/`, where `<name>` is what the user calls it, else the app's short name (`baby-tracker-clone`). Never scatter APKs, captures or evidence into other folders under `~/Documents`.
@@ -31,7 +35,7 @@ Everything for one app lives in **one folder**: `~/Documents/<name>-clone/`, whe
   lib/ or src/, test/, android/ …   the clone app, in its framework's normal layout
 ```
 
-Run every command from that folder so relative paths land inside it. Gitignore `/apk/`, `/research/state/` and `/traces/**/raw/` (they can hold account data).
+Run every command from that folder so relative paths land inside it. Gitignore `/apk/`, `/research/state/`, `/traces/**/raw/` and `/traces/**/state.json` (they can hold account data and tokens).
 
 ## Setup (once per machine)
 
@@ -78,7 +82,7 @@ Create a few real records in the original, then:
 python3 -I scripts/capture_state.py PKG research/state/after-first-records
 ```
 
-It pulls `/data/data/PKG` (needs root) to `raw/` and decodes to `state.json`: shared_prefs, every SQLite table (schema + rows), the **Firestore offline cache** (documents, pending writes and overlays decoded from protobuf), plus a size list of other files (Hive, Isar, ObjectBox: inspect those by hand). Capture before and after one action to see exactly what it writes. Write the recovered schema, units, enums and defaults into the clone's `docs/data-model.md`.
+It pulls `/data/data/PKG` (needs root) to `raw/` and decodes to `state.json`: shared_prefs, every SQLite table (schema + rows), the **Firestore offline cache** (documents, pending writes and overlays decoded from protobuf), plus a size list of other files (Hive, Isar, ObjectBox: inspect those by hand). Capture before and after one action to see exactly what it writes. Write the recovered schema, units, enums and defaults into the clone's `research/data-model.md`.
 
 Use the app **offline** or with a disposable account. Cloud writes cannot be undone by an emulator snapshot, so never experiment on the user's real account.
 
@@ -104,7 +108,13 @@ def run(lab):
 uv run scripts/experiment.py experiments/next_nap_after_short_nap.py --package ORIGINAL_PKG --label original --out traces
 ```
 
-`Lab` API: `snapshot_save/load`, `offline`, `set_time`, `launch`, `stop`, `clear`, `push_state(raw_dir)` (seed exact records: capture, edit the pulled DB locally with sqlite3, push back), `tap(label)` (text or content-desc, exact then contains), `find`, `type`, `back`, `texts()`, `read(regex)`, `capture(name)`, `note(key, value)`, and `lab.d` for raw uiautomator2.
+`Lab` API: `snapshot_save/load`, `offline`, `set_time`, `launch`, `stop`, `clear`, `push_state(raw_dir)` (seed exact records: capture, edit the pulled DB locally with sqlite3, push back), `tap(label)` (text or content-desc, exact then contains), `find`, `type`, `back`, `texts()`, `read(regex)`, `wait_idle()`, `notifications()`, `alarms()`, `capture(name)`, `note(key, value)`, and `lab.d` for raw uiautomator2.
+
+Rules the tools enforce:
+- `note()` raises on `None` (the regex found nothing), so a broken read cannot pass. `diff.py` also fails on empty notes.
+- `set_time` moves only the wall clock (plus a `TIME_SET` broadcast). Monotonic timers, AlarmManager/WorkManager and server time do not follow: restart the app after a jump, check `lab.alarms()`, and treat server-timestamped output as untestable offline.
+- `capture()` waits for the UI to settle; `diff.py` ignores the status and nav bars. Capture state at key steps with `--no-state` elsewhere to save time.
+- Backend-driven rules (computed on a server) are out of reach offline. Say so in `parity.md` rather than guessing; a proxy (mitmproxy) works only where the app does not pin certificates, and the APK is never patched to change that.
 
 Design experiments like a scientist:
 - **Vary one input at a time** from a fixed snapshot: empty vs accumulated history, settings toggles, short/late/skipped/overlapping entries, edit, delete, kill and reopen, midnight and overnight boundaries, invalid input.
@@ -129,14 +139,20 @@ uv run scripts/diff.py traces/X        # notes must match; texts diff; pixel % +
 
 ## 6. Scorecard: measure, never estimate
 
-Keep `parity.md` in the clone repo: one row per catalog item.
+Generate `parity.md`; do not type it. List the confirmed catalog items in `research/features.json` (`{"Next nap prediction": {"present": true, "experiments": ["next_nap_short"]}}`), then:
+
+```bash
+uv run scripts/parity.py .
+```
+
+It reads every `traces/<experiment>/{original,clone}`, writes `parity.md` and `parity.json`, and exits 1 if any count is lower than the previous `parity.json`. The table looks like:
 
 | Feature | Experiments | Status |
 |---|---|---|
 | Next nap prediction | next_nap_* (14) | 12/14 match |
 
-Report three numbers separately: **breadth** (catalog items present), **behaviour** (experiments whose notes match), **visual** (steps under the pixel threshold). Never lower a number already reached; rerun affected experiments after every change. Passing clone-only tests or a matching screenshot are not parity.
+Report three numbers separately: **breadth** (catalog items present), **behaviour** (experiments whose notes match), **visual** (steps under the pixel threshold). Never lower a number already reached; rerun affected experiments after every change. Passing clone-only tests or a matching screenshot are not parity. The generator enforces the never-lower rule.
 
 ## When to use static analysis
 
-Only for a specific question that experiments cannot settle cheaply (an exact threshold, a hidden branch, a server endpoint). Read `strings.txt`/`sources.txt` first. For Flutter AOT, Blutter (ARM64 `libapp.so`) dumps the object pool and annotated functions. Look up the one function, take the constant, and confirm it with an experiment. For native apps, `jadx` on the specific class.
+Only for a specific question that experiments cannot settle cheaply (an exact threshold, a hidden branch, a server endpoint). Read `strings.txt`/`sources.txt` first. For Flutter AOT, Blutter (ARM64 `libapp.so`) dumps the object pool and annotated functions; the Play emulator delivers x86_64, so it needs an ARM64 copy of the APK from another source, otherwise rely on experiments. Look up the one function, take the constant, and confirm it with an experiment. For native apps, `jadx` on the specific class.
