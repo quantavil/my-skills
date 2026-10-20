@@ -11,6 +11,22 @@ Static disassembly is a **tie-breaker only**: use it when experiments leave two 
 
 All tools are plain CLIs (no MCP server): `apktool`, `adb`, `sqlite3`, Python `uiautomator2` (pulled in by `uv run`). Scripts live in `scripts/` next to this file; call them by absolute path.
 
+## One folder per clone
+
+Everything for one app lives in **one folder**: `~/Documents/<name>-clone/`, where `<name>` is what the user calls it, else the app's short name (`baby-tracker-clone`). Never scatter APKs, captures or evidence into other folders under `~/Documents`.
+
+```
+<name>-clone/
+  apk/            original base.apk + splits (gitignored)
+  research/       inventory/ (catalog.md…), state/ captures (gitignored), data-model.md
+  experiments/    *.py behaviour experiments (run(lab))
+  traces/         golden traces: <experiment>/original|clone/ (raw/ gitignored)
+  parity.md       scorecard
+  lib/ or src/, test/, android/ …   the clone app, in its framework's normal layout
+```
+
+Run every command from that folder so relative paths land inside it. Gitignore `/apk/`, `/research/state/` and `/traces/**/raw/` (they can hold account data).
+
 ## Setup (once per machine)
 
 One emulator does everything: a **Google Play** image (so Play-protected apps run and APKs download) rooted with **Magisk via rootAVD** (so data capture, seeding and clock control work). Plain `google_apis` images can `adb root` but many apps refuse to run there ("Check that Google Play is enabled…" = Play automatic integrity protection), so don't use them.
@@ -33,7 +49,7 @@ The scripts get root through `su` automatically (or `adb root` where adbd allows
 From Play, on a signed-in Play emulator:
 
 ```bash
-scripts/download-play-apks.sh 'https://play.google.com/store/apps/details?id=PKG' ./apks/PKG-x86_64 emulator-5556 x86_64
+scripts/download-play-apks.sh 'https://play.google.com/store/apps/details?id=PKG' apk emulator-5556 x86_64
 ```
 
 It opens the listing if the app is absent; install it there and rerun. Keep base + splits together; experiments run on the same emulator, against the Play-installed app.
@@ -41,7 +57,7 @@ It opens the listing if the app is absent; install it there and rerun. Keep base
 ## 2. Catalog: what exists
 
 ```bash
-python3 -I scripts/inventory.py base.apk split_*.apk -o research/inventory
+python3 -I scripts/inventory.py apk/base.apk apk/split_*.apk -o research/inventory
 ```
 
 Seconds, no disassembly. `catalog.md` lists framework, storage and cloud stack, notifications, widgets, payments, deep links, permissions, and a **feature tree**. For Flutter, every `package:<app>/...dart` path survives in `libapp.so`, so folders like `domain/schedule/` and files like `skip_nap_dialog` name the features. `strings.txt` holds the UI text (all languages, ASCII first), including error messages that hint at rules.

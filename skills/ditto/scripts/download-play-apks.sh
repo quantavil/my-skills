@@ -23,7 +23,7 @@ print(value)
 PY
 )
 
-output_dir=${2:-"./play-apks/$package"}
+output_dir=${2:-"./apk"}
 serial=${3:-emulator-5556}
 expected_abi=${4:-x86_64}
 if [[ $expected_abi != x86_64 && $expected_abi != arm64-v8a ]]; then
