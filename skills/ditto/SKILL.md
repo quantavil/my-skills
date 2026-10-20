@@ -9,7 +9,13 @@ Treat the original app as a **black box and test oracle**. Do not try to recover
 
 Static disassembly is a **tie-breaker only**: use it when experiments leave two candidate rules and you need one constant or branch. Never make it the main road.
 
-All tools are plain CLIs (no MCP server): `apktool`, `adb`, `sqlite3`, Python `uiautomator2` (pulled in by `uv run`). Scripts live in `scripts/` next to this file; call them by absolute path.
+Analysis and experiments use plain CLIs: `apktool`, `adb`, `sqlite3`, Python `uiautomator2` (pulled in by `uv run`). Scripts live in `scripts/` next to this file; call them by absolute path.
+
+While building the clone (step 5), use two MCP servers when the client has them:
+- **dart** (`dart mcp-server`): analyze, hot reload/restart, widget inspector and runtime errors for a Flutter clone. Its roots are the session's folders, so open the session in the clone folder.
+- **codebase-memory**: index the clone once (`index_repository`), then `search_graph`/`trace_path` to find where a rule or screen lives before changing it.
+
+Never wrap the analysis tools above in an MCP.
 
 ## One folder per clone
 
