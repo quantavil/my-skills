@@ -30,8 +30,8 @@ if [[ $expected_abi != x86_64 && $expected_abi != arm64-v8a ]]; then
   echo "EXPECTED_ABI must be x86_64 or arm64-v8a" >&2
   exit 2
 fi
-if [[ -n ${DITTO2_ADB_BIN:-} ]]; then
-  adb_bin=$DITTO2_ADB_BIN
+if [[ -n ${DITTO_ADB_BIN:-} ]]; then
+  adb_bin=$DITTO_ADB_BIN
 elif command -v adb >/dev/null 2>&1; then
   adb_bin=$(command -v adb)
 elif [[ -x ${ANDROID_HOME:-$HOME/Android/Sdk}/platform-tools/adb ]]; then

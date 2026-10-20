@@ -73,9 +73,9 @@
       "type": "upstream",
       "contentHash": "b011107f17188e0b2898bb1856b5bac8b49537cc86e737c82126558a235bd62a"
     },
-    "ditto2": {
+    "ditto": {
       "type": "local",
-      "contentHash": "207e9da1a159c26a57615774fccf441b842d6273ad06d143da12f75d4990b41d"
+      "contentHash": "7f5233268b60f9acc3a54a99e7cbfe58dd419ed83501f10b5a4197cd902796a5"
     },
     "dms-plugin-maker": {
       "type": "local",
@@ -99,7 +99,7 @@
     },
     "fact-check": {
       "type": "local",
-      "contentHash": "73bf9653bc329c7e99a54158c11ab6d9e8b525487b1f901e32477667e23e328a"
+      "contentHash": "d96aeba4b384fdde19ac9cbd11ce95f2f9df51d9f8fbdd637ffd9e31fe7d4c39"
     },
     "finishing-a-development-branch": {
       "type": "upstream",
