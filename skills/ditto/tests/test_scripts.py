@@ -162,13 +162,24 @@ class NoteTest(unittest.TestCase):
 
 
 class StablePullTest(unittest.TestCase):
-    def test_returns_when_two_pulls_match(self):
-        pulls = iter([b"a", b"b", b"b"])
-        self.assertEqual(capture_state.stable_tar(lambda: next(pulls)), b"b")
+    def test_idle_app_is_pulled_once(self):
+        calls = []
+        data = capture_state.stable_tar(lambda: calls.append(1) or b"x", lambda: "same listing")
+        self.assertEqual((data, len(calls)), (b"x", 1))
 
-    def test_gives_up_with_last_copy(self):
-        pulls = iter([b"1", b"2", b"3", b"4"])
-        self.assertEqual(capture_state.stable_tar(lambda: next(pulls)), b"4")
+    def test_retries_when_files_change_during_the_pull(self):
+        listings = iter(["probe", "a", "b", "c", "c"])  # probe; a/b differ (torn); then c/c match
+        pulls = iter([b"torn", b"good"])
+        data = capture_state.stable_tar(lambda: next(pulls), lambda: next(listings))
+        self.assertEqual(data, b"good")
+
+    def test_without_fingerprint_two_identical_pulls_are_needed(self):
+        pulls = iter([b"a", b"b", b"b"])
+        self.assertEqual(capture_state.stable_tar(lambda: next(pulls), lambda: ""), b"b")
+
+    def test_case_name_for_grid_entries(self):
+        self.assertEqual(experiment.case_name("nap", {}), "nap")
+        self.assertEqual(experiment.case_name("nap", {"age_weeks": 8, "tz": "a/b"}), "nap__age_weeks-8__tz-a-b")
 
 
 class ParityTest(unittest.TestCase):
@@ -242,6 +253,21 @@ class InventoryTest(unittest.TestCase):
     def test_dex_constants_become_ui_text_candidates(self):
         kept = inventory.ui_strings(["Lcom/app/A;", "Start the nap timer", "Tap here to add a feeding"])
         self.assertEqual(kept, ["Start the nap timer", "Tap here to add a feeding"])
+
+    def test_react_native_js_bundle(self):
+        js = b'x("Add a new feeding to the log");require("./src/screens/HomeScreen.js");var SettingsDialog=1;'
+        kind, texts, sources = inventory.bundle_info(js)
+        self.assertEqual(kind, "js")
+        self.assertIn("Add a new feeding to the log", texts)
+        self.assertIn("rn.src.screens.HomeScreen", sources)
+        self.assertIn("rn.SettingsDialog", sources)
+
+    def test_react_native_hermes_bundle(self):
+        data = inventory.HERMES_MAGIC + b"\x00\x00ProfileScreen\x00Tap to start the timer\x00"
+        kind, texts, sources = inventory.bundle_info(data)
+        self.assertEqual(kind, "hermes")
+        self.assertIn("Tap to start the timer", texts)
+        self.assertEqual(sources, ["rn.ProfileScreen"])
 
     def test_manifest_widgets_and_deep_links(self):
         manifest = """<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.x">

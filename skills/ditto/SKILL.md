@@ -66,7 +66,7 @@ It opens the listing if the app is absent; install it there and rerun. Keep base
 python3 -I scripts/inventory.py apk/base.apk apk/split_*.apk -o research/inventory
 ```
 
-Seconds, no disassembly. `catalog.md` lists framework, storage and cloud stack, notifications, widgets, payments, deep links, permissions, and a **feature tree**. For Flutter, every `package:<app>/...dart` path survives in `libapp.so`, so folders like `domain/schedule/` and files like `skip_nap_dialog` name the features. `strings.txt` holds the UI text (all languages, ASCII first), including error messages that hint at rules.
+Seconds, no disassembly. For native apps the dex string constants feed the UI text list, and for React Native the bundle's string literals, module paths and `*Screen`/`*Dialog`/`*Modal` component names (Hermes bytecode keeps them as plain strings) feed the feature tree. `catalog.md` lists framework, storage and cloud stack, notifications, widgets, payments, deep links, permissions, and a **feature tree**. For Flutter, every `package:<app>/...dart` path survives in `libapp.so`, so folders like `domain/schedule/` and files like `skip_nap_dialog` name the features. `strings.txt` holds the UI text (all languages, ASCII first), including error messages that hint at rules.
 
 Then use the original app (drive it with `experiment.py` or by hand) and confirm each catalog item. Add what is only visible at runtime: onboarding, empty states, notifications, settings effects. The confirmed list becomes the rows of `parity.md` (step 6).
 
@@ -109,7 +109,10 @@ uv run scripts/experiment.py experiments/next_nap_after_short_nap.py --package O
 Rules the tools enforce:
 - `note()` raises on `None` (the regex found nothing), so a broken read cannot pass. `diff.py` also fails on empty notes.
 - `set_time` moves only the wall clock (plus a `TIME_SET` broadcast). Monotonic timers, AlarmManager/WorkManager and server time do not follow: restart the app after a jump, check `lab.alarms()`, and treat server-timestamped output as untestable offline.
-- `capture()` waits for the UI to settle; `diff.py` ignores the status and nav bars. Capture state at key steps with `--no-state` elsewhere to save time.
+- `capture()` waits for the UI to settle; `diff.py` ignores the status and nav bars.
+- Data capture (`state.json`, a root pull) is **off by default** because it is the slow part. Ask for it where it matters: `lab.capture("after-short-nap", state=True)`, or `--state` for every step. The pull checks the app's file listing before and after and retries only if something was written meanwhile.
+- **Seed instead of tapping.** Build a fixture once (onboarded, with a few records), `capture_state.py` it, and begin each experiment with `lab.push_state("research/state/fixture/raw/PKG")`. Edit the pulled database with `sqlite3` to set up exact records.
+- **Grids.** For a rule that depends on numbers, define `GRID = [{"age_weeks": 8}, {"age_weeks": 12}]` and `def run(lab, age_weeks):` in the experiment file. One command runs every entry in one process, each saved as its own experiment (`traces/<name>__age_weeks-8/...`), so `diff.py` and `parity.py` work unchanged.
 - Backend-driven rules (computed on a server) are out of reach offline. Say so in `parity.md` rather than guessing; a proxy (mitmproxy) works only where the app does not pin certificates, and the APK is never patched to change that.
 
 Design experiments like a scientist:
@@ -151,4 +154,4 @@ Report three numbers separately: **breadth** (catalog items present), **behaviou
 
 ## When to use static analysis
 
-Only for a specific question that experiments cannot settle cheaply (an exact threshold, a hidden branch, a server endpoint). Read `strings.txt`/`sources.txt` first. For Flutter AOT, Blutter (ARM64 `libapp.so`) dumps the object pool and annotated functions; the Play emulator delivers x86_64, so it needs an ARM64 copy of the APK from another source, otherwise rely on experiments. Look up the one function, take the constant, and confirm it with an experiment. For native apps, `jadx` on the specific class.
+Only for a specific question that experiments cannot settle cheaply (an exact threshold, a hidden branch, a server endpoint). Read `strings.txt`/`sources.txt` first. For Flutter AOT, Blutter (ARM64 `libapp.so`) dumps the object pool and annotated functions; the Play emulator delivers x86_64, so run `scripts/arm64-avd.sh` once (an ARM64 Play emulator, ~1.5 GB, slow) and fetch the ARM64 delivery with `scripts/download-play-apks.sh PKG apk-arm64 emulator-5558 arm64-v8a`. `download-play-apks.sh` never downloads from Play itself: it copies the APKs that Play installed on the chosen emulator, which are matched to that emulator's ABI. Look up the one function, take the constant, and confirm it with an experiment. For native apps, `jadx` on the specific class.

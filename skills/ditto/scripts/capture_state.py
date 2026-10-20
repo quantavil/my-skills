@@ -254,22 +254,37 @@ def decode_tree(root: Path) -> dict:
 
 # ------------------------------------------------------------------- pull --
 
-def stable_tar(fetch, attempts: int = 4) -> bytes:
-    """Fetch twice until two pulls are byte-identical, so a write in flight cannot tear the copy."""
-    previous = fetch()
-    for _ in range(attempts - 1):
-        current = fetch()
-        if current == previous:
-            return current
-        previous = current
+def stable_tar(fetch, fingerprint, attempts: int = 4) -> bytes:
+    """One pull when the app's files did not change during it, else retry.
+
+    `fingerprint()` is a cheap listing of (mtime, size, name); equal before and after a pull
+    means no write landed in between. Without a usable fingerprint, fall back to pulling
+    twice until the two copies are byte-identical.
+    """
+    if not fingerprint():
+        previous = fetch()
+        for _ in range(attempts - 1):
+            current = fetch()
+            if current == previous:
+                return current
+            previous = current
+        print("warning: app data kept changing during the pull; the copy may be inconsistent", file=sys.stderr)
+        return previous
+    for _ in range(attempts):
+        before = fingerprint()
+        data = fetch()
+        if fingerprint() == before:
+            return data
     print("warning: app data kept changing during the pull; the copy may be inconsistent", file=sys.stderr)
-    return previous
+    return data
 
 
 def pull(adb: Adb, package: str, dest: Path) -> Path:
     adb.app_uid(package)
     command = adb.root_command(f"tar -C /data/data -cf - {package}")
-    data = stable_tar(lambda: adb.run("exec-out", command, binary=True, timeout=300))
+    listing = f"find /data/data/{package} -type f -exec stat -c '%Y %s %n' {{}} +"
+    data = stable_tar(lambda: adb.run("exec-out", command, binary=True, timeout=300),
+                      lambda: adb.root_shell(listing, check=False).strip())
     dest.mkdir(parents=True, exist_ok=True)
     with tarfile.open(fileobj=io.BytesIO(data)) as archive:
         archive.extractall(dest, filter="data")

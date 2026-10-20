@@ -6,12 +6,20 @@
 """Run one behaviour experiment against an app and record a golden trace.
 
 Usage:
-  experiment.py SCRIPT.py --package PKG --label original|clone --out traces/ [--serial S]
+  experiment.py SCRIPT.py --package PKG --label original|clone --out traces/ [--serial S] [--state]
 
 SCRIPT.py defines `run(lab)`. The same script runs unchanged against the original
 and the clone; only --package and --label differ. Results land in
-  traces/<script-name>/<label>/<NN-step>/{screen.png, ui.xml, texts.json, state.json}
+  traces/<script-name>/<label>/<NN-step>/{screen.png, ui.xml, texts.json}
   traces/<script-name>/<label>/notes.json   (values recorded with lab.note)
+
+Data capture (state.json, a root pull of the app's files) is off by default because it is
+the slow part: ask for it at key steps with lab.capture(name, state=True), or for every
+step with --state.
+
+A script may also define GRID = [{"age_weeks": 8}, {"age_weeks": 12}] and run(lab, **params).
+It then runs once per entry in the same process, each as its own experiment
+traces/<script-name>__<params>/<label>/ (so diff.py and parity.py work unchanged).
 """
 
 from __future__ import annotations
@@ -65,6 +73,10 @@ class Lab:
         self.d = uiautomator2.connect(serial)
         self.step = 0
         self.notes: dict = {}
+
+    def begin(self, out: Path) -> None:
+        """Start a fresh trace folder (used between GRID cases in one process)."""
+        self.out, self.step, self.notes = out, 0, {}
 
     # --- device and app control -------------------------------------------
     def snapshot_load(self, name: str) -> None:
@@ -205,6 +217,14 @@ class Lab:
         return folder
 
 
+def case_name(stem: str, params: dict) -> str:
+    """Experiment folder name for one GRID entry: stem__key-value__key-value."""
+    if not params:
+        return stem
+    parts = (re.sub(r"[^a-zA-Z0-9._-]+", "-", f"{key}-{value}") for key, value in params.items())
+    return stem + "__" + "__".join(parts)
+
+
 def load_script(path: Path):
     spec = importlib.util.spec_from_file_location(path.stem, path)
     module = importlib.util.module_from_spec(spec)
@@ -221,25 +241,32 @@ def main() -> None:
     parser.add_argument("--label", required=True, help="original or clone")
     parser.add_argument("--out", type=Path, default=Path("traces"))
     parser.add_argument("--serial", default="emulator-5556")
-    parser.add_argument("--no-state", action="store_true", help="skip data capture (non-root device)")
+    parser.add_argument("--state", action="store_true", help="capture app data at every step (slow; needs root)")
     args = parser.parse_args()
 
-    out = args.out / args.script.stem / args.label
-    if out.exists() and any(out.iterdir()):
-        raise SystemExit(f"{out} already has a trace; delete it or use another --label")
-    out.mkdir(parents=True, exist_ok=True)
     module = load_script(args.script)
-    lab = Lab(args.serial, args.package, out, state=not args.no_state)
-    started = time.time()
-    try:
-        module.run(lab)
-    finally:
-        version = lab.adb.shell(f"dumpsys package {args.package} | grep -E 'versionName|versionCode'", check=False)
-        meta = {"script": str(args.script), "package": args.package, "label": args.label,
-                "serial": args.serial, "steps": lab.step, "seconds": round(time.time() - started, 1),
-                "version": " ".join(version.split()), "started": datetime.now().isoformat(timespec="seconds")}
-        (out / "run.json").write_text(json.dumps(meta, indent=1) + "\n")
-    print(f"{lab.step} steps, notes={lab.notes} → {out}")
+    cases = getattr(module, "GRID", None) or [{}]
+    outs = [args.out / case_name(args.script.stem, params) / args.label for params in cases]
+    for out in outs:
+        if out.exists() and any(out.iterdir()):
+            raise SystemExit(f"{out} already has a trace; delete it or use another --label")
+    lab = Lab(args.serial, args.package, outs[0], state=args.state)
+    version = None
+    for params, out in zip(cases, outs):
+        out.mkdir(parents=True, exist_ok=True)
+        lab.begin(out)
+        started = time.time()
+        try:
+            module.run(lab, **params)
+        finally:
+            if version is None:
+                version = " ".join(lab.adb.shell(
+                    f"dumpsys package {args.package} | grep -E 'versionName|versionCode'", check=False).split())
+            meta = {"script": str(args.script), "params": params, "package": args.package, "label": args.label,
+                    "serial": args.serial, "steps": lab.step, "seconds": round(time.time() - started, 1),
+                    "version": version, "started": datetime.now().isoformat(timespec="seconds")}
+            (out / "run.json").write_text(json.dumps(meta, indent=1) + "\n")
+        print(f"{lab.step} steps, notes={lab.notes} → {out}")
 
 
 if __name__ == "__main__":
