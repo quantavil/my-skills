@@ -321,21 +321,6 @@ class InventoryTest(unittest.TestCase):
         self.assertIn("log_entry", text)
         self.assertIn("**home_page**", text)
 
-    def test_react_native_js_bundle(self):
-        js = b'x("Add a new feeding to the log");require("./src/screens/HomeScreen.js");var SettingsDialog=1;'
-        kind, texts, sources = inventory.bundle_info(js)
-        self.assertEqual(kind, "js")
-        self.assertIn("Add a new feeding to the log", texts)
-        self.assertIn("rn.src.screens.HomeScreen", sources)
-        self.assertIn("rn.SettingsDialog", sources)
-
-    def test_react_native_hermes_bundle(self):
-        data = inventory.HERMES_MAGIC + b"\x00\x00ProfileScreen\x00Tap to start the timer\x00"
-        kind, texts, sources = inventory.bundle_info(data)
-        self.assertEqual(kind, "hermes")
-        self.assertIn("Tap to start the timer", texts)
-        self.assertEqual(sources, ["rn.ProfileScreen"])
-
     def test_manifest_widgets_and_deep_links(self):
         manifest = """<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.x">
           <uses-permission android:name="android.permission.VIBRATE"/>

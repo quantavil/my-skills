@@ -44,7 +44,7 @@ def visible_texts(hierarchy_xml: str) -> list[str]:
     """Text and content-desc of every node, top-to-bottom, left-to-right.
 
     Flutter exposes its Semantics labels as content-desc, so this covers Flutter,
-    native and React Native screens alike. The status bar is skipped.
+    native screens alike. The status bar is skipped.
     """
     items = []
     for node in ET.fromstring(hierarchy_xml).iter("node"):

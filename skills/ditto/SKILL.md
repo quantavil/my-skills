@@ -1,6 +1,6 @@
 ---
 name: ditto
-description: Use when cloning an Android app (APK or Play listing) by functional reverse engineering - cataloguing its features, recovering its data model, and recording its behaviour as golden traces that the rebuilt app must reproduce. Works for Flutter, native and React Native apps.
+description: Use when cloning an Android app (APK or Play listing) by functional reverse engineering - cataloguing its features, recovering its data model, and recording its behaviour as golden traces that the rebuilt app must reproduce. Works for Flutter and native (Java/Kotlin) apps; React Native is not supported yet.
 ---
 
 # Ditto: clone an app by its behaviour
@@ -83,7 +83,7 @@ It rejects the copy unless the package and versionCode equal the Play copy, the 
 python3 -I scripts/inventory.py apk/base.apk apk/split_*.apk -o research/inventory
 ```
 
-Seconds, no disassembly. For native apps the dex string constants go to `strings_code.txt` (mostly library messages; `strings.txt` keeps resource text), and for React Native the bundle's string literals, module paths and `*Screen`/`*Dialog`/`*Modal` component names (Hermes bytecode keeps them as plain strings) feed the feature tree. `catalog.md` lists framework, storage and cloud stack, notifications, widgets, payments, deep links, permissions, and a **feature tree**. For Flutter, every `package:<app>/...dart` path survives in `libapp.so`, so folders like `domain/schedule/` and files like `skip_nap_dialog` name the features. `strings.txt` holds the UI text (all languages, ASCII first), including error messages that hint at rules.
+Seconds, no disassembly. For native apps the dex string constants go to `strings_code.txt` (mostly library messages; `strings.txt` keeps resource text). `catalog.md` lists framework, storage and cloud stack, notifications, widgets, payments, deep links, permissions, and a **feature tree**. For Flutter, every `package:<app>/...dart` path survives in `libapp.so`, so folders like `domain/schedule/` and files like `skip_nap_dialog` name the features. `strings.txt` holds the UI text (all languages, ASCII first), including error messages that hint at rules.
 
 Then use the original app (drive it with `experiment.py` or by hand) and confirm each catalog item. Add what is only visible at runtime: onboarding, empty states, notifications, settings effects. The confirmed list becomes the rows of `parity.md` (step 6).
 
@@ -175,4 +175,3 @@ Use it for a specific question that experiments cannot settle cheaply (an exact 
 
 - **Flutter:** the x86_64 `libapp.so` is enough for strings, the feature tree and the Dart package layout (the catalog already uses it). Blutter reads only ARM64 `libapp.so`, which Play delivers only to an ARM64 device, and the emulator cannot be ARM64 on an x86_64 host. The ARM64 copy in `apk-arm64/` (step 1b, verified by `check_arm64.py`) is required, so run Blutter on its `lib/arm64-v8a/libapp.so` (a source build under `~/.local/share/ditto-toolchain/blutter`: ask the user before building) and write the output to `research/blutter/`. Take the one constant, then confirm it with an experiment and cite that experiment next to the rule.
 - **Native:** `jadx` on the specific class.
-- **React Native (Hermes):** decompile with `hbc-decompiler` only for the specific function, then confirm with an experiment.

@@ -13,7 +13,7 @@ Writes:
 Flutter: the AOT snapshot keeps every `package:<app>/...dart` path and string
 literal, so the feature tree and UI text come straight out of libapp.so.
 Native: class names come from the DEX string table and text from res/values.
-React Native: text comes from the JS bundle.
+React Native (JS bundle, Hermes bytecode) is not supported yet: the script stops with a message.
 """
 
 from __future__ import annotations
@@ -95,30 +95,6 @@ def ui_strings(candidates: list[str]) -> list[str]:
     return sorted(unique, key=lambda s: (not s.isascii(), s.lower()))
 
 
-HERMES_MAGIC = bytes.fromhex("c61fbc03c1031919")  # little-endian 0x1F1903C103BC1FC6
-JS_STRING = re.compile(r"\"([^\"\\\n]{4,300})\"|'([^'\\\n]{4,300})'")
-JS_MODULE = re.compile(r"[\"']((?:\./|src/|app/|screens?/|components?/)[\w/.-]+?)\.(?:jsx?|tsx?)[\"']")
-RN_COMPONENT = re.compile(r"\b([A-Z][A-Za-z0-9]{2,}(?:Screen|Dialog|Modal|Sheet|Tab|Page|Form|Card|Picker|Navigator))\b")
-
-
-def bundle_info(data: bytes) -> tuple[str, list[str], list[str]]:
-    """React Native bundle -> (kind, UI text candidates, source names).
-
-    Hermes bytecode keeps its string table as plain UTF-8/UTF-16, so printable runs find the
-    text and component names. A plain Metro bundle also has string literals and module paths.
-    Component and module names become feature-tree entries under `rn.`.
-    """
-    hermes = data.startswith(HERMES_MAGIC)
-    texts = printable_runs(data)
-    sources = {f"rn.{m}" for run in texts for m in RN_COMPONENT.findall(run)}
-    if not hermes:
-        text = data.decode("utf-8", errors="replace")
-        texts += [a or b for a, b in JS_STRING.findall(text)]
-        sources |= {"rn." + m.lstrip("./").replace("/", ".") for m in JS_MODULE.findall(text)}
-        sources |= {f"rn.{m}" for m in RN_COMPONENT.findall(text)}
-    return ("hermes" if hermes else "js"), texts, sorted(sources)
-
-
 def apktool_version(path: Path) -> tuple[str | None, str | None]:
     """(versionName, versionCode) from apktool.yml; the decoded manifest often lacks versionName."""
     if not path.exists():
@@ -182,7 +158,7 @@ def resource_strings(apktool_dir: Path) -> dict[str, str]:
 
 def analyse(apks: list[Path], out: Path) -> dict:
     framework, app_sources, packages, raw_strings, assets = "native", [], Counter(), [], []
-    rn_kind, code_strings = "", []
+    code_strings = []
     for apk in apks:
         with ZipFile(apk) as archive:
             for name in archive.namelist():
@@ -194,11 +170,7 @@ def analyse(apks: list[Path], out: Path) -> dict:
                         app_sources.append(f"{uri[0].decode()}/{uri[1].decode()}")
                     raw_strings += printable_runs(data)
                 elif name == "assets/index.android.bundle":
-                    framework = "react-native"
-                    kind, texts, sources = bundle_info(archive.read(name))
-                    rn_kind = kind
-                    raw_strings += texts
-                    app_sources += sources
+                    raise SystemExit("React Native apps are not supported yet (the logic is in a JS bundle or Hermes bytecode)")
                 elif re.fullmatch(r"classes\d*\.dex", name) and framework != "flutter":
                     for value in dex_strings(archive.read(name)):
                         if value.startswith("L") and value.endswith(";"):
@@ -232,8 +204,8 @@ def analyse(apks: list[Path], out: Path) -> dict:
     else:
         own = app_package
         prefix = own_prefix(app_package, app_sources) if app_package else ""
-        libraries = sorted({".".join(s.split(".")[:3]) for s in app_sources if not s.startswith((prefix, "rn."))})
-        app_sources = sorted({s for s in app_sources if s.startswith((prefix, "rn."))})
+        libraries = sorted({".".join(s.split(".")[:3]) for s in app_sources if not s.startswith(prefix)})
+        app_sources = sorted({s for s in app_sources if s.startswith(prefix)})
 
     def uses(name: str) -> bool:
         return any(lib == name or lib.startswith(name + ".") for lib in libraries)
@@ -244,7 +216,7 @@ def analyse(apks: list[Path], out: Path) -> dict:
     firebase = {k: v for k, v in res.items() if k in ("project_id", "google_app_id", "firebase_database_url", "gcm_defaultSenderId")}
 
     return {
-        "package": app_package, "version": manifest.get("version"), "framework": framework, "bundle": rn_kind,
+        "package": app_package, "version": manifest.get("version"), "framework": framework,
         "source_package": own, "signals": signals, "libraries": libraries, "firebase": firebase,
         "manifest": manifest, "sources": app_sources, "assets": sorted(assets),
         "strings": ui_strings(raw_strings),
