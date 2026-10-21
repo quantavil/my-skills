@@ -7,7 +7,7 @@ description: Use when cloning an Android app (APK or Play listing) by functional
 
 Treat the original app as a **black box and test oracle**. Do not try to recover its source code. Find out what it has (catalog), what it stores (data model) and what it outputs for given inputs (experiments). Then build a clone that reproduces those outputs, and measure that it does.
 
-Static disassembly is a **tie-breaker only**: use it when experiments leave two candidate rules and you need one constant or branch. Never make it the main road.
+Static disassembly is a **tie-breaker, but a prepared one**: the ARM64 delivery and the disassembler are set up during Setup, so that when experiments leave two candidate rules you can read the one constant or branch in minutes instead of discovering the tooling is missing. Experiments stay the main road; disassembly never decides a rule alone, a confirming experiment does.
 
 Analysis and experiments use plain CLIs: `apktool`, `adb`, `sqlite3`, Python `uiautomator2` (pulled in by `uv run`). Scripts live in `scripts/` next to this file; call them by absolute path.
 
@@ -23,7 +23,8 @@ Everything for one app lives in **one folder**: `~/Documents/<name>-clone/`, whe
 
 ```
 <name>-clone/
-  apk/            original base.apk + splits (gitignored)
+  apk/            x86_64 Play delivery: base.apk + splits (gitignored)
+  apk-arm64/      ARM64 Play delivery of the same version, for Blutter (gitignored)
   research/       inventory/ (catalog.md…), state/ captures (gitignored), data-model.md
   experiments/    *.py behaviour experiments (run(lab))
   traces/         golden traces: <experiment>/original|clone/ (raw/ gitignored)
@@ -31,7 +32,7 @@ Everything for one app lives in **one folder**: `~/Documents/<name>-clone/`, whe
   lib/ or src/, test/, android/ …   the clone app, in its framework's normal layout
 ```
 
-Run every command from that folder so relative paths land inside it. Gitignore `/apk/`, `/research/state/`, `/traces/**/raw/` and `/traces/**/state.json` (they can hold account data and tokens).
+Run every command from that folder so relative paths land inside it. Gitignore `/apk/`, `/apk-arm64/`, `/research/state/`, `/traces/**/raw/` and `/traces/**/state.json` (they can hold account data and tokens).
 
 ## Setup (once per machine)
 
@@ -50,15 +51,25 @@ rootAVD patches the image's `ramdisk.img` (stock copy kept as `ramdisk.img.backu
 
 The scripts get root through `su` automatically (or `adb root` where adbd allows it). Fix the timezone at launch (`-timezone`); experiments then set only the clock. Default serial is `emulator-5556`; add `-no-window` to run headless. Never patch the target APK to get past a check.
 
+Second emulator, **ARM64** (once per machine; Play only delivers the ARM64 build to an ARM64 device, and Blutter reads only ARM64 `libapp.so`). It is used only to download and never rooted or experimented on:
+
+```bash
+scripts/arm64-avd.sh                       # ~1.5 GB image, creates ditto_arm64_play
+emulator -avd ditto_arm64_play -port 5558 -timezone Asia/Kolkata -no-snapshot-load &   # slow on x86 hosts
+```
+
+Sign in to Play on it yourself (the agent never enters Google credentials). Keep the AVD; later apps need no new setup.
+
 ## 1. Get the APK
 
-From Play, on a signed-in Play emulator:
+From Play, on the signed-in Play emulators. Get **both** deliveries every time, so the ARM64 copy exists before anyone needs it:
 
 ```bash
 scripts/download-play-apks.sh 'https://play.google.com/store/apps/details?id=PKG' apk emulator-5556 x86_64
+scripts/download-play-apks.sh 'https://play.google.com/store/apps/details?id=PKG' apk-arm64 emulator-5558 arm64-v8a
 ```
 
-It opens the listing if the app is absent; install it there and rerun. Keep base + splits together; experiments run on the same emulator, against the Play-installed app.
+It copies what Play installed on the chosen emulator (it never talks to Play itself), so install the app from the listing on each emulator first. Check that both `acquisition.json` files show the same `versionName`; mismatched versions make Blutter's findings invalid. Keep base + splits together; experiments run on the x86_64 emulator, against the Play-installed app.
 
 ## 2. Catalog: what exists
 
@@ -154,4 +165,8 @@ Report three numbers separately: **breadth** (catalog items present), **behaviou
 
 ## When to use static analysis
 
-Only for a specific question that experiments cannot settle cheaply (an exact threshold, a hidden branch, a server endpoint). Read `strings.txt`/`sources.txt` first. For Flutter AOT, Blutter (ARM64 `libapp.so`) dumps the object pool and annotated functions; the Play emulator delivers x86_64, so, **only when an experiment cannot settle a rule** and the app is Flutter, run `scripts/arm64-avd.sh` once (you sign in to Play on it yourself; the agent never enters Google credentials) (an ARM64 Play emulator, ~1.5 GB, slow) and fetch the ARM64 delivery with `scripts/download-play-apks.sh PKG apk-arm64 emulator-5558 arm64-v8a`. `download-play-apks.sh` never downloads from Play itself: it copies the APKs that Play installed on the chosen emulator, which are matched to that emulator's ABI. Look up the one function, take the constant, and confirm it with an experiment. For native apps, `jadx` on the specific class.
+Use it for a specific question that experiments cannot settle cheaply (an exact threshold, a hidden branch, a constant, a server endpoint), or to narrow candidate rules before designing a grid. Read `strings.txt`/`sources.txt` first.
+
+- **Flutter:** run Blutter on `apk-arm64/` `lib/arm64-v8a/libapp.so` (and `libflutter.so`): it dumps the object pool and annotated function listings with real names. Build Blutter once under `~/.local/share/ditto-toolchain/blutter` (it needs a source build with cmake and clang: ask the user before building) and write its output to `research/blutter/`. Look up the one function, take the constant, then confirm it with an experiment and cite that experiment next to the rule.
+- **Native:** `jadx` on the specific class.
+- **React Native (Hermes):** decompile with `hbc-decompiler` only for the specific function, then confirm with an experiment.

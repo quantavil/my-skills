@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Create an ARM64 Google Play emulator, only to fetch an app's ARM64 delivery
 # (Blutter needs an ARM64 libapp.so). Downloads a ~1.5 GB system image; runs slowly on x86 hosts.
-# Not needed for catalog, data model or experiments: those use the x86_64 Play emulator, whose
-# libapp.so already gives the full catalog. Run this only when Blutter is the last resort.
+# Used only to download: Play delivers the ARM64 build (and its libapp.so for Blutter) to an ARM64 device.
+# Experiments, data capture and the catalog stay on the rooted x86_64 Play emulator.
 set -euo pipefail
 image="system-images;android-34;google_apis_playstore;arm64-v8a"
 sdkmanager "$image"
