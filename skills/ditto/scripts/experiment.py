@@ -28,6 +28,7 @@ import argparse
 import importlib.util
 import json
 import re
+import shutil
 import sys
 import time
 import xml.etree.ElementTree as ET
@@ -100,8 +101,15 @@ class Lab:
         The timezone is fixed when the emulator starts (-timezone); see SKILL.md.
         """
         moment = datetime.fromisoformat(when)
-        self.adb.shell("settings put global auto_time 0")
+        self.adb.shell("settings put global auto_time 0")  # undone by restore() at the end of a run
         self.adb.root_shell(f"date {moment:%m%d%H%M%Y.%S}")
+        self.adb.shell("am broadcast -a android.intent.action.TIME_SET", check=False)
+
+    def restore(self) -> None:
+        """Undo what experiments change on the device: network back on, clock back to real time."""
+        self.adb.shell("svc wifi enable; svc data enable", check=False)
+        self.adb.shell("settings put global auto_time 1", check=False)
+        self.adb.root_shell(f"date {datetime.now():%m%d%H%M%Y.%S}", check=False)
         self.adb.shell("am broadcast -a android.intent.action.TIME_SET", check=False)
 
     def launch(self, wait: float = 2.0) -> None:
@@ -217,6 +225,12 @@ class Lab:
         return folder
 
 
+def complete_trace(out: Path) -> bool:
+    """A trace folder from a run that finished without error."""
+    meta = out / "run.json"
+    return meta.exists() and "error" not in json.loads(meta.read_text())
+
+
 def case_name(stem: str, params: dict) -> str:
     """Experiment folder name for one GRID entry: stem__key-value__key-value."""
     if not params:
@@ -248,25 +262,36 @@ def main() -> None:
     cases = getattr(module, "GRID", None) or [{}]
     outs = [args.out / case_name(args.script.stem, params) / args.label for params in cases]
     for out in outs:
-        if out.exists() and any(out.iterdir()):
-            raise SystemExit(f"{out} already has a trace; delete it or use another --label")
+        if complete_trace(out):
+            raise SystemExit(f"{out} already has a finished trace; delete it or use another --label")
+        if out.exists():  # left by a failed run: start over
+            shutil.rmtree(out)
     lab = Lab(args.serial, args.package, outs[0], state=args.state)
-    version = None
+    version, failures = None, []
     for params, out in zip(cases, outs):
         out.mkdir(parents=True, exist_ok=True)
         lab.begin(out)
-        started = time.time()
+        started, error = time.time(), None
         try:
             module.run(lab, **params)
-        finally:
-            if version is None:
-                version = " ".join(lab.adb.shell(
-                    f"dumpsys package {args.package} | grep -E 'versionName|versionCode'", check=False).split())
-            meta = {"script": str(args.script), "params": params, "package": args.package, "label": args.label,
-                    "serial": args.serial, "steps": lab.step, "seconds": round(time.time() - started, 1),
-                    "version": version, "started": datetime.now().isoformat(timespec="seconds")}
-            (out / "run.json").write_text(json.dumps(meta, indent=1) + "\n")
-        print(f"{lab.step} steps, notes={lab.notes} → {out}")
+        except Exception as exc:  # keep going: one bad case must not hide the others
+            error = f"{type(exc).__name__}: {exc}"
+            failures.append((out, error))
+        if version is None:
+            version = " ".join(lab.adb.shell(
+                f"dumpsys package {args.package} | grep -E 'versionName|versionCode'", check=False).split())
+        meta = {"script": str(args.script), "params": params, "package": args.package, "label": args.label,
+                "serial": args.serial, "steps": lab.step, "seconds": round(time.time() - started, 1),
+                "version": version, "started": datetime.now().isoformat(timespec="seconds")}
+        if error:
+            meta["error"] = error
+        (out / "run.json").write_text(json.dumps(meta, indent=1) + "\n")
+        print(f"{'FAILED' if error else 'ok'}: {lab.step} steps, notes={lab.notes} → {out}")
+    lab.restore()
+    if failures:
+        for out, error in failures:
+            print(f"  {out}: {error}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

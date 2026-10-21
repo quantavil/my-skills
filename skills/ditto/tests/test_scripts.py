@@ -178,6 +178,16 @@ class StablePullTest(unittest.TestCase):
         pulls = iter([b"a", b"b", b"b"])
         self.assertEqual(capture_state.stable_tar(lambda: next(pulls), lambda: ""), b"b")
 
+    def test_failed_traces_can_be_rerun_but_finished_ones_cannot(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "x" / "original"
+            out.mkdir(parents=True)
+            self.assertFalse(experiment.complete_trace(out))
+            (out / "run.json").write_text('{"steps": 2, "error": "ValueError: boom"}')
+            self.assertFalse(experiment.complete_trace(out))
+            (out / "run.json").write_text('{"steps": 2}')
+            self.assertTrue(experiment.complete_trace(out))
+
     def test_case_name_for_grid_entries(self):
         self.assertEqual(experiment.case_name("nap", {}), "nap")
         self.assertEqual(experiment.case_name("nap", {"age_weeks": 8, "tz": "a/b"}), "nap__age_weeks-8__tz-a-b")
@@ -227,6 +237,20 @@ class CheckArm64Test(unittest.TestCase):
         other = {**self.REF, "versionCode": "11", "cert": "ef" * 32}
         self.assertEqual(len(check_arm64.problems(self.REF, other, set())), 3)
 
+    def test_abi_suffix_version_code_is_accepted(self):
+        self.assertTrue(check_arm64.version_ok("64", "643"))
+        self.assertFalse(check_arm64.version_ok("64", "65"))
+        self.assertFalse(check_arm64.version_ok("64", "64123"))
+
+    def test_different_signer_needs_flag_and_matching_dart_sources(self):
+        other = {**self.REF, "versionCode": "103", "cert": "ef" * 32}
+        libs = {"lib/arm64-v8a/libapp.so"}
+        self.assertEqual(len(check_arm64.problems(self.REF, other, libs)), 1)
+        same = {"app/a.dart"}
+        self.assertEqual(check_arm64.problems(self.REF, other, libs, True, same, set(same)), [])
+        self.assertEqual(len(check_arm64.problems(self.REF, other, libs, True, same, {"app/b.dart"})), 1)
+        self.assertEqual(len(check_arm64.problems(self.REF, other, libs, True, set(), set())), 1)
+
     def test_unreadable_cert_is_a_failure(self):
         self.assertEqual(len(check_arm64.problems(self.REF, {**self.REF, "cert": None}, {"lib/arm64-v8a/a.so"})), 1)
 
@@ -273,6 +297,29 @@ class InventoryTest(unittest.TestCase):
     def test_dex_constants_become_ui_text_candidates(self):
         kept = inventory.ui_strings(["Lcom/app/A;", "Start the nap timer", "Tap here to add a feeding"])
         self.assertEqual(kept, ["Start the nap timer", "Tap here to add a feeding"])
+
+    def test_inner_classes_fold_into_their_outer_class(self):
+        self.assertEqual(inventory.class_name("Lcom/app/Foo$Bar$1;"), "com.app.Foo")
+
+    def test_own_prefix_prefers_the_full_package(self):
+        many = [f"com.google.android.apps.messaging.A{i}" for i in range(10)] + ["com.google.android.gms.X"]
+        self.assertEqual(inventory.own_prefix("com.google.android.apps.messaging", many), "com.google.android.apps.messaging.")
+        self.assertEqual(inventory.own_prefix("com.a.b", ["com.a.b.X", "com.a.c.Y"]), "com.a.")
+
+    def test_version_comes_from_apktool_yml(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".yml") as handle:
+            handle.write("version: 3.0.3\nversionInfo:\n  versionCode: 64\n  versionName: 1.18.2\n")
+            handle.flush()
+            self.assertEqual(inventory.apktool_version(Path(handle.name)), ("1.18.2", "64"))
+
+    def test_generated_dart_files_are_hidden_from_the_feature_tree(self):
+        lines = inventory.feature_tree(["app/model/log_entry.dart", "app/model/log_entry.mapper.dart",
+                                         "app/gen/strings_de.g.dart", "app/pages/home_page.dart"], "flutter")
+        text = "\n".join(lines)
+        self.assertNotIn("mapper", text)
+        self.assertNotIn("strings_de", text)
+        self.assertIn("log_entry", text)
+        self.assertIn("**home_page**", text)
 
     def test_react_native_js_bundle(self):
         js = b'x("Add a new feeding to the log");require("./src/screens/HomeScreen.js");var SettingsDialog=1;'

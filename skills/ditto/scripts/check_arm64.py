@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """Verify an ARM64 copy of the app against the Play-installed reference, then record it.
 
-Usage: check_arm64.py REFERENCE_DIR ARM64_DIR [--source phone|apkmirror|apkpure|uptodown|other]
+Usage: check_arm64.py REFERENCE_DIR ARM64_DIR [--source NAME] [--allow-different-signer]
 
 REFERENCE_DIR is the Play delivery from download-play-apks.sh (apk/). ARM64_DIR holds the
 ARM64 base.apk and splits, from a phone (`adb pull`) or a mirror (unzip .apkm/.xapk first).
 Checks, each of which must pass:
-  package and versionCode equal the reference
-  signing certificate SHA-256 equals the reference (so the file is the developer's build)
-  lib/arm64-v8a/libapp.so is present (Flutter), or lib/arm64-v8a/*.so for other apps
+  package and versionName equal the reference; versionCode equal, or the reference code plus
+    the 1-2 digit ABI suffix that per-ABI builds append (64 -> 643)
+  signing certificate SHA-256 equals the reference; builds from the developer's own site or
+    GitHub use a different key than Play's, so those need --allow-different-signer, in which
+    case the Dart source list below must match instead
+  Flutter: the app's Dart source files in libapp.so equal the reference's (same code)
+  lib/arm64-v8a/*.so is present
 Writes ARM64_DIR/acquisition-arm64.json (sha256 of every file, source, versions).
 Exit 1 on any failure. Nothing is installed or executed from the downloaded files.
 """
@@ -56,6 +60,24 @@ def apk_info(apk: Path) -> dict:
     return {**parse_badging(badging), "cert": parse_cert(certs.stdout)}
 
 
+DART_SOURCE = re.compile(rb"package:([a-z0-9_]+)/([A-Za-z0-9_/.]+?\.dart)")
+
+
+def dart_sources(apks: list[Path]) -> set[str]:
+    """Dart source paths named inside every libapp.so; empty for non-Flutter apps."""
+    found: set[str] = set()
+    for apk in apks:
+        with ZipFile(apk) as archive:
+            for name in archive.namelist():
+                if name.endswith("/libapp.so"):
+                    found.update(f"{a.decode()}/{b.decode()}" for a, b in DART_SOURCE.findall(archive.read(name)))
+    return found
+
+
+def version_ok(reference: str, candidate: str) -> bool:
+    return candidate == reference or (candidate.startswith(reference) and len(candidate) - len(reference) in (1, 2))
+
+
 def native_libs(apks: list[Path]) -> set[str]:
     found: set[str] = set()
     for apk in apks:
@@ -69,13 +91,24 @@ def sha256(path: Path) -> str:
         return hashlib.file_digest(handle, "sha256").hexdigest()
 
 
-def problems(reference: dict, candidate: dict, libs: set[str]) -> list[str]:
+def problems(reference: dict, candidate: dict, libs: set[str], allow_signer: bool = False,
+             reference_sources: set[str] | None = None, candidate_sources: set[str] | None = None) -> list[str]:
     out = []
-    for key in ("package", "versionCode"):
+    for key in ("package", "versionName"):
         if reference[key] != candidate[key]:
             out.append(f"{key}: Play copy {reference[key]} != ARM64 copy {candidate[key]}")
-    if not candidate["cert"] or candidate["cert"] != reference["cert"]:
-        out.append(f"signing certificate differs or is unreadable: {reference['cert']} vs {candidate['cert']}")
+    if not version_ok(reference["versionCode"], candidate["versionCode"]):
+        out.append(f"versionCode: Play copy {reference['versionCode']} != ARM64 copy {candidate['versionCode']}")
+    if not candidate["cert"]:
+        out.append("signing certificate unreadable")
+    elif candidate["cert"] != reference["cert"]:
+        if not allow_signer:
+            out.append(f"signing certificate differs ({reference['cert'][:12]} vs {candidate['cert'][:12]}); "
+                       "a build signed with the developer's own key needs --allow-different-signer")
+        elif reference_sources and candidate_sources != reference_sources:
+            out.append("different signer and the Dart source lists differ: not the same code")
+        elif not reference_sources:
+            out.append("different signer and no Dart sources to compare: cannot prove it is the same code")
     if not libs:
         out.append("no lib/arm64-v8a/*.so in any APK (is the split_config.arm64_v8a.apk missing?)")
     return out
@@ -86,6 +119,7 @@ def main() -> None:
     parser.add_argument("reference", type=Path)
     parser.add_argument("arm64", type=Path)
     parser.add_argument("--source", default="other")
+    parser.add_argument("--allow-different-signer", action="store_true")
     args = parser.parse_args()
 
     reference_apk, candidate_apk = args.reference / "base.apk", args.arm64 / "base.apk"
@@ -94,13 +128,14 @@ def main() -> None:
             raise SystemExit(f"missing {apk}")
     apks = sorted(args.arm64.glob("*.apk"))
     reference, candidate, libs = apk_info(reference_apk), apk_info(candidate_apk), native_libs(apks)
-    found = problems(reference, candidate, libs)
+    found = problems(reference, candidate, libs, args.allow_different_signer,
+                     dart_sources(sorted(args.reference.glob("*.apk"))), dart_sources(apks))
     framework_hint = "libapp.so" if any(n.endswith("/libapp.so") for n in libs) else "no libapp.so (not Flutter, or missing split)"
     if found:
         print("ARM64 copy REJECTED:\n- " + "\n- ".join(found), file=sys.stderr)
         sys.exit(1)
     record = {"source": args.source, "package": candidate["package"], "versionCode": candidate["versionCode"],
-              "versionName": candidate["versionName"], "cert_sha256": candidate["cert"],
+              "versionName": candidate["versionName"], "cert_sha256": candidate["cert"], "same_signer_as_play": candidate["cert"] == reference["cert"],
               "native_libs": sorted(libs), "files": {apk.name: sha256(apk) for apk in apks}}
     (args.arm64 / "acquisition-arm64.json").write_text(json.dumps(record, indent=1) + "\n")
     print(f"ARM64 copy accepted ({args.source}): {candidate['package']} {candidate['versionName']} "

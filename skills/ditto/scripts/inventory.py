@@ -119,6 +119,30 @@ def bundle_info(data: bytes) -> tuple[str, list[str], list[str]]:
     return ("hermes" if hermes else "js"), texts, sorted(sources)
 
 
+def apktool_version(path: Path) -> tuple[str | None, str | None]:
+    """(versionName, versionCode) from apktool.yml; the decoded manifest often lacks versionName."""
+    if not path.exists():
+        return None, None
+    text = path.read_text()
+    name, code = re.search(r"versionName: *(\S+)", text), re.search(r"versionCode: *(\d+)", text)
+    return (name.group(1).strip("'\"") if name else None, code.group(1) if code else None)
+
+
+GENERATED = re.compile(r"\.(g|mapper|freezed|gr|gen|config)$")
+
+
+def class_name(descriptor: str) -> str:
+    """'Lcom/app/Foo$Bar;' -> 'com.app.Foo': inner and lambda classes count as their outer class."""
+    return descriptor[1:-1].replace("/", ".").split("$")[0]
+
+
+def own_prefix(package: str, sources: list[str]) -> str:
+    """Package prefix that selects the app's own classes: the full package, else its first two parts."""
+    if sum(s.startswith(package + ".") for s in sources) >= 10:
+        return package + "."
+    return ".".join(package.split(".")[:2]) + "."
+
+
 def parse_manifest(path: Path) -> dict:
     root = ET.parse(path).getroot()
     app = root.find("application")
@@ -158,7 +182,7 @@ def resource_strings(apktool_dir: Path) -> dict[str, str]:
 
 def analyse(apks: list[Path], out: Path) -> dict:
     framework, app_sources, packages, raw_strings, assets = "native", [], Counter(), [], []
-    rn_kind = ""
+    rn_kind, code_strings = "", []
     for apk in apks:
         with ZipFile(apk) as archive:
             for name in archive.namelist():
@@ -178,9 +202,9 @@ def analyse(apks: list[Path], out: Path) -> dict:
                 elif re.fullmatch(r"classes\d*\.dex", name) and framework != "flutter":
                     for value in dex_strings(archive.read(name)):
                         if value.startswith("L") and value.endswith(";"):
-                            app_sources.append(value[1:-1].replace("/", "."))
+                            app_sources.append(class_name(value))
                         else:
-                            raw_strings.append(value)
+                            code_strings.append(value)
                 elif name.startswith(("assets/flutter_assets/", "assets/")) and not name.endswith("/"):
                     assets.append(name)
 
@@ -190,6 +214,9 @@ def analyse(apks: list[Path], out: Path) -> dict:
         subprocess.run(["apktool", "d", "-s", "-f", "-o", str(apktool_dir), str(apks[0])],
                        check=True, capture_output=True)
         manifest = parse_manifest(apktool_dir / "AndroidManifest.xml")
+        name, code = apktool_version(apktool_dir / "apktool.yml")
+        manifest["version"] = name or manifest.get("version")
+        manifest["version_code"] = code
         res = resource_strings(apktool_dir)
         raw_strings += list(res.values())
     else:
@@ -204,7 +231,7 @@ def analyse(apks: list[Path], out: Path) -> dict:
         libraries = sorted(p for p in packages if p != own)
     else:
         own = app_package
-        prefix = ".".join(app_package.split(".")[:2])
+        prefix = own_prefix(app_package, app_sources) if app_package else ""
         libraries = sorted({".".join(s.split(".")[:3]) for s in app_sources if not s.startswith((prefix, "rn."))})
         app_sources = sorted({s for s in app_sources if s.startswith((prefix, "rn."))})
 
@@ -221,6 +248,7 @@ def analyse(apks: list[Path], out: Path) -> dict:
         "source_package": own, "signals": signals, "libraries": libraries, "firebase": firebase,
         "manifest": manifest, "sources": app_sources, "assets": sorted(assets),
         "strings": ui_strings(raw_strings),
+        "code_strings": ui_strings(code_strings),
     }
 
 
@@ -230,9 +258,11 @@ def feature_tree(sources: list[str], framework: str) -> list[str]:
     for source in sources:
         if framework == "flutter":
             parts = source.split("/")[1:]
-            if any(p in ("l10n", "generated") for p in parts):
+            if any(p in ("l10n", "generated", "gen") for p in parts):
                 continue
             directory, stem = "/".join(parts[:-1]) or ".", parts[-1].removesuffix(".dart")
+            if GENERATED.search(stem):
+                continue
         else:
             directory, _, stem = source.rpartition(".")
         groups[directory].append(stem)
@@ -256,7 +286,8 @@ def write_catalog(data: dict, out: Path) -> None:
         *[f"- {kind.title()}: {', '.join(names)}" for kind, names in data["signals"].items() if names],
         *([f"- Firebase project: `{data['firebase'].get('project_id')}`"] if data["firebase"] else []),
         f"- Third-party libraries: {len(data['libraries'])} (see inventory.json)",
-        f"- UI strings: {len(data['strings'])} candidates, {len(english)} ASCII (strings.txt)", "",
+        f"- UI strings: {len(data['strings'])} candidates, {len(english)} ASCII (strings.txt)",
+        f"- Strings inside code (dex): {len(data['code_strings'])} (strings_code.txt; mostly library messages)", "",
         "## Feature tree (bold = screens, dialogs, sheets, tabs)", "",
         *feature_tree(data["sources"], data["framework"]), "",
         "## Platform surface", "",
@@ -277,8 +308,9 @@ def main() -> None:
     args.out.mkdir(parents=True, exist_ok=True)
     data = analyse(args.apks, args.out)
     (args.out / "strings.txt").write_text("\n".join(data["strings"]) + "\n")
+    (args.out / "strings_code.txt").write_text("\n".join(data["code_strings"]) + "\n")
     (args.out / "sources.txt").write_text("\n".join(data["sources"]) + "\n")
-    (args.out / "inventory.json").write_text(json.dumps({k: v for k, v in data.items() if k != "strings"}, indent=1) + "\n")
+    (args.out / "inventory.json").write_text(json.dumps({k: v for k, v in data.items() if k not in ("strings", "code_strings")}, indent=1) + "\n")
     write_catalog(data, args.out)
     print(f"{data['framework']}: {len(data['sources'])} sources, {len(data['strings'])} strings, "
           f"storage={data['signals']['storage']}, cloud={data['signals']['cloud']}")
