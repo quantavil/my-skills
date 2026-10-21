@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import adbutil  # noqa: E402
 import capture_state  # noqa: E402
+import check_arm64  # noqa: E402
 import diff  # noqa: E402
 import experiment  # noqa: E402
 import inventory  # noqa: E402
@@ -209,6 +210,25 @@ class ParityTest(unittest.TestCase):
         self.assertEqual(parity.regressions({"behaviour_ok": 3, "visual_ok": 5, "breadth_ok": 2},
                                             {"behaviour_ok": 4, "visual_ok": 5, "breadth_ok": 2}),
                          ["behaviour_ok: 4 -> 3"])
+
+
+class CheckArm64Test(unittest.TestCase):
+    REF = {"package": "com.x", "versionCode": "10", "versionName": "1.0", "cert": "ab" * 32}
+
+    def test_parsers(self):
+        self.assertEqual(check_arm64.parse_badging("package: name='com.x' versionCode='10' versionName='1.0' platformBuildVersionName='14'"),
+                         {"package": "com.x", "versionCode": "10", "versionName": "1.0"})
+        self.assertEqual(check_arm64.parse_cert("Signer #1 certificate SHA-256 digest: " + "cd" * 32), "cd" * 32)
+
+    def test_matching_copy_passes(self):
+        self.assertEqual(check_arm64.problems(self.REF, dict(self.REF), {"lib/arm64-v8a/libapp.so"}), [])
+
+    def test_version_cert_and_libs_are_all_checked(self):
+        other = {**self.REF, "versionCode": "11", "cert": "ef" * 32}
+        self.assertEqual(len(check_arm64.problems(self.REF, other, set())), 3)
+
+    def test_unreadable_cert_is_a_failure(self):
+        self.assertEqual(len(check_arm64.problems(self.REF, {**self.REF, "cert": None}, {"lib/arm64-v8a/a.so"})), 1)
 
 
 class RootCommandTest(unittest.TestCase):

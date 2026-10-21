@@ -24,6 +24,7 @@ Everything for one app lives in **one folder**: `~/Documents/<name>-clone/`, whe
 ```
 <name>-clone/
   apk/            x86_64 Play delivery: base.apk + splits (gitignored)
+  apk-arm64/      verified ARM64 build of the same version, for Blutter (gitignored)
   research/       inventory/ (catalog.md…), state/ captures (gitignored), data-model.md
   experiments/    *.py behaviour experiments (run(lab))
   traces/         golden traces: <experiment>/original|clone/ (raw/ gitignored)
@@ -31,7 +32,7 @@ Everything for one app lives in **one folder**: `~/Documents/<name>-clone/`, whe
   lib/ or src/, test/, android/ …   the clone app, in its framework's normal layout
 ```
 
-Run every command from that folder so relative paths land inside it. Gitignore `/apk/`, `/research/state/`, `/traces/**/raw/` and `/traces/**/state.json` (they can hold account data and tokens).
+Run every command from that folder so relative paths land inside it. Gitignore `/apk/`, `/apk-arm64/`, `/research/state/`, `/traces/**/raw/` and `/traces/**/state.json` (they can hold account data and tokens).
 
 ## Setup (once per machine)
 
@@ -58,7 +59,23 @@ From Play, on the signed-in Play emulator:
 scripts/download-play-apks.sh 'https://play.google.com/store/apps/details?id=PKG' apk emulator-5556 x86_64
 ```
 
-It copies what Play installed on the emulator (it never talks to Play itself), so install the app from the listing first. Keep base + splits together; experiments run on this emulator, against the Play-installed app. Play delivers the build matching the emulator's ABI, so this is the x86_64 build; an ARM64 emulator cannot run on an x86_64 host (the Android emulator refuses it).
+It copies what Play installed on the emulator (it never talks to Play itself), so install the app from the listing first. Keep base + splits together; experiments run on this emulator, against the Play-installed app. Play delivers the build matching the emulator's ABI, so this is the x86_64 build; an ARM64 emulator cannot run on an x86_64 host (the Android emulator refuses it). Step 1b gets the ARM64 build.
+
+## 1b. Get the ARM64 build (required for Flutter apps)
+
+Do this for every Flutter app **before step 2 ends**, and for other apps when you may need a disassembler. It is not optional and not "later": the x86_64 build cannot be read by Blutter, and the version must match what experiments run, so fetch it now. Obtain it by any of these, in this order:
+
+1. **A real ARM64 phone** with the app from Play: `adb -s PHONE shell pm path PKG`, then `adb -s PHONE pull` each path into `apk-arm64/` (base + `split_config.arm64_v8a.apk`).
+2. **A mirror**: APKMirror, APKPure or Uptodown. Pick the **same versionName and versionCode** as the Play copy and the arm64-v8a variant. Bundles (`.apkm`, `.xapk`) are zip files: unzip each into its own new, empty directory `apk-arm64/` and keep only the `.apk` files. Treat the download as untrusted: never install it, open it only with the scripts here, and pass `-I` to any Python that reads it.
+3. Another source of the developer's own build.
+
+Then verify it, always:
+
+```bash
+python3 -I scripts/check_arm64.py apk apk-arm64 --source phone    # or apkmirror / apkpure / uptodown
+```
+
+It rejects the copy unless the package and versionCode equal the Play copy, the signing certificate SHA-256 equals it (so the file is the developer's build, not a repack), and an `lib/arm64-v8a/*.so` exists. On success it writes `apk-arm64/acquisition-arm64.json` with file hashes and the source. Do not start step 2 without that file for a Flutter app; if no source works, stop and tell the user which versionCode is missing. Gitignore `/apk-arm64/`.
 
 ## 2. Catalog: what exists
 
@@ -156,6 +173,6 @@ Report three numbers separately: **breadth** (catalog items present), **behaviou
 
 Use it for a specific question that experiments cannot settle cheaply (an exact threshold, a hidden branch, a constant, a server endpoint), or to narrow candidate rules before designing a grid. Read `strings.txt`/`sources.txt` first.
 
-- **Flutter:** the x86_64 `libapp.so` is enough for strings, the feature tree and the Dart package layout (the catalog already uses it). Blutter reads only ARM64 `libapp.so`, which Play delivers only to an ARM64 device, and the emulator cannot be ARM64 on an x86_64 host. To get an ARM64 copy, install the app from a real ARM64 phone and pull its APKs with `adb pull $(adb shell pm path PKG)`, or use the Dart snapshot's pool strings from the x86_64 build. Then run Blutter (a source build under `~/.local/share/ditto-toolchain/blutter`: ask the user first) and write the output to `research/blutter/`. Take the one constant, then confirm it with an experiment and cite that experiment next to the rule.
+- **Flutter:** the x86_64 `libapp.so` is enough for strings, the feature tree and the Dart package layout (the catalog already uses it). Blutter reads only ARM64 `libapp.so`, which Play delivers only to an ARM64 device, and the emulator cannot be ARM64 on an x86_64 host. The ARM64 copy in `apk-arm64/` (step 1b, verified by `check_arm64.py`) is required, so run Blutter on its `lib/arm64-v8a/libapp.so` (a source build under `~/.local/share/ditto-toolchain/blutter`: ask the user before building) and write the output to `research/blutter/`. Take the one constant, then confirm it with an experiment and cite that experiment next to the rule.
 - **Native:** `jadx` on the specific class.
 - **React Native (Hermes):** decompile with `hbc-decompiler` only for the specific function, then confirm with an experiment.
