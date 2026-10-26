@@ -48,7 +48,8 @@ Before running, check that quantities and assessable values sum to the BE totals
 
 | You see | Do this |
 | --- | --- |
-| `ImpexCube is logged out` | Ask the user to log in, then rerun. |
+| `ImpexCube is logged out` | Ask the user to log in, then rerun. The tool checks with the site whenever a run fails, so an expiry in the middle of a run is reported this way too. |
+| `logged out N times in a row` | Stop. Tell the user it keeps logging out and let them decide; do not keep rerunning or keep asking them to log in without saying so. |
 | `NEW, not in known.json: <id>` | A control the job file and `known.json` do not cover. Show the user the id and value and ask where the value comes from. To check it, follow `references/development.md` "Adding a field". If harmless (a search box), add it to `known.json` and say so. Never add ids blindly. A new Type or several invoices can draw many NEW lines at once; review them together. |
 | `Cannot see a job number` or `This page shows <other job>` | The wrong job is open. Nothing was changed. Open the right job and rerun. |
 | `Grid row N shows S.No M` | The grid order is not what the file expects. Stop and show the user. |
@@ -62,4 +63,4 @@ If the pane route fails, use the command line in `references/development.md` "Co
 
 ## Sessions
 
-ImpexCube ends idle sessions. Do not keep it alive with background pings. Plan so that a run starts soon after the user logs in; a check takes about 40 s. If the user asks for stored credentials, say plainly that you won't store them and point to the Chromium profile and their browser's own password manager.
+ImpexCube ends idle sessions. Do not keep it alive with background pings, and do not log in for the user. Plan so that a run starts soon after the user logs in; a check takes about 40 s. The tool counts logged-out stops in a row in the browser's storage; the third one says so. If the user asks for stored credentials, say plainly that you won't store them and point to the Chromium profile and their browser's own password manager.

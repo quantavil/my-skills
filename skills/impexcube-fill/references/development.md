@@ -21,7 +21,8 @@ Not covered: creating the job, Invoice, Container, Manufacturer, E-Sanchit uploa
 - The job number on every page must match the file. A page with no visible job number is refused.
 - Each grid row is checked against the item's S.No before anything is edited.
 - Every save is confirmed: Product by reselecting the row, Job Details and Shipment by fetching the page again.
-- A duplicate Re-Export row, a logged-out session, a full-page reload or a failed confirmation stops the run.
+- A duplicate Re-Export row, a logged-out session, a full-page reload or a failed confirmation stops the run. After any failed run it asks the site whether the session is gone, so a mid-run expiry is reported as a logout. Logged-out stops in a row are counted (`src/session.ts`); the third tells Claude to stop and tell the user.
+- It never logs in and never handles credentials.
 - One run at a time. The job file is validated strictly: unknown keys, wrong types, bad dates and inconsistent totals are rejected.
 
 ## What a pass means
@@ -80,6 +81,7 @@ Example: `tests/fixtures/sample-job.json` (fake data). Real job files hold custo
 | `src/reconcile.ts` | compare, fix, confirm |
 | `src/pages.ts` | what to check on each page |
 | `src/coverage.ts` | which controls a run did not compare, and which are new |
+| `src/session.ts` | logged-out detection and the in-a-row counter |
 | `src/run.ts` | `runAll` (hidden frames, progress, timeouts) and `runStep` |
 | `known.json` | control ids already seen on each page |
 | `cli/`, `scripts/` | Chromium launcher and runner, build, payload |

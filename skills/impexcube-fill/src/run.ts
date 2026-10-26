@@ -6,6 +6,7 @@ import { STEPS, type Step, type StepName } from './fields';
 import { type Sync, syncItems, syncJobDetails, syncShipment } from './pages';
 import type { Log } from './reconcile';
 import { parseJob } from './schema';
+import { isLoggedOut, LoggedOutError, logoutMessage, recordSession } from './session';
 
 declare const __VERSION__: string;
 export const VERSION = typeof __VERSION__ === 'undefined' ? 'dev' : __VERSION__;
@@ -69,6 +70,8 @@ export interface Progress {
   notCompared: number;
   /** step name -> ids that are in no known list */
   unknown: Record<string, string[]>;
+  /** logged-out stops in a row in this browser; 0 when this run did not stop that way */
+  logouts: number;
   ok: boolean;
   done: boolean;
 }
@@ -105,7 +108,7 @@ async function openFrame(step: Step, jobNo: string): Promise<HTMLIFrameElement> 
     });
     const win = frame.contentWindow as FrameWindow;
     if (/frmlogin/i.test(win.location.pathname)) {
-      throw new RunError('ImpexCube is logged out. Ask the user to log in, then run again.');
+      throw new LoggedOutError();
     }
     for (let i = 0; i < 100; i++) {
       if (win.document.getElementById(step.ready) && win.Sys) return frame;
@@ -140,6 +143,7 @@ export async function runAll(
     compared: 0,
     notCompared: 0,
     unknown: {},
+    logouts: 0,
     ok: true,
     done: false,
   };
@@ -183,9 +187,17 @@ export async function runAll(
         frame.remove();
       }
     }
+    recordSession(false);
   } catch (error) {
     progress.ok = false;
-    progress.lines.push(`STOPPED: ${(error as Error).message}`);
+    // A stop from an expired session can look like any page error, so ask the site before blaming the page.
+    if (error instanceof LoggedOutError || (await isLoggedOut())) {
+      progress.logouts = recordSession(true);
+      progress.lines.push(`STOPPED: ${logoutMessage(progress.logouts)}`);
+    } else {
+      recordSession(false);
+      progress.lines.push(`STOPPED: ${(error as Error).message}`);
+    }
   }
   progress.lines.push(
     `Result: ${progress.differences} differences in ${progress.compared} compared fields. ` +
