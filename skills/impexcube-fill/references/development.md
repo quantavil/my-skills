@@ -1,4 +1,4 @@
-# impexcube-fill
+# impexcube-fill: development reference
 
 Checks and fixes an ImpexCube export job against one JSON file. Bun and TypeScript, one browser bundle, no UI.
 It **saves only**: the four Update buttons are the only things it can click. Login, Approve, SB File and Submit stay with the user.

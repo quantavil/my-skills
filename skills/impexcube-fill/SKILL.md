@@ -5,7 +5,7 @@ description: "Use when filing, checking or correcting an ImpexCube (export.impex
 
 # impexcube-fill
 
-Checks and fixes an ImpexCube export job against one JSON file. The code is in this skill's folder, `~/Documents/my-skills/skills/impexcube-fill` (Bun, TypeScript). `README.md` has what it covers, its safety guarantees, the command line and how to add a field. Job files hold customer data: keep them outside this repository (for example `~/Downloads/jyoti/jobs/`).
+Checks and fixes an ImpexCube export job against one JSON file. The code is in this skill's folder, `~/Documents/my-skills/skills/impexcube-fill` (Bun, TypeScript). `references/development.md` has what it covers, its safety guarantees, the command line and how to add a field. Job files hold customer data: keep them outside this repository (for example `~/Downloads/jyoti/jobs/`).
 
 ## Rules
 
@@ -18,7 +18,7 @@ Checks and fixes an ImpexCube export job against one JSON file. The code is in t
 
 ## 1. Build the job file
 
-Write `<JOBNO>.json` in the jobs folder. Format: README "Job file"; example: `tests/fixtures/sample-job.json`.
+Write `<JOBNO>.json` in the jobs folder. Format: `references/development.md` "Job file"; example: `tests/fixtures/sample-job.json`.
 
 | Fields | Source |
 | --- | --- |
@@ -42,14 +42,14 @@ Before running, check that quantities and assessable values sum to the BE totals
 5. About 40 s later read `JSON.stringify(window.__impexProgress)`: `{version, lines, differences, compared, notCompared, unknown, ok, done}`. Show the lines that mention a difference, NEW or STOPPED, and the final `Result:` line. `done:false` after two minutes means it is stuck: report it and do not start another run.
 6. **Never say "all correct".** Quote the Result line: how many fields were compared and how many others the tool does not check. Offer `audit: true` to list those.
 7. On the user's yes, rerun with `true` as the second argument, poll, then run the check again: it must show 0 differences.
-8. Tell the user to open the Check List and review, and to check what the tool does not cover (README "What it covers", for example the Shipment container count). Approve and Submit are theirs.
+8. Tell the user to open the Check List and review, and to check what the tool does not cover (`references/development.md` "What it covers", for example the Shipment container count). Approve and Submit are theirs.
 
 ## If a run stops or reports something new
 
 | You see | Do this |
 | --- | --- |
 | `ImpexCube is logged out` | Ask the user to log in, then rerun. |
-| `NEW, not in known.json: <id>` | A control the job file and `known.json` do not cover. Show the user the id and value and ask where the value comes from. To check it, follow README "Adding a field". If harmless (a search box), add it to `known.json` and say so. Never add ids blindly. A new Type or several invoices can draw many NEW lines at once; review them together. |
+| `NEW, not in known.json: <id>` | A control the job file and `known.json` do not cover. Show the user the id and value and ask where the value comes from. To check it, follow `references/development.md` "Adding a field". If harmless (a search box), add it to `known.json` and say so. Never add ids blindly. A new Type or several invoices can draw many NEW lines at once; review them together. |
 | `Cannot see a job number` or `This page shows <other job>` | The wrong job is open. Nothing was changed. Open the right job and rerun. |
 | `Grid row N shows S.No M` | The grid order is not what the file expects. Stop and show the user. |
 | `rows, expected 1` or `duplicate rows` | Ask the user to delete the extra Re-Export row in ImpexCube, then rerun. |
@@ -58,7 +58,7 @@ Before running, check that quantities and assessable values sum to the BE totals
 
 ## 3. Fallback: command line
 
-If the pane route fails, use the command line in README "Command line". The user logs in in the Chromium it opens, and the profile keeps the login between runs.
+If the pane route fails, use the command line in `references/development.md` "Command line". The user logs in in the Chromium it opens, and the profile keeps the login between runs.
 
 ## Sessions
 

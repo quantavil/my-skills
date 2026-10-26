@@ -7,7 +7,7 @@
   },
   "scripts": {
     "check": "./run.sh check",
-    "test": "bun test tests",
+    "test": "bun test ./tests",
     "typecheck": "tsc --noEmit",
     "build": "./run.sh"
   },
