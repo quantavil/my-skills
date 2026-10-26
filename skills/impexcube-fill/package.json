@@ -9,7 +9,8 @@
     "test": "bun test",
     "check": "bun run typecheck && bun run lint && bun test",
     "browser": "bun cli/browser.ts",
-    "fill": "bun run build && bun cli/fill.ts"
+    "fill": "bun run build && bun cli/fill.ts",
+    "payload": "bun scripts/build.ts > /dev/null && bun scripts/payload.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",
