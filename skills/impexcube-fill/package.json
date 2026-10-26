@@ -1,0 +1,25 @@
+{
+  "name": "impexcube-fill",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "lint": "biome check",
+    "test": "bun test",
+    "check": "bun run typecheck && bun run lint && bun test",
+    "browser": "bun cli/browser.ts",
+    "fill": "bun run build && bun cli/fill.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.3",
+    "@happy-dom/global-registrator": "^21.0.4",
+    "@types/bun": "^1.4.4",
+    "happy-dom": "^21.0.4",
+    "playwright-core": "^1.64.1",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "valibot": "^1.5.0"
+  }
+}

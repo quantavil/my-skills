@@ -1,0 +1,223 @@
+{
+  "jobNo": "EXP-2627-123",
+  "invoiceNo": "INV/1",
+  "jobDetails": {
+    "nfeiCategory": "8",
+    "exporterRefNo": "RE-EXPORT"
+  },
+  "shipment": {
+    "marksAndNos": "RE-EXPORT OF 17,816 PCS (ITEMS 17,216 + ACCESSORIES 600) IN 598 CARTONS AGAINST BE NO. 1234567 DT 01.01.2025. FREE OF COST, NO COMMERCIAL VALUE, NO REMITTANCE TO BE RECEIVED."
+  },
+  "items": [
+    {
+      "sno": 1,
+      "description": "WIDGET (MODEL M1)",
+      "ritc": "85076000",
+      "qty": 2240,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 1,
+        "qtyUtilised": 2240,
+        "beItemDesc": "WIDGET (MODEL M1)",
+        "beQty": 2240,
+        "beAssdValue": 995518.05,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 2,
+      "description": "WIDGET (MODEL M2)",
+      "ritc": "85076000",
+      "qty": 2000,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 2,
+        "qtyUtilised": 2000,
+        "beItemDesc": "WIDGET (MODEL M2)",
+        "beQty": 2000,
+        "beAssdValue": 888855.4,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 3,
+      "description": "WIDGET (MODEL M3)",
+      "ritc": "85076000",
+      "qty": 2240,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 3,
+        "qtyUtilised": 2240,
+        "beItemDesc": "WIDGET (MODEL M3)",
+        "beQty": 2240,
+        "beAssdValue": 995518.05,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 4,
+      "description": "WIDGET (MODEL M4)",
+      "ritc": "85076000",
+      "qty": 2240,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 4,
+        "qtyUtilised": 2240,
+        "beItemDesc": "WIDGET (MODEL M4)",
+        "beQty": 2240,
+        "beAssdValue": 995518.05,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 5,
+      "description": "WIDGET (MODEL M5)",
+      "ritc": "85076000",
+      "qty": 2208,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 5,
+        "qtyUtilised": 2208,
+        "beItemDesc": "WIDGET (MODEL M5)",
+        "beQty": 2208,
+        "beAssdValue": 1668203.81,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 6,
+      "description": "WIDGET (MODEL M6)",
+      "ritc": "85076000",
+      "qty": 2064,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 6,
+        "qtyUtilised": 2064,
+        "beItemDesc": "WIDGET (MODEL M6)",
+        "beQty": 2064,
+        "beAssdValue": 1559407.91,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 7,
+      "description": "WIDGET (MODEL M7)",
+      "ritc": "85076000",
+      "qty": 2112,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 7,
+        "qtyUtilised": 2112,
+        "beItemDesc": "WIDGET (MODEL M7)",
+        "beQty": 2112,
+        "beAssdValue": 1595673.21,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 8,
+      "description": "WIDGET (MODEL M8)",
+      "ritc": "85076000",
+      "qty": 2112,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 8,
+        "qtyUtilised": 2112,
+        "beItemDesc": "WIDGET (MODEL M8)",
+        "beQty": 2112,
+        "beAssdValue": 1595673.21,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 9,
+      "description": "WIDGET ACCESSORY 1, DETAILS AS PER PACKING LIST",
+      "ritc": "85079090",
+      "qty": 300,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 9,
+        "qtyUtilised": 300,
+        "beItemDesc": "WIDGET ACCESSORY 1, DETAILS AS PER PACKING LIST",
+        "beQty": 300,
+        "beAssdValue": 127995.18,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    },
+    {
+      "sno": 10,
+      "description": "WIDGET ACCESSORY 2, DETAILS AS PER PACKING LIST",
+      "ritc": "85079090",
+      "qty": 300,
+      "type": "99",
+      "igstStatus": "NA",
+      "reExport": {
+        "beSite": "TESTS1",
+        "beNo": "1234567",
+        "beDate": "01/01/2025",
+        "beInvSlNo": 1,
+        "beItemSlNo": 10,
+        "qtyUtilised": 300,
+        "beItemDesc": "WIDGET ACCESSORY 2, DETAILS AS PER PACKING LIST",
+        "beQty": 300,
+        "beAssdValue": 219991.71,
+        "dutyPaid": 0,
+        "otherParam": "CONT0000001"
+      }
+    }
+  ]
+}

@@ -187,6 +187,12 @@
       "skillPath": "skills/imagegen-frontend-web/SKILL.md",
       "computedHash": "65f5ae59fa317567809438310b1c54f78cd133426deb43e4d3d4ca4c8f541628"
     },
+    "impexcube-fill": {
+      "source": "quantavil/my-skills",
+      "sourceType": "local",
+      "skillPath": "skills/impexcube-fill/SKILL.md",
+      "computedHash": "5b9e85703b8e1d5c9ad3b28ab4580e233a741f2b17932064917d11c1e8d96886"
+    },
     "industrial-brutalist-ui": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
