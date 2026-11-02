@@ -1,9 +1,18 @@
 ---
 name: agent-browser
 description: Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to "open a website", "fill out a form", "click a button", "take a screenshot", "scrape data from a page", "test this web app", "login to a site", "automate browser actions", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.
-allowed-tools: Bash(agent-browser:*), Bash(npx agent-browser:*)
+allowed-tools: Bash(agent-browser:*)
 hidden: true
 ---
+
+## Profile guard (mandatory, overrides everything below)
+
+Never open a non-logged-in browser: no default, ephemeral, temp (`/tmp/agent-browser-chrome-*`) or fresh profile, ever.
+
+- Use only the personal Cloak profile `/home/quantavil/Documents/ALWAYS-USE-PROFILE` with `/home/quantavil/.local/bin/cloakbrowser-chrome`.
+- Do not let agent-browser launch the browser: it silently relaunches with a temp profile if the browser exits. Launch CloakBrowser yourself (or ask the user to) with `cloakbrowser-chrome --user-data-dir=/home/quantavil/Documents/ALWAYS-USE-PROFILE --remote-debugging-port=9222`, then attach with `agent-browser --cdp 9222 ...`. A failed attach is correct; never fall back to launching.
+- Before each batch of commands, verify the browser process has `--user-data-dir=/home/quantavil/Documents/ALWAYS-USE-PROFILE` (`ps`). If not, stop and close it.
+- If the browser exits, the profile is unavailable, or the site is signed out: stop and tell the user. Never log in for them, never reload a logged-in page, never close their pages unasked.
 
 # agent-browser
 
