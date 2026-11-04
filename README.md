@@ -24,6 +24,7 @@ Use this manager to install the full collection. Bundled sources have no `SKILL.
 | `caveman-kit` | Use for terse response styles, concise code reviews and commit messages, or compressing prose files. Load only the matching guide. |
 | `design-taste` | Use for website and interface design, redesigns, brand systems, or converting visual references into frontend code. Route to the matching design guide; default to design-taste-frontend. |
 | `engram` | Use to learn a topic, practice due memory reviews, or assess learning progress and study strategy. Load only the matching guide. |
+| `gws` | Use for Google Workspace CLI tasks: send, read, and manage Gmail, authentication, and shared patterns. Load only the matching guide. |
 | `qt` | Use to write, debug, optimize, or review Qt 6 QML code. Load the authoring or review guide as needed. |
 | `superpowers` | Use for software development: planning features, implementing changes, debugging failures, reviewing code, testing, and finishing branches. Load only the guide for the current step. |
 
@@ -34,6 +35,8 @@ Members of `caveman-kit`: `caveman`, `cavecrew`, `caveman-commit`, `caveman-comp
 Members of `design-taste`: `brandkit`, `design-taste-frontend`, `design-taste-frontend-v1`, `design-taste-frontend-v2-experimental`, `full-output-enforcement`, `gpt-taste`, `high-end-visual-design`, `image-to-code`, `imagegen-frontend-mobile`, `imagegen-frontend-web`, `industrial-brutalist-ui`, `minimalist-ui`, `redesign-existing-projects`, `stitch-design-taste`.
 
 Members of `engram`: `learn`, `review`, `coach`.
+
+Members of `gws`: `gws-gmail`, `gws-shared`.
 
 Members of `qt`: `qt-qml`, `qt-qml-review`.
 
@@ -64,13 +67,6 @@ Members of `superpowers`: `brainstorming`, `diagnosing-superpowers`, `dispatchin
 | Skill | Use it when |
 | --- | --- |
 | [`humanizer`](skills/humanizer/) | Rewrite AI-sounding text so it reads like the writer without changing what it says. Use when editing or reviewing prose for AI tells: not-X-but-Y contrasts, one-line closers, staged openers, forced triads, dashes everywhere, inflated claims, sales language, stock AI words, bold labels, or filler. Based on Wikipedia's "Signs of AI writing." |
-
-### [googleworkspace/cli](https://github.com/googleworkspace/cli)
-
-| Skill | Use it when |
-| --- | --- |
-| [`gws-gmail`](skills/gws-gmail/) | Gmail: Send, read, and manage email. |
-| [`gws-shared`](skills/gws-shared/) | gws CLI: Shared patterns for authentication, global flags, and output formatting. |
 
 ### [karanb192/itr-wala](https://github.com/karanb192/itr-wala)
 

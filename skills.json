@@ -113,6 +113,10 @@
       "type": "local",
       "contentHash": "d90312d147386439612ecee4b2c76c9dd0ed98ad1bc402fed23d5b2d02c1ad5d"
     },
+    "gws": {
+      "type": "superskill",
+      "contentHash": "e25f1c77bc8aa167b4579bf342cdde07cef4d392994a5ce548e867ed4aad55c8"
+    },
     "gws-gmail": {
       "type": "upstream",
       "contentHash": "5e5b5fdb4b4f347310d929657ed773abcaf528b5ac0a68deee12d3d38d307642"
@@ -323,6 +327,13 @@
         "coach"
       ],
       "description": "Use to learn a topic, practice due memory reviews, or assess learning progress and study strategy. Load only the matching guide."
+    },
+    "gws": {
+      "members": [
+        "gws-gmail",
+        "gws-shared"
+      ],
+      "description": "Use for Google Workspace CLI tasks: send, read, and manage Gmail, authentication, and shared patterns. Load only the matching guide."
     },
     "qt": {
       "members": [
