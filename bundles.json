@@ -91,6 +91,11 @@
     "myanimelist": {
       "tier": "gateway",
       "summary": "MyAnimeList lists and anime recommendations"
+    },
+    "android-skills": {
+      "repo": "android/skills",
+      "tier": "gateway",
+      "summary": "Android app development: Jetpack Compose, navigation, AGP 9 and Play Billing upgrades, Wear OS, TV, XR, Glance widgets, performance and ANR fixes, R8, and Android security"
     }
   }
 }

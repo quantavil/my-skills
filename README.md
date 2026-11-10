@@ -24,6 +24,7 @@ To add, remove or retier a bundle, edit `bundles.json`, then run `sync` (for a n
 | `i-have-adhd` | core | 1 | [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) | ADHD-friendly output mode (/i-have-adhd) |
 | `superpowers` | core | 15 | [obra/superpowers](https://github.com/obra/superpowers) | software development: planning features, implementing changes, debugging failures, reviewing code, testing, and finishing branches |
 | `visual-explainer` | core | 1 | [nicobailon/visual-explainer](https://github.com/nicobailon/visual-explainer) | HTML visual explanations: diagrams, diff and plan reviews, slides, recaps |
+| `android-skills` | gateway | 36 | [android/skills](https://github.com/android/skills) | Android app development: Jetpack Compose, navigation, AGP 9 and Play Billing upgrades, Wear OS, TV, XR, Glance widgets, performance and ANR fixes, R8, and Android security |
 | `anthropic` | gateway | 20 | [anthropics/skills](https://github.com/anthropics/skills) | Office files (Word, Excel, PowerPoint, PDF), MCP servers, Claude API, generative art |
 | `caveman` | gateway | 22 | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | terse caveman-style replies, commits and reviews |
 | `design-taste-frontend` | gateway | 1 | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) | frontend design with taste (anti-slop websites) |
