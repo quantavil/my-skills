@@ -96,6 +96,11 @@
       "repo": "android/skills",
       "tier": "gateway",
       "summary": "Android app development: Jetpack Compose, navigation, AGP 9 and Play Billing upgrades, Wear OS, TV, XR, Glance widgets, performance and ANR fixes, R8, and Android security"
+    },
+    "impeccable": {
+      "repo": "pbakaus/impeccable",
+      "tier": "gateway",
+      "summary": "designing, critiquing, auditing, polishing or animating frontend UI: websites, dashboards, components, iOS and Android screens, design systems (DESIGN.md)"
     }
   }
 }

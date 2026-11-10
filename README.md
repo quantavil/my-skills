@@ -34,6 +34,7 @@ To add, remove or retier a bundle, edit `bundles.json`, then run `sync` (for a n
 | `fact-check` | gateway | 1 | local | fact-checking a video, audio or transcript |
 | `gstr-wala` | gateway | 1 | [quantavil/gstr-wala](https://github.com/quantavil/gstr-wala) | Indian GST returns (GSTR-1, 3B, 2B) |
 | `gws` | gateway | 95 | [googleworkspace/cli](https://github.com/googleworkspace/cli) | Google Workspace CLI: Gmail, Drive, Sheets, Calendar, Docs |
+| `impeccable` | gateway | 1 | [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | designing, critiquing, auditing, polishing or animating frontend UI: websites, dashboards, components, iOS and Android screens, design systems (DESIGN.md) |
 | `itr-wala` | gateway | 1 | [karanb192/itr-wala](https://github.com/karanb192/itr-wala) | Indian income tax returns (ITR) |
 | `myanimelist` | gateway | 1 | local | MyAnimeList lists and anime recommendations |
 | `qt` | gateway | 13 | [TheQtCompanyRnD/agent-skills](https://github.com/TheQtCompanyRnD/agent-skills) | Qt 6 QML and C++: write, review, test, profile |
