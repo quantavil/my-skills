@@ -1,0 +1,96 @@
+{
+  "targets": [
+    "agents",
+    "antigravity",
+    "antigravity-cli",
+    "claude",
+    "codex",
+    "config-agents",
+    "cursor",
+    "gemini",
+    "opencode"
+  ],
+  "bundles": {
+    "superpowers": {
+      "repo": "obra/superpowers",
+      "tier": "core",
+      "summary": "software development: planning features, implementing changes, debugging failures, reviewing code, testing, and finishing branches"
+    },
+    "anthropic": {
+      "repo": "anthropics/skills",
+      "tier": "gateway",
+      "summary": "Office files (Word, Excel, PowerPoint, PDF), MCP servers, Claude API, generative art"
+    },
+    "agent-browser": {
+      "repo": "vercel-labs/agent-browser",
+      "tier": "core",
+      "summary": "browser automation with the agent-browser CLI: open sites, fill forms, click, screenshot, scrape, test web apps, and drive Electron apps, Slack and cloud browsers"
+    },
+    "visual-explainer": {
+      "repo": "nicobailon/visual-explainer",
+      "tier": "core",
+      "summary": "HTML visual explanations: diagrams, diff and plan reviews, slides, recaps"
+    },
+    "humanizer": {
+      "repo": "blader/humanizer",
+      "tier": "core",
+      "summary": "rewriting AI-sounding prose"
+    },
+    "i-have-adhd": {
+      "repo": "ayghri/i-have-adhd",
+      "tier": "core",
+      "summary": "ADHD-friendly output mode (/i-have-adhd)"
+    },
+    "caveman": {
+      "repo": "JuliusBrussee/caveman",
+      "tier": "gateway",
+      "summary": "terse caveman-style replies, commits and reviews"
+    },
+    "design-taste-frontend": {
+      "repo": "Leonxlnx/taste-skill",
+      "tier": "gateway",
+      "summary": "frontend design with taste (anti-slop websites)"
+    },
+    "engram": {
+      "repo": "nagisanzenin/engram",
+      "tier": "gateway",
+      "summary": "learning a topic, spaced-repetition reviews"
+    },
+    "qt": {
+      "repo": "TheQtCompanyRnD/agent-skills",
+      "tier": "gateway",
+      "summary": "Qt 6 QML and C++: write, review, test, profile"
+    },
+    "gws": {
+      "repo": "googleworkspace/cli",
+      "tier": "gateway",
+      "summary": "Google Workspace CLI: Gmail, Drive, Sheets, Calendar, Docs"
+    },
+    "itr-wala": {
+      "repo": "karanb192/itr-wala",
+      "tier": "gateway",
+      "summary": "Indian income tax returns (ITR)"
+    },
+    "gstr-wala": {
+      "repo": "quantavil/gstr-wala",
+      "tier": "gateway",
+      "summary": "Indian GST returns (GSTR-1, 3B, 2B)"
+    },
+    "ditto": {
+      "tier": "gateway",
+      "summary": "cloning an Android app by reverse engineering"
+    },
+    "dms-plugin-maker": {
+      "tier": "gateway",
+      "summary": "DankMaterialShell (DMS) plugins"
+    },
+    "fact-check": {
+      "tier": "gateway",
+      "summary": "fact-checking a video, audio or transcript"
+    },
+    "myanimelist": {
+      "tier": "gateway",
+      "summary": "MyAnimeList lists and anime recommendations"
+    }
+  }
+}

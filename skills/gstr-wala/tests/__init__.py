@@ -1,1 +1,0 @@
-"""gstr-wala tests package."""

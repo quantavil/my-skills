@@ -1,12 +1,6 @@
 node_modules/
 __pycache__/
 *.pyc
-.agents/
-.claude/
-.codex/
-.gemini/
-.opencode/
 .worktrees/
-.active/
-skills.local.json
-superskills/
+.build/
+vendor/
