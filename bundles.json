@@ -41,6 +41,11 @@
       "tier": "core",
       "summary": "ADHD-friendly output mode (/i-have-adhd)"
     },
+    "modern-web-guidance": {
+      "repo": "GoogleChrome/modern-web-guidance",
+      "tier": "core",
+      "summary": "modern web platform best practices: HTML/CSS, UI components, accessibility, CWV, and Chrome extensions"
+    },
     "caveman": {
       "repo": "JuliusBrussee/caveman",
       "tier": "gateway",

@@ -22,6 +22,7 @@ To add, remove or retier a bundle, edit `bundles.json`, then run `sync` (for a n
 | `agent-browser` | core | 10 | [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser) | browser automation with the agent-browser CLI: open sites, fill forms, click, screenshot, scrape, test web apps, and drive Electron apps, Slack and cloud browsers |
 | `humanizer` | core | 1 | [blader/humanizer](https://github.com/blader/humanizer) | rewriting AI-sounding prose |
 | `i-have-adhd` | core | 1 | [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) | ADHD-friendly output mode (/i-have-adhd) |
+| `modern-web-guidance` | core | 2 | [GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance) | modern web platform best practices: HTML/CSS, UI components, accessibility, CWV, and Chrome extensions |
 | `superpowers` | core | 15 | [obra/superpowers](https://github.com/obra/superpowers) | software development: planning features, implementing changes, debugging failures, reviewing code, testing, and finishing branches |
 | `visual-explainer` | core | 1 | [nicobailon/visual-explainer](https://github.com/nicobailon/visual-explainer) | HTML visual explanations: diagrams, diff and plan reviews, slides, recaps |
 | `android-skills` | gateway | 36 | [android/skills](https://github.com/android/skills) | Android app development: Jetpack Compose, navigation, AGP 9 and Play Billing upgrades, Wear OS, TV, XR, Glance widgets, performance and ANR fixes, R8, and Android security |
